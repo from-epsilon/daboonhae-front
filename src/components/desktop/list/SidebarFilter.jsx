@@ -1,0 +1,206 @@
+import { X, RotateCcw, Check } from 'lucide-react';
+
+// 데스크탑 좌측 사이드바 필터
+// - 280px 고정 폭, sticky 상단 고정
+// - 필터 타이틀 + 활성 개수 + 초기화 버튼
+// - 세부 카테고리(라디오 리스트) + 목적별 필터(range/tristate/bool)
+// - 부모(ListPage)가 모든 상태를 관리, 여기서는 입력만 전달
+export default function SidebarFilter({
+  subCategories,
+  subCategory,
+  onSubCategoryChange,
+  specs,
+  value,
+  onChange,
+  onReset,
+  activeCount,
+}) {
+  // 필터 한 항목 갱신
+  const updateField = (key, next) => {
+    onChange({ ...value, [key]: next });
+  };
+
+  return (
+    <aside className="d-list-sidebar">
+      <SidebarHeader activeCount={activeCount} onReset={onReset} />
+
+      {subCategories && subCategories.length > 0 && (
+        <SubCategorySection
+          subCategories={subCategories}
+          value={subCategory}
+          onChange={onSubCategoryChange}
+        />
+      )}
+
+      {specs && specs.length > 0 ? (
+        specs.map((spec) => (
+          <FilterSection key={spec.key} spec={spec} value={value[spec.key]} onChange={(next) => updateField(spec.key, next)} />
+        ))
+      ) : (
+        <div className="d-list-sidebar-empty">목적을 선택하면 세부 필터가 표시됩니다.</div>
+      )}
+    </aside>
+  );
+}
+
+// 사이드바 상단 헤더 — "필터" + 활성 개수 뱃지 + 초기화
+function SidebarHeader({ activeCount, onReset }) {
+  return (
+    <div className="d-list-sidebar-header">
+      <div className="d-list-sidebar-title">
+        필터
+        {activeCount > 0 && <span className="d-list-sidebar-count">{activeCount}</span>}
+      </div>
+      {activeCount > 0 && (
+        <button type="button" className="d-list-sidebar-reset" onClick={onReset}>
+          <RotateCcw size={12} aria-hidden />
+          <span>초기화</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// 세부 카테고리 — 라디오 리스트 (전체 + 각 카테고리)
+function SubCategorySection({ subCategories, value, onChange }) {
+  return (
+    <div className="d-list-filter-section">
+      <div className="d-list-filter-section-label">세부 카테고리</div>
+      <div className="d-list-radio-list">
+        <RadioRow label="전체" checked={value === 'all'} onChange={() => onChange('all')} />
+        {subCategories.map((c) => (
+          <RadioRow key={c} label={c} checked={value === c} onChange={() => onChange(c)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 단일 필터 섹션 (label + 타입별 컨트롤)
+function FilterSection({ spec, value, onChange }) {
+  return (
+    <div className="d-list-filter-section">
+      <div className="d-list-filter-section-label">{spec.label}</div>
+      {renderControl(spec, value, onChange)}
+    </div>
+  );
+}
+
+// 타입별 컨트롤 분기
+function renderControl(spec, v, onChange) {
+  if (spec.type === 'range') return <RangeControl spec={spec} value={v} onChange={onChange} />;
+  if (spec.type === 'tristate') return <TriStateControl spec={spec} value={v ?? {}} onChange={onChange} />;
+  if (spec.type === 'bool') return <BoolToggle value={!!v} onChange={onChange} />;
+  return null;
+}
+
+// 라디오 한 줄
+function RadioRow({ label, checked, onChange }) {
+  return (
+    <label className={`d-list-radio-row ${checked ? 'is-active' : ''}`}>
+      <span className={`d-list-radio-dot ${checked ? 'is-active' : ''}`} aria-hidden />
+      <input type="radio" checked={checked} onChange={onChange} className="sr-only" />
+      <span className="d-list-radio-label">{label}</span>
+    </label>
+  );
+}
+
+// range: min/max number input + 단위
+function RangeControl({ spec, value, onChange }) {
+  const min = value?.min ?? '';
+  const max = value?.max ?? '';
+  const handleMin = (e) => onChange({ ...value, min: e.target.value === '' ? undefined : Number(e.target.value) });
+  const handleMax = (e) => onChange({ ...value, max: e.target.value === '' ? undefined : Number(e.target.value) });
+  return (
+    <div className="d-list-range">
+      <input
+        type="number"
+        className="d-list-range-input"
+        placeholder={String(spec.min)}
+        value={min}
+        onChange={handleMin}
+        aria-label={`${spec.label} 최솟값`}
+      />
+      <span className="d-list-range-sep">~</span>
+      <input
+        type="number"
+        className="d-list-range-input"
+        placeholder={String(spec.max)}
+        value={max}
+        onChange={handleMax}
+        aria-label={`${spec.label} 최댓값`}
+      />
+    </div>
+  );
+}
+
+// tristate: 옵션별 포함(체크)/제외(X)/중립 3상태
+function TriStateControl({ spec, value, onChange }) {
+  const setState = (option, nextState) => {
+    const next = { ...value };
+    // 같은 버튼 재클릭 시 해제 (중립으로)
+    if (next[option] === nextState) {
+      delete next[option];
+    } else {
+      next[option] = nextState;
+    }
+    onChange(next);
+  };
+
+  return (
+    <div className="d-list-tristate">
+      {spec.options.map((opt) => (
+        <TriStateRow key={opt} option={opt} state={value[opt]} onSet={(s) => setState(opt, s)} />
+      ))}
+    </div>
+  );
+}
+
+// tristate 단일 행 (옵션명 + 포함/제외 버튼)
+function TriStateRow({ option, state, onSet }) {
+  return (
+    <div className="d-list-tristate-row">
+      <span className="d-list-tristate-label">{option}</span>
+      <div className="d-list-tristate-btns">
+        <button
+          type="button"
+          className={`d-list-tristate-btn d-list-tristate-include ${state === 'include' ? 'is-active' : ''}`}
+          onClick={() => onSet('include')}
+          aria-label={`${option} 포함`}
+          aria-pressed={state === 'include'}
+          title="포함"
+        >
+          <Check size={14} aria-hidden />
+        </button>
+        <button
+          type="button"
+          className={`d-list-tristate-btn d-list-tristate-exclude ${state === 'exclude' ? 'is-active' : ''}`}
+          onClick={() => onSet('exclude')}
+          aria-label={`${option} 제외`}
+          aria-pressed={state === 'exclude'}
+          title="제외"
+        >
+          <X size={14} aria-hidden />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// bool: 토글 스위치
+function BoolToggle({ value, onChange }) {
+  return (
+    <label className="d-list-bool">
+      <span className={`d-list-bool-switch ${value ? 'is-on' : ''}`} aria-hidden>
+        <span className="d-list-bool-thumb" />
+      </span>
+      <input
+        type="checkbox"
+        checked={value}
+        onChange={(e) => onChange(e.target.checked)}
+        className="sr-only"
+      />
+      <span className="d-list-bool-text">{value ? '적용 중' : '미적용'}</span>
+    </label>
+  );
+}

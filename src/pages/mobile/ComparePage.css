@@ -1,0 +1,466 @@
+/* ===========================================================================
+   모바일 비교 페이지 스타일 (.m-compare-*)
+   - DS 토큰만 사용 (var(--...))
+   - 레이아웃: sticky 좌측 라벨 컬럼(110px) + 가로 스크롤 데이터 컬럼들(각 150px)
+   - 각 행 높이는 토큰으로 통일해 좌/우가 정확히 정렬되도록 함
+   - 강조: 우수값은 그린 텍스트 + soft-green pill 배경 + IconCheck
+   =========================================================================== */
+
+/* ─────────────────────────────────────────────────────────────────────────
+   행 높이 / 컬럼 폭 / 색상 토큰 (페이지 스코프)
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare {
+  --row-header-h: 168px;  /* 썸네일+브랜드+이름 헤더 */
+  --row-score-h: 92px;    /* ScoreGauge 56 + padding */
+  --row-cell-h: 52px;     /* 영양소 셀 */
+  --row-tags-h: 120px;    /* 자동 태그 스택 */
+  --label-col-w: 104px;
+  --data-col-w: 150px;
+
+  background: var(--bg-white);
+  min-height: 100%;
+  padding-bottom: var(--space-8);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   액션바: 카운트 + 전체 지우기 (AppBar 아래)
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare-actionbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--bg-divider);
+  background: var(--bg-white);
+}
+.m-compare-actionbar-count {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+}
+.m-compare-actionbar-count b {
+  font-family: var(--font-numeric);
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-right: 2px;
+}
+.m-compare-clear-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 4px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.m-compare-clear-btn:hover {
+  color: var(--text-primary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   비교 그리드 — 좌측 라벨 컬럼 + 우측 가로 스크롤
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare-grid {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  background: var(--bg-white);
+  /* 위쪽에 미세한 회색 백그라운드로 카드처럼 */
+  border-bottom: 1px solid var(--bg-divider);
+}
+
+/* 좌측 sticky 라벨 컬럼 */
+.m-compare-label-col {
+  flex: 0 0 var(--label-col-w);
+  width: var(--label-col-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-white);
+  border-right: 1px solid var(--border-tertiary);
+  z-index: 2;
+  /* sticky로 잡아 가로 스크롤 시에도 보이도록 */
+  position: sticky;
+  left: 0;
+  align-self: flex-start;
+}
+
+.m-compare-label-cell {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--bg-divider);
+  height: var(--row-cell-h);
+  background: var(--bg-white);
+}
+/* 헤더/점수/태그처럼 큰 행은 별도 높이 */
+.m-compare-label-col .m-compare-label-cell:nth-child(1) {
+  height: var(--row-header-h);
+}
+.m-compare-label-col .m-compare-label-cell:nth-child(2) {
+  height: var(--row-score-h);
+}
+.m-compare-label-col .m-compare-label-cell:last-child {
+  height: var(--row-tags-h);
+  align-items: flex-start;
+  padding-top: var(--space-3);
+  border-bottom: none;
+}
+
+/* 우측 가로 스크롤 영역 */
+.m-compare-data-scroll {
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.m-compare-data-scroll::-webkit-scrollbar {
+  height: 0;
+}
+.m-compare-data-track {
+  display: flex;
+  align-items: stretch;
+  min-width: min-content;
+}
+
+/* 데이터 컬럼 1개 */
+.m-compare-data-col {
+  flex: 0 0 var(--data-col-w);
+  width: var(--data-col-w);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--bg-divider);
+  scroll-snap-align: start;
+  background: var(--bg-white);
+}
+.m-compare-data-col:last-child {
+  border-right: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   컬럼 헤더 (썸네일 + 브랜드 + 이름 + X)
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare-col-header {
+  position: relative;
+  height: var(--row-header-h);
+  padding: var(--space-3);
+  background: var(--bg-card-ui);
+  border-bottom: 1px solid var(--bg-divider);
+  display: flex;
+  flex-direction: column;
+}
+.m-compare-col-x {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--border-tertiary);
+  background: var(--bg-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  z-index: 1;
+}
+.m-compare-col-x:hover {
+  color: var(--text-primary);
+  border-color: var(--gray-900);
+}
+
+.m-compare-col-open {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: center;
+  color: inherit;
+}
+.m-compare-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  margin-bottom: 4px;
+}
+.m-compare-thumb--ph {
+  /* 이미지 실패 시 placeholder — 단색 */
+  background: var(--gray-200);
+}
+.m-compare-col-brand {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+  font-weight: 500;
+  line-height: 1.2;
+}
+.m-compare-col-name {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  /* 2줄까지만 보여주고 ellipsis */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: 0 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   데이터 셀 (영양소 1개)
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare-cell {
+  position: relative;
+  height: var(--row-cell-h);
+  padding: 0 var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-bottom: 1px solid var(--bg-divider);
+  font-family: var(--font-numeric);
+  color: var(--text-primary);
+}
+.m-compare-cell-num {
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  line-height: 1;
+}
+.m-compare-cell-unit {
+  font-size: var(--font-size-xxs);
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-left: 1px;
+}
+
+/* 우수값 강조 — soft-green pill + 그린 텍스트 + 체크 아이콘 */
+.m-compare-cell--best {
+  background: var(--green-50);
+}
+.m-compare-cell--best .m-compare-cell-num {
+  color: var(--green-700);
+}
+.m-compare-cell--best .m-compare-cell-unit {
+  color: var(--green-600);
+}
+.m-compare-cell-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--green-500);
+  color: white;
+  flex-shrink: 0;
+}
+
+/* 점수 셀 */
+.m-compare-cell--score {
+  height: var(--row-score-h);
+  gap: 4px;
+}
+.m-compare-cell--score.m-compare-cell--best {
+  /* 점수는 게이지가 이미 색이 있으니 배경만 매우 옅게 */
+  background: var(--green-50);
+}
+
+/* 태그 셀 */
+.m-compare-cell--tags {
+  height: var(--row-tags-h);
+  align-items: flex-start;
+  padding: var(--space-3);
+  border-bottom: none;
+}
+.m-compare-cell--empty {
+  color: var(--text-tertiary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  justify-content: center;
+}
+.m-compare-tags-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   AddSlot — 마지막 컬럼 (점선 박스)
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare-data-col--add {
+  background: var(--bg-white);
+  border-right: none;
+}
+.m-compare-add-slot {
+  flex: 1;
+  margin: var(--space-3);
+  /* 헤더+점수+영양소6개+태그 = 전체 행 합 높이를 채움 */
+  /* 좌측 컬럼과 가로 스크롤 영역의 alignment는 grid 전체 stretch에 의해 자동 */
+  border: 2px dashed var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: var(--space-4);
+  /* 최소 높이: 데이터 컬럼 총합과 비슷하게 (header+score+6*cell+tags) */
+  /* 실제로 데이터 컬럼이 그 높이가 되면 flex:1로 자동 매칭됨 */
+}
+.m-compare-add-slot:hover {
+  border-color: var(--green-500);
+  color: var(--green-700);
+  background: var(--green-50);
+}
+.m-compare-add-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.m-compare-add-slot:hover .m-compare-add-icon {
+  background: var(--green-500);
+  color: white;
+}
+.m-compare-add-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.m-compare-add-sub {
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   하단 요약 (Compare, don't rank)
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare-summary {
+  margin: var(--space-5) var(--space-4) 0;
+  padding: var(--space-4);
+  background: var(--bg-card-ui);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+}
+.m-compare-summary-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--space-2);
+}
+.m-compare-summary-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--green-500);
+}
+.m-compare-summary-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-s);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.m-compare-summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.m-compare-summary-item {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: var(--lh-base);
+  padding-left: 10px;
+  position: relative;
+}
+.m-compare-summary-item::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--gray-400);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   빈 상태
+   ──────────────────────────────────────────────────────────────────────── */
+.m-compare--empty-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: var(--space-12) var(--space-4);
+}
+.m-compare-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+}
+.m-compare-empty-illus {
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  background: var(--green-50);
+  color: var(--green-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+.m-compare-empty-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-l);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: var(--lh-tight);
+}
+.m-compare-empty-sub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--lh-base);
+}
+.m-compare-empty-cta {
+  margin-top: var(--space-3);
+}

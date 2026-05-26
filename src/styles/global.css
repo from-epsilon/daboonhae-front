@@ -3,28 +3,30 @@
    - 색/폰트/간격은 CSS 변수로 분리해 추후 디자인 토큰화 용이 */
 
 :root {
-  --c-bg: #fafafa;
-  --c-surface: #ffffff;
-  --c-border: #e6e6e6;
-  --c-text: #1a1a1a;
-  --c-text-sub: #666;
-  --c-primary: #3b82f6;
-  --c-primary-soft: #dbeafe;
-  --c-accent: #10b981;
-  --c-danger: #ef4444;
-  --radius: 10px;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-  --max-width: 1100px;
+  /* ───────── DS 토큰 alias (Phase 1: design-tokens.css 매핑) ─────────
+     - 기존 --c-* 변수는 모두 DS 토큰의 alias로 전환
+     - --shadow-sm/--shadow-md는 design-tokens.css에 동명 정의가 있으므로 여기서 재선언하지 않음
+       (cascade 순서상 design-tokens.css → global.css 로 import되므로 DS 값이 그대로 상속됨) */
+  --c-bg: var(--gray-100);              /* DS bg-off-white = #F5F5F5 */
+  --c-surface: var(--white);
+  --c-border: var(--border-tertiary);   /* #E0E0E0 — DS divider/콘텐츠 보더 */
+  --c-text: var(--text-primary);        /* #222 */
+  --c-text-sub: var(--text-secondary);  /* #616161 */
+  --c-primary: var(--brand-green);      /* #00C600 — verified/safe/high-score 브랜드 그린 */
+  --c-primary-soft: var(--green-50);    /* #E5FCE3 */
+  --c-accent: var(--brand-cta);         /* #0028AC — CTA 블루 (구매/비교함 담기) */
+  --c-danger: var(--red-500);           /* #EF2B2A */
+  --radius: var(--radius-md);           /* 8px — DS 표준 */
+  --max-width: 1240px;                  /* DS 데스크탑 가이드. 모바일 재설계 예정 임시값 */
 
-  /* z-index 스케일 — 한 곳에서 위계를 관리 */
+  /* z-index 스케일 — DS에 정의 없음, 기존 값 유지 */
   --z-content: 1;        /* 일반 컨텐츠 위 (예: 슬라이더 네비) */
   --z-sticky: 30;        /* sticky 헤더 */
   --z-dropdown: 40;      /* 자동완성, 셀렉트 등 임시 오버레이 */
   --z-floating: 50;      /* 하단 트레이바 */
   --z-overlay: 60;       /* 우하단 피드백 FAB·패널 */
 
-  /* 포커스 가시성 토큰 */
+  /* 포커스 가시성 토큰 — DS에 정의 없음, 기존 값 유지 */
   --focus-ring: 2px solid var(--c-primary);
   --focus-offset: 2px;
 }
@@ -33,7 +35,7 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+  font-family: var(--font-body); /* DS 본문 폰트: Noto Sans KR 우선 */
   background: var(--c-bg);
   color: var(--c-text);
   line-height: 1.5;
@@ -55,10 +57,23 @@ select:focus-visible {
   outline-offset: 1px;
 }
 
-/* ───────── 레이아웃 ───────── */
+/* ───────── 레이아웃 ─────────
+   - 데스크탑: 기존 .app/.app-main/.page (최대 1240px 컨텐츠 폭)
+   - 모바일(<=768px): .mobile-shell (전체 폭, 하단 BottomNav 공간 확보)
+   - App.jsx가 viewport에 따라 어느 셸을 렌더할지 결정 */
 .app { display: flex; flex-direction: column; min-height: 100vh; }
 .app-main { flex: 1; padding-bottom: 96px; }
 .page { max-width: var(--max-width); margin: 0 auto; padding: 24px 16px; }
+
+.mobile-shell {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-white);
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.mobile-shell-main { flex: 1; padding-bottom: 56px; /* BottomNav 높이 */ }
+.mobile-page { padding: 16px; }
 
 /* ───────── Header ───────── */
 .header {
@@ -68,11 +83,19 @@ select:focus-visible {
   padding: 12px 16px;
   display: flex; align-items: center; gap: 16px;
 }
+/* 메인페이지 전용 — 헤더 박스 톤 제거 (배경/보더/sticky 없음)
+   로고만 페이지 콘텐츠 위에 자연스럽게 놓임 */
+.header.header--bare {
+  position: static;
+  background: transparent;
+  border-bottom: none;
+  padding: 20px 40px 0;
+}
 .header-logo { font-size: 20px; font-weight: 700; color: var(--c-primary); }
 .purpose-toggle { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
 .purpose-chip {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 8px 14px; min-height: 36px; border-radius: 999px;
+  padding: 8px 14px; min-height: 36px; border-radius: var(--radius-pill);
   background: var(--c-surface); border: 1px solid var(--c-border);
   font-size: 13px; white-space: nowrap;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
@@ -135,9 +158,9 @@ select:focus-visible {
   background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius);
   padding: 20px 8px; text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition: box-shadow 0.15s, border-color 0.15s;
 }
-.purpose-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--c-primary); }
+.purpose-tile:hover { box-shadow: var(--shadow-md); border-color: var(--c-primary); }
 .purpose-tile-icon { color: var(--c-primary); }
 .purpose-tile-label { font-weight: 600; font-size: 14px; }
 
@@ -206,7 +229,7 @@ select:focus-visible {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 10px 16px; min-height: 40px;
   border: 1px solid var(--c-border); background: var(--c-surface);
-  border-radius: 8px; color: var(--c-text); font-size: 13px; font-weight: 600;
+  border-radius: var(--radius-md); color: var(--c-text); font-size: 13px; font-weight: 600;
   transition: border-color 0.15s, color 0.15s;
 }
 .list-empty-btn:hover { border-color: var(--c-primary); color: var(--c-primary); }
@@ -250,7 +273,7 @@ select:focus-visible {
 .filter-item { margin-bottom: 14px; }
 .filter-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
 .filter-range { display: flex; align-items: center; gap: 6px; }
-.filter-range input { width: 100%; padding: 6px 8px; border: 1px solid var(--c-border); border-radius: 6px; font-size: 13px; }
+.filter-range input { width: 100%; padding: 6px 8px; border: 1px solid var(--c-border); border-radius: var(--radius-sm); font-size: 13px; }
 .filter-multi { display: flex; flex-direction: column; gap: 4px; }
 .filter-multi-item { font-size: 13px; display: flex; align-items: center; gap: 6px; }
 .filter-bool { font-size: 13px; display: flex; align-items: center; gap: 6px; }
@@ -263,7 +286,7 @@ select:focus-visible {
 .filter-tristate-buttons { display: flex; gap: 4px; }
 .tristate-btn {
   /* 사이드바 안의 조밀한 컨트롤이라 44는 과해서 36 + 명시 hit-area로 보정 */
-  width: 36px; height: 36px; border-radius: 6px;
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
   border: 1px solid var(--c-border); background: var(--c-surface);
   font-size: 13px; font-weight: 700; color: var(--c-text-sub);
   display: inline-flex; align-items: center; justify-content: center;
@@ -278,7 +301,7 @@ select:focus-visible {
 }
 .tristate-btn.is-active:hover { filter: brightness(0.97); }
 
-.sort-dropdown { padding: 8px 12px; border: 1px solid var(--c-border); border-radius: 8px; background: var(--c-surface); font-size: 14px; }
+.sort-dropdown { padding: 8px 12px; border: 1px solid var(--c-border); border-radius: var(--radius-md); background: var(--c-surface); font-size: 14px; }
 
 /* 카드 그리드는 화면 폭에 따라 자동 채움 (풀폭 리스트에서도 카드가 과도하게 커지지 않도록) */
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
@@ -295,7 +318,7 @@ select:focus-visible {
 .metric-label { color: var(--c-text-sub); }
 .metric-value { font-weight: 600; }
 .product-cart-btn {
-  border: 1px solid var(--c-border); background: var(--c-surface); border-radius: 7px;
+  border: 1px solid var(--c-border); background: var(--c-surface); border-radius: var(--radius-sm);
   padding: 6px 10px; font-size: 12px; color: var(--c-text-sub);
   display: inline-flex; align-items: center; justify-content: center; gap: 4px;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
@@ -303,12 +326,85 @@ select:focus-visible {
 .product-cart-btn:hover { border-color: var(--c-primary); color: var(--c-primary); }
 .product-cart-btn.is-active { background: var(--c-primary-soft); border-color: var(--c-primary); color: var(--c-primary); font-weight: 600; }
 
+/* ───────── DS Skeleton — 로딩 상태 placeholder
+   - shimmer는 background-position 만 이동시켜 GPU 부담 없음
+   - prefers-reduced-motion에서는 정적 회색만 표시 */
+.d-skeleton {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    var(--gray-200) 0%,
+    var(--gray-100) 50%,
+    var(--gray-200) 100%
+  );
+  background-size: 200% 100%;
+  animation: d-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+@keyframes d-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.d-skeleton-foodcard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.d-skeleton-foodcard-thumb {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: auto;
+}
+.d-skeleton-foodcard-body {
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .d-skeleton { animation: none; background: var(--gray-200); }
+}
+
+/* ───────── DS FoodCard: 비교함 + 버튼
+   - 시각 크기 26x26 유지, 의사요소(::before)로 hit-area 44x44 확장
+   - 작은 비주얼 위에 큰 터치 타깃 확보 (모바일/터치 환경 안전) */
+.d-foodcard-compare {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: white;
+  border: 1px solid var(--border-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-primary);
+  z-index: 1;
+  padding: 0;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+.d-foodcard-compare::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+}
+.d-foodcard-compare:hover {
+  border-color: var(--brand-green);
+  color: var(--brand-green);
+  background: var(--green-50);
+}
+
 /* ───────── 공용 제품 썸네일 (ProductThumb) ─────────
    - 이미지 없는 동안 brand 이니셜+컬러 아바타로 시각 구분
    - container-type 적용 → 폰트가 컨테이너 폭에 비례 (cqi 단위)
    - ::after로 부드러운 광택 오버레이 (1톤 평면 방지) */
 .product-thumb {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; letter-spacing: -0.04em;
   user-select: none;
@@ -360,7 +456,7 @@ img.product-thumb { object-fit: cover; }
 .summary-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--c-border); }
 .summary-section-title { font-size: 15px; margin: 0 0 12px; }
 .nutrition-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.nutrition-item { background: var(--c-bg); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; }
+.nutrition-item { background: var(--c-bg); border-radius: var(--radius-md); padding: 10px; display: flex; flex-direction: column; }
 .nutrition-label { font-size: 12px; color: var(--c-text-sub); }
 .nutrition-value { font-weight: 700; font-size: 16px; margin-top: 2px; }
 .ingredient-list { list-style: none; margin: 0; padding: 0; }
@@ -371,7 +467,7 @@ img.product-thumb { object-fit: cover; }
 .detail-actions { display: flex; gap: 8px; margin-bottom: 16px; }
 .detail-actions .product-cart-btn { flex: 1; padding: 12px; }
 .detail-buy {
-  flex: 1; padding: 12px; border-radius: 8px;
+  flex: 1; padding: 12px; border-radius: var(--radius-md);
   background: var(--c-accent); color: white; font-weight: 600;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   transition: background-color 0.15s;
@@ -382,7 +478,7 @@ img.product-thumb { object-fit: cover; }
 .analysis-report-title { font-size: 18px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
 .analysis-report-hint { color: var(--c-text-sub); font-size: 13px; margin: 0 0 16px; }
 .analysis-sections { display: flex; flex-direction: column; gap: 12px; }
-.analysis-section { background: var(--c-bg); border-radius: 8px; padding: 12px; }
+.analysis-section { background: var(--c-bg); border-radius: var(--radius-md); padding: 12px; }
 .analysis-section-title { font-size: 14px; margin: 0 0 6px; }
 .analysis-section-body { margin: 0; font-size: 14px; color: var(--c-text-sub); }
 
@@ -402,11 +498,11 @@ img.product-thumb { object-fit: cover; }
 .rating-btn:hover { border-color: var(--c-primary); color: var(--c-primary); }
 .rating-btn.is-active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 .review-bool { display: flex; align-items: center; gap: 6px; font-size: 14px; }
-.review-textarea { width: 100%; padding: 10px; border: 1px solid var(--c-border); border-radius: 8px; font: inherit; resize: vertical; }
-.review-submit { align-self: flex-end; padding: 8px 16px; border: none; border-radius: 8px; background: var(--c-primary); color: white; font-weight: 600; }
+.review-textarea { width: 100%; padding: 10px; border: 1px solid var(--c-border); border-radius: var(--radius-md); font: inherit; resize: vertical; }
+.review-submit { align-self: flex-end; padding: 8px 16px; border: none; border-radius: var(--radius-md); background: var(--c-primary); color: white; font-weight: 600; }
 .review-submit:disabled { background: var(--c-border); cursor: not-allowed; }
 .review-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
-.review-item { padding: 12px; background: var(--c-bg); border-radius: 8px; }
+.review-item { padding: 12px; background: var(--c-bg); border-radius: var(--radius-md); }
 .review-meta { display: flex; gap: 12px; font-size: 12px; color: var(--c-text-sub); margin-bottom: 6px; }
 .review-repurchase { display: inline-flex; align-items: center; gap: 4px; }
 .review-repurchase.is-yes { color: var(--c-accent); }
@@ -423,7 +519,7 @@ img.product-thumb { object-fit: cover; }
 .compare-header-actions { display: flex; align-items: center; gap: 12px; }
 .compare-purpose { font-size: 13px; color: var(--c-text-sub); display: inline-flex; align-items: center; gap: 6px; }
 .compare-purpose-icon { color: var(--c-primary); }
-.compare-clear { padding: 8px 14px; min-height: 36px; border: 1px solid var(--c-border); background: var(--c-surface); border-radius: 8px; font-size: 13px; transition: border-color 0.15s, color 0.15s; }
+.compare-clear { padding: 8px 14px; min-height: 36px; border: 1px solid var(--c-border); background: var(--c-surface); border-radius: var(--radius-md); font-size: 13px; transition: border-color 0.15s, color 0.15s; }
 .compare-clear:hover { border-color: var(--c-danger); color: var(--c-danger); }
 .compare-empty { padding: 64px; text-align: center; color: var(--c-text-sub); }
 .compare-empty-link {
@@ -474,7 +570,7 @@ img.product-thumb { object-fit: cover; }
   position: absolute; top: 8px; right: 8px;
   width: 24px; height: 24px; min-height: 0; padding: 0;
   border: 1px solid var(--c-border); background: var(--c-surface);
-  border-radius: 999px; color: var(--c-text-sub);
+  border-radius: var(--radius-pill); color: var(--c-text-sub);
   display: inline-flex; align-items: center; justify-content: center;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -484,7 +580,7 @@ img.product-thumb { object-fit: cover; }
 .compare-tray {
   position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: var(--z-floating);
   background: var(--c-text); color: white;
-  padding: 10px 16px; border-radius: 999px;
+  padding: 10px 16px; border-radius: var(--radius-pill);
   display: flex; align-items: center; gap: 16px;
   box-shadow: var(--shadow-md);
   max-width: 90vw;
@@ -494,7 +590,7 @@ img.product-thumb { object-fit: cover; }
 .compare-tray-clear { background: transparent; color: rgba(255,255,255,0.7); border: none; font-size: 13px; padding: 8px 12px; min-height: 36px; transition: color 0.15s; }
 .compare-tray-clear:hover { color: white; }
 .compare-tray-cta {
-  background: var(--c-primary); padding: 8px 16px; min-height: 36px; border-radius: 999px;
+  background: var(--c-primary); padding: 8px 16px; min-height: 36px; border-radius: var(--radius-pill);
   color: white; font-weight: 600; font-size: 13px;
   display: inline-flex; align-items: center; gap: 6px;
   transition: background-color 0.15s, gap 0.15s;
@@ -504,7 +600,7 @@ img.product-thumb { object-fit: cover; }
 /* ───────── Global: Site Feedback ───────── */
 .site-feedback { position: fixed; right: 16px; bottom: 16px; z-index: var(--z-overlay); }
 .site-feedback-fab {
-  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 999px;
+  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-pill);
   padding: 12px 18px; min-height: 44px; box-shadow: var(--shadow-md); font-size: 13px; font-weight: 600;
   display: inline-flex; align-items: center; gap: 6px;
   transition: border-color 0.15s, color 0.15s, box-shadow 0.15s;
@@ -516,11 +612,11 @@ img.product-thumb { object-fit: cover; }
   border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-md);
 }
 .site-feedback-title { font-weight: 700; margin-bottom: 8px; }
-.site-feedback-textarea { width: 100%; border: 1px solid var(--c-border); border-radius: 6px; padding: 8px; font: inherit; resize: vertical; }
+.site-feedback-textarea { width: 100%; border: 1px solid var(--c-border); border-radius: var(--radius-sm); padding: 8px; font: inherit; resize: vertical; }
 .site-feedback-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
-.site-feedback-cancel { padding: 8px 14px; min-height: 36px; background: transparent; border: 1px solid var(--c-border); border-radius: 6px; font-size: 13px; transition: border-color 0.15s; }
+.site-feedback-cancel { padding: 8px 14px; min-height: 36px; background: transparent; border: 1px solid var(--c-border); border-radius: var(--radius-sm); font-size: 13px; transition: border-color 0.15s; }
 .site-feedback-cancel:hover { border-color: var(--c-text-sub); }
-.site-feedback-submit { padding: 8px 14px; min-height: 36px; background: var(--c-primary); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; transition: background-color 0.15s; }
+.site-feedback-submit { padding: 8px 14px; min-height: 36px; background: var(--c-primary); color: white; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; transition: background-color 0.15s; }
 .site-feedback-submit:hover:not(:disabled) { background: #2563eb; }
 .site-feedback-submit:disabled { background: var(--c-border); cursor: not-allowed; }
 .site-feedback-done { color: var(--c-accent); font-size: 14px; text-align: center; padding: 12px 0; }

@@ -1,0 +1,973 @@
+/* ===========================================================================
+   다분해 데스크탑 메인 페이지 — 크몽 톤(Clean white + 강한 카피 + 신뢰감)
+   - prefix: .d-home-*  (desktop home 전용)
+   - 1240px max-width, 느슨한 간격(섹션 간 80px), 약한 그림자, 8-12px 라운드
+   - DS 토큰(design-tokens.css)만 사용, 하드코딩 hex 금지 (예외: 디스플레이 사이즈)
+   =========================================================================== */
+
+/* 페이지 컨테이너 — 클린 화이트, 좌우 패딩 여유, 상단은 헤더와 자연스럽게 붙음 */
+.d-home {
+  max-width: 1240px;
+  margin: 0 auto;
+  /* 상단 12px (헤더 .header--bare 의 padding-top 20px 와 함께 약 32px 여백)
+     좌우 40px — 사용자 요청 패딩 확장
+     하단 96px */
+  padding: 12px 40px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+/* 상단 split(d-home-top) ↔ 카테고리 그리드 사이 간격만 좁힘
+   d-home 의 80px gap 은 다른 섹션들 사이를 위한 것이므로 유지하고
+   카테고리만 인접 셀렉터로 negative margin 사용 → 약 32px 간격 */
+.d-home > .d-home-top + .d-home-cat-grid {
+  margin-top: -48px;
+}
+
+/* ─────────────── 1. 상단 split: 좌 2/3 히어로 + 우 1/3 프로모션 배너 ───────────────
+   이미지(크몽 메인) 가이드 — 좌 콘텐츠 / 우 카드 스택, 모바일에서 배너 하단으로 내림 */
+.d-home-top {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: stretch;
+  padding: 24px 0 16px;
+}
+
+/* ─────────────── 좌측 히어로(HeroSection) ─────────────── */
+.d-home-hero-left {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 14px;
+  /* above-the-fold 1366×768 환경에서 카테고리도 same-viewport에 보이도록 단축 */
+  min-height: 320px;
+  padding: 8px 8px 8px 0;
+}
+/* 좌측 배경 글로우 — 우측 컬러풀 PromoBanner와 시각 무게 균형 */
+.d-home-hero-glow {
+  position: absolute;
+  z-index: 0;
+  top: -40px;
+  left: -120px;
+  width: 360px;
+  height: 360px;
+  border-radius: var(--radius-pill);
+  background: var(--green-100);
+  opacity: 0.4;
+  filter: blur(70px);
+  pointer-events: none;
+}
+/* hero 콘텐츠를 글로우 위로 */
+.d-home-hero-left > *:not(.d-home-hero-glow) {
+  position: relative;
+  z-index: 1;
+}
+.d-home-hero-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--green-700);
+  background: var(--green-50);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.d-home-hero-headline {
+  font-family: var(--font-display);
+  font-size: 40px; /* 디스플레이 사이즈 (토큰 범위 초과) */
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+.d-home-hero-headline-accent {
+  color: var(--green-600);
+}
+
+/* 검색바 — 크고 둥근(50px+ radius) pill + 우측 원형 검색 버튼
+   - 보더 추가: 포커스 전에도 입력 영역이 명확히 인지되도록
+   - max-width 축소: 720 → 560 (좌측 텍스트 호흡과 균형) */
+.d-home-search {
+  width: 100%;
+  max-width: 560px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-white);
+  border: 1.5px solid var(--border-tertiary);
+  border-radius: var(--radius-pill);
+  padding: 8px 8px 8px 28px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.d-home-search:hover {
+  border-color: var(--gray-500);
+}
+.d-home-search:focus-within {
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 3px var(--green-100);
+}
+.d-home-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-m); /* 16px — iOS 자동줌 회피 임계 */
+  padding: 14px 4px;
+  color: var(--text-primary);
+  background: transparent;
+  min-width: 0;
+}
+.d-home-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+/* 원형 검색 버튼 (FAB 스타일) — 이미지 가이드 핵심 디테일 */
+.d-home-search-fab {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--text-primary);
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.15s;
+}
+.d-home-search-fab:hover {
+  background: var(--green-700);
+}
+
+/* 추천 키워드 칩 — 회색 배경 둥근 칩 */
+.d-home-hero-keywords {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+/* "인기 검색어" prefix — 칩 그룹의 의미를 즉시 알려줌 */
+.d-home-hero-keywords-prefix {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  margin-right: 4px;
+}
+.d-home-hero-keyword {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  /* 페이지 배경(--gray-100)과 같은 톤이면 칩이 안 보임 → 흰색 + 보더로 명확히 분리 */
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-pill);
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.d-home-hero-keyword:hover {
+  background: var(--green-50);
+  border-color: var(--green-300);
+  color: var(--green-700);
+}
+
+/* ─────────────── 우측 프로모션 배너 (PromoBanner) — 카드 스택 ─────────────── */
+.d-home-promo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 380px;
+}
+.d-home-promo-stack {
+  position: relative;
+  width: 100%;
+  height: 340px;
+}
+.d-home-promo-card {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-xl);
+  padding: 28px 28px 24px;
+  color: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  box-shadow: var(--shadow-md);
+}
+/* depth 분기 — 가장 앞 카드는 그대로, 뒤 카드는 약간 우측+아래로 어긋남
+   (그림자 방향과 동일 — 카드 더미 메타포로 자연스러움) */
+.d-home-promo-card--depth-0 {
+  z-index: 3;
+  transform: translate(0, 0) scale(1);
+  opacity: 1;
+}
+.d-home-promo-card--depth-1 {
+  z-index: 2;
+  transform: translate(10px, 10px) scale(0.97);
+  opacity: 0.65;
+}
+.d-home-promo-card--depth-2 {
+  z-index: 1;
+  transform: translate(20px, 20px) scale(0.94);
+  opacity: 0.35;
+}
+
+/* 카드 톤 variant — props.accent 와 매칭 */
+.d-home-promo-card--green {
+  background: linear-gradient(135deg, var(--green-600) 0%, var(--green-700) 100%);
+}
+.d-home-promo-card--blue {
+  background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-700) 100%);
+}
+.d-home-promo-card--purple {
+  background: linear-gradient(135deg, #7B61FF 0%, #4A36C2 100%);
+}
+
+.d-home-promo-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+}
+.d-home-promo-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0;
+  color: white;
+  letter-spacing: -0.01em;
+  white-space: pre-line;
+}
+.d-home-promo-sub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 280px;
+}
+
+/* 일러스트 자리 — 추후 SVG/이미지 교체 가능. 현재는 부드러운 circle 3개 */
+.d-home-promo-illus {
+  position: absolute;
+  right: 16px;
+  bottom: 44px;
+  width: 130px;
+  height: 130px;
+}
+.d-home-promo-illus-circle {
+  position: absolute;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.18);
+}
+.d-home-promo-illus-circle--1 { width: 90px; height: 90px; right: 0; bottom: 0; }
+.d-home-promo-illus-circle--2 { width: 56px; height: 56px; right: 50px; top: 0; background: rgba(255,255,255,0.28); }
+.d-home-promo-illus-circle--3 { width: 32px; height: 32px; right: 12px; top: 22px; background: rgba(255,255,255,0.35); }
+
+/* 페이지네이션 (2/8 형식) — 우하단 pill */
+.d-home-promo-pagination {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-xs);
+  color: white;
+  font-weight: 700;
+}
+.d-home-promo-pagination-sep,
+.d-home-promo-pagination-total {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+/* 컨트롤 줄 — 좌측 점 인디케이터 + 우측 좌/우 네비게이션 */
+.d-home-promo-controls {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+/* 점 인디케이터 — 슬라이드 개수/현재 위치 즉시 인지 */
+.d-home-promo-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.d-home-promo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-300);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.15s, width 0.2s;
+}
+.d-home-promo-dot:hover {
+  background: var(--gray-500);
+}
+.d-home-promo-dot.is-active {
+  background: var(--brand-green);
+  /* 활성 점은 캡슐형으로 늘어남 — 현재 위치 더 강하게 인지 */
+  width: 20px;
+}
+.d-home-promo-nav {
+  display: flex;
+  gap: 8px;
+}
+.d-home-promo-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.d-home-promo-nav-btn:hover {
+  border-color: var(--gray-900);
+  background: var(--gray-100);
+}
+
+/* ─────────────── 2. 카테고리 아이콘 그리드 — 8칸 가로 (7 카테고리 + 전체보기) ─────────────── */
+.d-home-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  padding: 8px 0 16px;
+}
+.d-home-cat-item {
+  position: relative;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 12px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s, border-color 0.15s;
+}
+/* hover: 배경 + 그린 보더 (인터랙티브 인지 강화) */
+.d-home-cat-item:hover {
+  background: var(--green-50);
+  border-color: var(--green-200);
+}
+.d-home-cat-badge {
+  /* 카드 좌상단 코너 — 비표준 가운데 배치 제거, 일반적인 우상단/좌상단 패턴으로 */
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  background: var(--red-500);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.02em;
+  z-index: 1;
+  line-height: 1.3;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(239, 43, 42, 0.25);
+}
+.d-home-cat-illus {
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 살짝의 그림자로 3D 일러스트 시뮬레이션 (실제 에셋 들어오면 더 강해짐) */
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+}
+.d-home-cat-illus-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* placeholder — 실제 3D 일러스트가 들어오기 전까지 gradient blob 으로 입체감 흉내 */
+.d-home-cat-illus-ph {
+  width: 64px;
+  height: 64px;
+  border-radius: 22px; /* 살짝 큰 라운드 사각 (앱 아이콘 톤) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* 아이콘이 위에, 하이라이트는 ::after 로 그 위에 살짝 (drop-shadow는 lucide stroke 강조) */
+  color: white;
+}
+/* 자식 svg는 하이라이트 위에 오도록 z-index */
+.d-home-cat-illus-ph > svg {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+/* 살짝의 하이라이트 — 입체감 보강 */
+.d-home-cat-illus-ph::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent 50%);
+  pointer-events: none;
+}
+.d-home-cat-illus-ph--all {
+  background: var(--gray-100);
+  color: var(--text-secondary);
+}
+.d-home-cat-illus-ph--all::after {
+  display: none;
+}
+.d-home-cat-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.3;
+}
+.d-home-cat-item--all .d-home-cat-label {
+  color: var(--text-secondary);
+}
+
+/* ─────────────── 공통 섹션 헤더 ─────────────── */
+.d-home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.d-home-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.d-home-section-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.d-home-section-title {
+  font-family: var(--font-display);
+  font-size: 24px; /* 토큰 최대값(xxxl)이 24px이라 그대로 */
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.d-home-section-sub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.d-home-section-sub-icon {
+  color: var(--green-600);
+}
+.d-home-section-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background-color 0.15s, gap 0.15s;
+}
+.d-home-section-more:hover {
+  color: var(--green-700);
+  background: var(--green-50);
+  gap: 8px;
+}
+
+/* ─────────────── 2. 목적별 카드 (4컬럼) — 톤 정리 ─────────────── */
+.d-home-purpose-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.d-home-purpose-card {
+  background: white;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.d-home-purpose-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border-color: var(--green-300);
+}
+.d-home-purpose-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--green-50);
+  color: var(--green-700);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.d-home-purpose-label {
+  font-family: var(--font-display);
+  font-size: var(--font-size-l);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+.d-home-purpose-desc {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  min-height: 36px;
+}
+.d-home-purpose-arrow {
+  margin-top: auto;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  transition: color 0.15s, gap 0.15s;
+}
+.d-home-purpose-card:hover .d-home-purpose-arrow {
+  color: var(--green-700);
+  gap: 8px;
+}
+
+/* ─────────────── 3. 추천 식품 (4컬럼 × 3행 = 12개) ─────────────── */
+.d-home-food-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px 20px;
+}
+/* FoodCard 래퍼 — 약한 그림자, hover 시 borders + soft lift (no transform) */
+.d-home-food-cell {
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.d-home-food-cell:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: var(--border-tertiary);
+}
+.d-home-food-cell > div {
+  padding: 4px;
+}
+
+/* ─────────────── 4. 신뢰 수치 섹션 — 크몽의 "4.9점" 패턴 ─────────────── */
+.d-home-trust {
+  background: linear-gradient(135deg, var(--green-50) 0%, var(--bg-white) 60%, var(--blue-50) 100%);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.d-home-trust-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.d-home-trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  color: var(--green-700);
+  border: 1px solid var(--green-200);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+/* BETA 라벨 — mock 단계임을 투명하게 알림 (신뢰 손상 방지) */
+.d-home-trust-beta {
+  background: var(--orange-500);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  margin-left: 4px;
+}
+.d-home-trust-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.d-home-trust-sub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 520px;
+}
+.d-home-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.d-home-stat {
+  background: white;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+.d-home-stat-value {
+  font-family: var(--font-numeric);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--green-700);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.d-home-stat-unit {
+  font-family: var(--font-body);
+  font-size: var(--font-size-m);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.d-home-stat-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 12px;
+}
+.d-home-stat-hint {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* ─────────────── 5. 카테고리 카드 그리드 (큰 아이콘 + 라벨) ─────────────── */
+.d-home-category-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+}
+.d-home-category-card {
+  background: white;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  padding: 20px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+.d-home-category-card:hover {
+  border-color: var(--green-500);
+  background: var(--green-50);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.d-home-category-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-100);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+}
+.d-home-category-card:hover .d-home-category-icon-wrap {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+.d-home-category-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ─────────────── 6. 최근 추가 식품 (4컬럼 × 2행) ─────────────── */
+.d-home-recent-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px 20px;
+}
+
+/* ─────────────── 7. 후기 슬라이드 ─────────────── */
+.d-home-testimonials {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.d-home-testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.d-home-testimonial {
+  background: white;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.d-home-testimonial:hover {
+  border-color: var(--green-300);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.d-home-testimonial-stars {
+  display: inline-flex;
+  gap: 2px;
+  line-height: 1;
+}
+.d-home-testimonial-star {
+  font-size: 16px;
+  color: var(--gray-300);
+}
+.d-home-testimonial-star.is-filled {
+  color: #f5b400; /* 별점 노랑 — 위계상 별도 컬러 사용 */
+}
+.d-home-testimonial-quote {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0;
+  /* 4줄까지 노출 */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 88px;
+}
+.d-home-testimonial-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bg-divider);
+}
+.d-home-testimonial-author {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.d-home-testimonial-context {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* ─────────────── 8. 푸터 — 회사 정보 / 약관 / 문의 ─────────────── */
+.d-home-footer {
+  margin-top: 16px;
+  padding: 32px 0 8px;
+  border-top: 1px solid var(--border-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.d-home-footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.d-home-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.d-home-footer-logo {
+  font-family: var(--font-display);
+  font-size: var(--font-size-l);
+  font-weight: 700;
+  color: var(--green-700);
+  letter-spacing: -0.01em;
+}
+.d-home-footer-tagline {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0;
+}
+.d-home-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.d-home-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.d-home-footer-link:hover {
+  color: var(--green-700);
+}
+.d-home-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--bg-divider);
+  flex-wrap: wrap;
+}
+.d-home-footer-copy {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+}
+.d-home-footer-note {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+  max-width: 560px;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .d-home-footer-bottom { flex-direction: column; align-items: flex-start; }
+  .d-home-footer-note { text-align: left; }
+}
+
+/* ─────────────── Responsive (데스크탑 우선) ─────────────── */
+@media (max-width: 1100px) {
+  .d-home-top {
+    /* split 폭 비율 살짝 보정 — 좌측 좁아질 때 배너가 너무 좁아지지 않게 */
+    gap: 24px;
+  }
+  .d-home-cat-grid { grid-template-columns: repeat(5, 1fr); }
+  .d-home-purpose-grid { grid-template-columns: repeat(2, 1fr); }
+  .d-home-food-grid { grid-template-columns: repeat(3, 1fr); }
+  .d-home-recent-grid { grid-template-columns: repeat(3, 1fr); }
+  .d-home-trust-grid { grid-template-columns: repeat(2, 1fr); }
+  .d-home-testimonial-grid { grid-template-columns: repeat(2, 1fr); }
+  .d-home-hero-headline { font-size: 34px; }
+}
+
+@media (max-width: 860px) {
+  /* split 해제 — 배너가 히어로 아래로 내려옴 */
+  .d-home-top {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .d-home-hero-left { min-height: auto; padding: 16px 0; }
+  .d-home-promo { min-height: auto; }
+  .d-home-promo-stack { height: 280px; }
+  .d-home-cat-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .d-home { gap: 56px; padding: 24px 16px 80px; }
+  .d-home-hero-headline { font-size: 28px; }
+  .d-home-cat-grid { grid-template-columns: repeat(4, 1fr); }
+  .d-home-trust { padding: 32px 20px; }
+  .d-home-trust-title { font-size: 22px; }
+  .d-home-stat-value { font-size: 28px; }
+}
+
+/* 모션 민감 사용자 — hover 인터랙션 비활성 */
+@media (prefers-reduced-motion: reduce) {
+  .d-home-food-cell,
+  .d-home-purpose-card,
+  .d-home-section-more,
+  .d-home-testimonial,
+  .d-home-hero-keyword,
+  .d-home-search,
+  .d-home-search-fab,
+  .d-home-promo-card,
+  .d-home-promo-nav-btn,
+  .d-home-cat-item {
+    transition: none;
+  }
+}

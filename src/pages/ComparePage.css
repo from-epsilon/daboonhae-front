@@ -1,0 +1,572 @@
+/* ===========================================================================
+   데스크탑 비교 페이지 스타일 (.d-compare-*)
+   - DS 토큰만 사용 (var(--...))
+   - 레이아웃: 가로 그리드 = 좌측 라벨 컬럼(160px) + 데이터 컬럼들(각 1fr, min 180px)
+   - "Compare, don't rank" — 1위/2위 X. 각 행의 우수값만 그린 강조
+   - 1240px max-width (page 컨테이너에 의존)
+   =========================================================================== */
+
+/* ─────────────────────────────────────────────────────────────────────────
+   페이지 헤더 (제목 + 카운트 + 전체 지우기)
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-tertiary);
+}
+.d-compare-page-titlewrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.d-compare-page-title {
+  font-family: var(--font-display);
+  font-size: 28px; /* 페이지 타이틀 — 토큰 범위 초과로 별도 값 (32px 미만) */
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  letter-spacing: -0.01em;
+}
+.d-compare-page-count {
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--brand-green);
+  letter-spacing: 0;
+}
+/* max 도달 — 추가 슬롯이 사라진 상태를 색으로 즉시 인지 */
+.d-compare-page-count.is-full {
+  color: var(--orange-600);
+}
+.d-compare-page-sub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  margin: 0;
+}
+.d-compare-clear-btn {
+  background: transparent;
+  border: 1px solid var(--border-tertiary);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.d-compare-clear-btn:hover {
+  border-color: var(--gray-900);
+  color: var(--text-primary);
+  background: var(--gray-50);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   비교 테이블 (메인 그리드)
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-table {
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  /* 5개일 때 자연스럽게 1240 - 32 padding 안에 들어옴 */
+}
+
+/* 한 행 = grid: 라벨 + 데이터 컬럼들 (gridTemplateColumns은 props로 주입) */
+.d-compare-row {
+  display: grid;
+  align-items: stretch;
+  border-bottom: 1px solid var(--bg-divider);
+}
+.d-compare-row:last-child {
+  border-bottom: none;
+}
+
+/* 헤더 행: bg-card-ui 톤으로 구분 + 더 큰 패딩 */
+.d-compare-row--header {
+  background: var(--bg-card-ui);
+  border-bottom: 1px solid var(--border-tertiary);
+}
+
+/* 좌측 라벨 셀 */
+.d-compare-row-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: 700;
+  color: var(--text-primary);
+  border-right: 1px solid var(--bg-divider);
+  background: var(--bg-white);
+  gap: 2px;
+}
+.d-compare-row-label-text {
+  line-height: 1.3;
+}
+.d-compare-row-hint {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  font-weight: 400;
+  color: var(--text-tertiary);
+  line-height: 1.3;
+}
+/* 헤더 행 라벨 셀은 비어있음 — 시각적으로 헤더 톤 유지 */
+.d-compare-row-label--header {
+  background: var(--bg-card-ui);
+  border-right: 1px solid var(--border-tertiary);
+  border-bottom: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   헤더 행: 제품 카드 셀
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-col-header {
+  position: relative;
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg-card-ui);
+  border-right: 1px solid var(--bg-divider);
+  text-align: center;
+}
+.d-compare-col-header:last-of-type {
+  border-right: none;
+}
+
+/* 우상단 X 버튼
+   - 실 버튼은 시각적으로 28x28 유지하되, 의사요소로 44x44 hit-area 확장
+   - 모바일/터치 환경에서 안전한 터치 타깃 확보 */
+.d-compare-col-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-tertiary);
+  background: var(--bg-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  z-index: 1;
+  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
+}
+.d-compare-col-x::before {
+  content: '';
+  position: absolute;
+  /* hit-area: 시각 크기보다 8px씩 확장 → 44x44 */
+  inset: -8px;
+}
+.d-compare-col-x:hover {
+  border-color: var(--red-500);
+  color: var(--red-500);
+  background: var(--red-50);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   기준(anchor) 컬럼 강조 — 사용자가 비교 중심으로 삼는 1열
+   - 헤더 셀: 헤더 톤(bg-card-ui) 위에 soft-green 오버레이
+   - 각 행의 2번째 자식(데이터 첫 셀)에 좌측 액센트 보더
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-col-header--anchor {
+  background: var(--green-50);
+  box-shadow: inset 3px 0 0 var(--brand-green);
+}
+.d-compare-col-anchor-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--brand-green);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  z-index: 1;
+  letter-spacing: 0.02em;
+}
+/* 본문/태그/Trust 셀의 첫 데이터 컬럼 = 그리드 2번째 자식 */
+.d-compare-row:not(.d-compare-row--header) > :nth-child(2) {
+  box-shadow: inset 3px 0 0 var(--brand-green);
+}
+
+/* 썸네일 + 브랜드 + 이름 클릭 영역 */
+.d-compare-col-open {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: center;
+  color: inherit;
+  width: 100%;
+  transition: opacity 150ms ease;
+}
+.d-compare-col-open:hover {
+  opacity: 0.85;
+}
+.d-compare-col-open:hover .d-compare-col-name {
+  color: var(--brand-green);
+}
+
+.d-compare-thumb {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+}
+.d-compare-thumb--ph {
+  background: var(--gray-200);
+}
+.d-compare-col-brand {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 4px;
+}
+.d-compare-col-name {
+  font-family: var(--font-body);
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 150ms ease;
+  padding: 0 4px;
+}
+
+.d-compare-col-score {
+  margin-top: var(--space-2);
+  display: flex;
+  justify-content: center;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   본문 데이터 셀 (영양소 / 점수)
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-metric-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-4) var(--space-3);
+  border-right: 1px solid var(--bg-divider);
+  background: var(--bg-white);
+  min-height: 72px;
+  transition: background-color 150ms ease;
+}
+.d-compare-metric-cell:last-child {
+  border-right: none;
+}
+.d-compare-metric-cell--empty {
+  background: var(--bg-card-ui);
+}
+
+/* 숫자 + 단위 + 체크 */
+.d-compare-metric-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--font-numeric);
+  color: var(--text-primary);
+  line-height: 1;
+}
+.d-compare-metric-num {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  line-height: 1;
+}
+.d-compare-metric-unit {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.d-compare-metric-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background: var(--green-500);
+  color: white;
+  align-self: center;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+/* 가로 막대 (상대값 시각화) */
+.d-compare-metric-bar {
+  width: 100%;
+  max-width: 140px;
+  height: 6px;
+  background: var(--gray-100);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.d-compare-metric-bar-fill {
+  height: 100%;
+  background: var(--gray-400);
+  border-radius: var(--radius-pill);
+  transition: width 300ms ease-out;
+}
+.d-compare-metric-bar-fill--score {
+  background: var(--green-500);
+}
+
+/* 우수값 강조 — soft-green pill + 그린 텍스트 + 체크 아이콘 */
+.d-compare-metric-cell--best {
+  background: var(--green-50);
+}
+.d-compare-metric-cell--best .d-compare-metric-num {
+  color: var(--green-700);
+}
+.d-compare-metric-cell--best .d-compare-metric-unit {
+  color: var(--green-600);
+}
+.d-compare-metric-cell--best .d-compare-metric-bar {
+  background: rgba(0, 198, 0, 0.18);
+}
+.d-compare-metric-cell--best .d-compare-metric-bar-fill {
+  background: var(--green-500);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   태그 / Trust 셀
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-tags-cell {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-4) var(--space-3);
+  border-right: 1px solid var(--bg-divider);
+  background: var(--bg-white);
+  min-height: 60px;
+}
+.d-compare-tags-cell:last-child {
+  border-right: none;
+}
+.d-compare-tags-cell--empty {
+  background: var(--bg-card-ui);
+}
+.d-compare-tags-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.d-compare-tags-empty {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-tertiary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   AddSlot (마지막 컬럼 자리 — max 미만일 때)
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-add-slot {
+  margin: var(--space-3);
+  border: 2px dashed var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  background: var(--bg-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: var(--space-5) var(--space-3);
+  min-height: 240px;
+  transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+}
+.d-compare-add-slot:hover {
+  border-color: var(--brand-green);
+  color: var(--green-700);
+  background: var(--green-50);
+}
+.d-compare-add-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+.d-compare-add-slot:hover .d-compare-add-icon {
+  background: var(--brand-green);
+  color: white;
+}
+.d-compare-add-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-m);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.d-compare-add-sub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   하단 자동 요약
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-summary {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--bg-card-ui);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+}
+.d-compare-summary-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--space-3);
+}
+.d-compare-summary-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-green);
+}
+.d-compare-summary-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-l);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+.d-compare-summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.d-compare-summary-item {
+  font-family: var(--font-body);
+  font-size: var(--font-size-m);
+  color: var(--text-primary);
+  line-height: var(--lh-base);
+  padding-left: 14px;
+  position: relative;
+}
+.d-compare-summary-item::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--green-500);
+}
+.d-compare-summary-note {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border-tertiary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: var(--lh-base);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   빈 상태
+   ──────────────────────────────────────────────────────────────────────── */
+.d-compare-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: 80px var(--space-6);
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+}
+.d-compare-empty-illus {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-pill);
+  background: var(--green-50);
+  color: var(--green-600);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+.d-compare-empty-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xxl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: var(--lh-tight);
+}
+.d-compare-empty-sub {
+  font-family: var(--font-body);
+  font-size: var(--font-size-m);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--lh-base);
+}
+.d-compare-empty-cta {
+  margin-top: var(--space-3);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   접근성: 모션 민감 사용자 대응
+   ──────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .d-compare-metric-bar-fill,
+  .d-compare-add-slot,
+  .d-compare-add-icon,
+  .d-compare-col-open,
+  .d-compare-col-x,
+  .d-compare-clear-btn {
+    transition: none !important;
+  }
+}

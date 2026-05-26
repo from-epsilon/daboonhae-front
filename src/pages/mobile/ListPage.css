@@ -1,0 +1,39 @@
+/* 모바일 리스트 페이지 — 셸 컨테이너 + 카드 리스트 영역
+   prefix: .m-list-* (다른 페이지 컴포넌트와 충돌 방지) */
+
+/* 최상위: 셸이 BottomNav 자리를 비워두므로 페이지는 단순 세로 스크롤 컨테이너 */
+.m-list-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  background: var(--bg-white);
+}
+
+/* 카드 리스트 영역
+   - 좌우 16px 패딩 (DS 카드의 1px 디바이더가 그대로 보임)
+   - FoodCard list 레이아웃은 자체적으로 padding 14px 0 + border-bottom 처리 */
+.m-list-cards {
+  padding: 0 16px 24px;
+  background: white;
+}
+
+/* 카드 리스트 첫 카드 상단 약간의 공기 */
+.m-list-cards > :first-child {
+  padding-top: 8px;
+}
+
+/* 결과 영역(빈 상태) 컨테이너: 카드와 동일 좌우 패딩 */
+.m-list-empty-wrap {
+  padding: 0 16px;
+}
+
+/* number input 의 spinner 제거 (모바일 단순화) — FilterRange 의 input 대상 */
+.m-list-root input[type='number']::-webkit-outer-spin-button,
+.m-list-root input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.m-list-root input[type='number'] {
+  -moz-appearance: textfield;
+}

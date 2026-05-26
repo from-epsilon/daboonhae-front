@@ -1,0 +1,120 @@
+// 다분해 DS MacroRow (단백질/탄수/지방 분포 + kcal)
+// props:
+//   - protein, carbs, fat, kcal: number (g, kcal)
+//   - compact: boolean — true 시 한 줄 텍스트로 축약 (FoodCard list 레이아웃용)
+
+// 그램 합 대비 비율 계산 (총합 0 일 때 0%)
+function calcPercent(value, total) {
+  return total > 0 ? (value / total) * 100 : 0;
+}
+
+// compact 변형: 한 줄 텍스트 + 구분선
+function CompactRow({ protein, carbs, fat, kcal }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 10,
+        fontSize: 11,
+        color: 'var(--text-secondary)',
+        fontFamily: 'var(--font-numeric)',
+        alignItems: 'center',
+      }}
+    >
+      <span>
+        <b style={{ color: 'var(--text-primary)' }}>{kcal}</b>kcal
+      </span>
+      <span style={{ width: 1, height: 10, background: 'var(--gray-300)' }} />
+      <span>
+        단백질 <b style={{ color: 'var(--text-primary)' }}>{protein}g</b>
+      </span>
+      <span>
+        탄수 <b style={{ color: 'var(--text-primary)' }}>{carbs}g</b>
+      </span>
+      <span>
+        지방 <b style={{ color: 'var(--text-primary)' }}>{fat}g</b>
+      </span>
+    </div>
+  );
+}
+
+// 풀 변형: 비율 막대 + 3컬럼 범례
+function FullRow({ protein, carbs, fat }) {
+  const total = protein + carbs + fat;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div
+        style={{
+          display: 'flex',
+          height: 8,
+          borderRadius: 4,
+          overflow: 'hidden',
+          background: 'var(--gray-100)',
+        }}
+      >
+        <div style={{ width: `${calcPercent(protein, total)}%`, background: 'var(--green-500)' }} />
+        <div style={{ width: `${calcPercent(carbs, total)}%`, background: 'var(--orange-400)' }} />
+        <div style={{ width: `${calcPercent(fat, total)}%`, background: 'var(--blue-400)' }} />
+      </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: 8,
+          fontSize: 11,
+          fontFamily: 'var(--font-numeric)',
+        }}
+      >
+        <div>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              borderRadius: 2,
+              background: 'var(--green-500)',
+              marginRight: 6,
+            }}
+          />
+          <span style={{ color: 'var(--text-secondary)' }}>단백질</span>{' '}
+          <b style={{ color: 'var(--text-primary)' }}>{protein}g</b>
+        </div>
+        <div>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              borderRadius: 2,
+              background: 'var(--orange-400)',
+              marginRight: 6,
+            }}
+          />
+          <span style={{ color: 'var(--text-secondary)' }}>탄수화물</span>{' '}
+          <b style={{ color: 'var(--text-primary)' }}>{carbs}g</b>
+        </div>
+        <div>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              borderRadius: 2,
+              background: 'var(--blue-400)',
+              marginRight: 6,
+            }}
+          />
+          <span style={{ color: 'var(--text-secondary)' }}>지방</span>{' '}
+          <b style={{ color: 'var(--text-primary)' }}>{fat}g</b>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = false }) {
+  if (compact) {
+    return <CompactRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} />;
+  }
+  return <FullRow protein={protein} carbs={carbs} fat={fat} />;
+}

@@ -1,0 +1,720 @@
+/* ===========================================================================
+   다분해 데스크탑 리스트 페이지
+   - 1240px max-width 컨테이너
+   - 상단 목적 탭 (전체 폭) + 본문 2단 (좌 280px 사이드바 + 우 메인 그리드)
+   - DS 토큰만 사용 (design-tokens.css)
+   - prefix: .d-list-*
+   =========================================================================== */
+
+/* ---------- 컨테이너 ---------- */
+.d-list-page {
+  background: var(--bg-white);
+  min-height: 100%;
+  padding: 0 var(--space-6) var(--space-12);
+}
+
+.d-list-page-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* ---------- 상단 목적 탭 ---------- */
+.d-list-tabs-wrap {
+  border-bottom: 1px solid var(--border-tertiary);
+  margin-bottom: var(--space-6);
+}
+
+/* TopTabs 내부 padding 0 처리 — 전체 폭 활용 */
+.d-list-tabs-wrap > div {
+  padding: 0 !important;
+  border-bottom: none !important;
+}
+
+/* ---------- 2단 본문 ---------- */
+.d-list-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+/* ===========================================================================
+   사이드바 필터
+   =========================================================================== */
+.d-list-sidebar {
+  position: sticky;
+  top: var(--space-4);
+  align-self: start;
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  max-height: calc(100vh - var(--space-8));
+  overflow-y: auto;
+}
+
+/* 사이드바 헤더 — 타이틀 + 초기화 */
+.d-list-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-tertiary);
+  margin-bottom: var(--space-4);
+}
+
+.d-list-sidebar-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-l);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.d-list-sidebar-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--gray-900);
+  color: var(--white);
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-xs);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.d-list-sidebar-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.d-list-sidebar-reset:hover {
+  color: var(--text-primary);
+  background: var(--gray-100);
+}
+
+.d-list-sidebar-empty {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-s);
+  padding: var(--space-4) 0;
+  text-align: center;
+}
+
+/* ---------- 필터 섹션 ---------- */
+.d-list-filter-section {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+
+.d-list-filter-section:last-child {
+  border-bottom: none;
+}
+
+.d-list-filter-section-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+/* ---------- 라디오 리스트 (세부 카테고리) ---------- */
+.d-list-radio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.d-list-radio-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.d-list-radio-row:hover {
+  background: var(--gray-100);
+}
+
+.d-list-radio-row.is-active {
+  background: var(--gray-100);
+}
+
+.d-list-radio-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gray-400);
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color 150ms ease;
+}
+
+.d-list-radio-dot.is-active {
+  border-color: var(--gray-900);
+}
+
+.d-list-radio-dot.is-active::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--gray-900);
+}
+
+.d-list-radio-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.d-list-radio-row.is-active .d-list-radio-label {
+  font-weight: var(--fw-medium);
+}
+
+/* sr-only — 접근성용 시각적 숨김 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- range (min/max input) ---------- */
+.d-list-range {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.d-list-range-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-s);
+  padding: 8px 10px;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  color: var(--text-primary);
+  transition: border-color 150ms ease;
+}
+
+.d-list-range-input:focus {
+  outline: none;
+  border-color: var(--border-active);
+}
+
+.d-list-range-input::-webkit-outer-spin-button,
+.d-list-range-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.d-list-range-input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.d-list-range-sep {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-s);
+}
+
+/* ---------- tristate ---------- */
+.d-list-tristate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.d-list-tristate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.d-list-tristate-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+}
+
+.d-list-tristate-btns {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.d-list-tristate-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-tertiary);
+  background: var(--bg-white);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.d-list-tristate-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--gray-500);
+}
+
+.d-list-tristate-include.is-active {
+  background: var(--green-50);
+  border-color: var(--green-500);
+  color: var(--green-700);
+}
+
+.d-list-tristate-exclude.is-active {
+  background: var(--red-50);
+  border-color: var(--red-500);
+  color: var(--red-700);
+}
+
+/* ---------- bool toggle ---------- */
+.d-list-bool {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.d-list-bool-switch {
+  width: 36px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-300);
+  position: relative;
+  transition: background-color 200ms ease;
+  flex-shrink: 0;
+}
+
+.d-list-bool-switch.is-on {
+  background: var(--gray-900);
+}
+
+.d-list-bool-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--white);
+  transition: transform 200ms ease;
+}
+
+.d-list-bool-switch.is-on .d-list-bool-thumb {
+  transform: translateX(16px);
+}
+
+.d-list-bool-text {
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+}
+
+/* ===========================================================================
+   메인 영역
+   =========================================================================== */
+.d-list-main {
+  min-width: 0; /* grid 자식 overflow 방지 */
+}
+
+/* ---------- 결과 헤더 ---------- */
+.d-list-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-tertiary);
+  gap: var(--space-4);
+}
+
+.d-list-result-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.d-list-result-purpose {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.d-list-result-count {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+}
+
+.d-list-result-count strong {
+  font-family: var(--font-numeric);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  margin: 0 2px;
+}
+
+/* 검색어 칩 */
+.d-list-search-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--gray-100);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-pill);
+  padding: 6px 10px 6px var(--space-3);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.d-list-search-chip:hover {
+  background: var(--gray-200);
+}
+
+.d-list-search-chip-text {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- 정렬 메뉴 ---------- */
+.d-list-sort {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.d-list-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  padding: 8px var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+  cursor: pointer;
+  min-width: 140px;
+  justify-content: space-between;
+  transition: border-color 150ms ease;
+}
+
+.d-list-sort-trigger:hover {
+  border-color: var(--gray-500);
+}
+
+.d-list-sort-trigger-label {
+  font-weight: var(--fw-medium);
+}
+
+.d-list-sort-chevron {
+  transition: transform 200ms ease;
+  color: var(--text-tertiary);
+}
+
+.d-list-sort-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.d-list-sort-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 100%;
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  z-index: 30;
+}
+
+.d-list-sort-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px var(--space-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.d-list-sort-option:hover {
+  background: var(--gray-100);
+}
+
+.d-list-sort-option.is-active {
+  font-weight: var(--fw-bold);
+}
+
+.d-list-sort-option.is-active svg {
+  color: var(--green-600);
+}
+
+/* ===========================================================================
+   활성 필터 칩 — 적용된 필터/카테고리를 사용자에게 가시화 + 개별 X로 해제
+   =========================================================================== */
+.d-list-active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: calc(var(--space-2) * -1) 0 var(--space-4);
+}
+
+.d-list-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--green-50);
+  border: 1px solid var(--green-200);
+  color: var(--green-700);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+  /* X 아이콘이 작아도 hit-area는 32px 이상 확보 */
+  min-height: 28px;
+  line-height: 1;
+}
+
+.d-list-active-chip:hover {
+  background: var(--green-100);
+  border-color: var(--green-300);
+}
+
+.d-list-active-chip svg {
+  /* X 아이콘 원형 배경 — hover 없이도 클릭 가능 영역 인지 */
+  background: rgba(0, 134, 0, 0.12);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  box-sizing: content-box;
+}
+
+.d-list-active-chip-text {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===========================================================================
+   결과 그리드
+   =========================================================================== */
+.d-list-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+
+.d-list-grid-cell {
+  min-width: 0;
+  transition: box-shadow 180ms ease, border-color 180ms ease;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+}
+
+/* hover lift는 shadow + border 색상으로만 — translate 제거해 layout shift 방지 */
+.d-list-grid-cell:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-tertiary);
+}
+
+/* 화면이 좁아지면 3컬럼 → 2컬럼 fallback (데스크탑 viewport 안에서 안전망) */
+@media (max-width: 1180px) {
+  .d-list-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .d-list-body {
+    grid-template-columns: 240px 1fr;
+    gap: var(--space-6);
+  }
+  .d-list-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===========================================================================
+   빈 상태
+   =========================================================================== */
+.d-list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  background: var(--bg-off-white);
+  border-radius: var(--radius-md);
+}
+
+.d-list-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-white);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-tertiary);
+  margin-bottom: var(--space-4);
+}
+
+.d-list-empty-title {
+  font-family: var(--font-display);
+  font-size: var(--font-size-l);
+  font-weight: var(--fw-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.d-list-empty-desc {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: var(--lh-base);
+}
+
+.d-list-empty-actions {
+  display: inline-flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.d-list-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-4);
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.d-list-empty-btn:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-700);
+}
+
+.d-list-empty-btn-primary {
+  background: var(--gray-900);
+  color: var(--white);
+  border-color: var(--gray-900);
+}
+
+.d-list-empty-btn-primary:hover {
+  background: var(--gray-800);
+  border-color: var(--gray-800);
+}
+
+/* ===========================================================================
+   모바일/터치 보정 — iOS 자동줌 + 44px 최소 터치 타깃
+   - 데스크탑 셸이 768px 이하에서는 모바일 셸로 분기되지만,
+     필터/리스트 같은 컴포넌트가 좁은 데스크탑에서 손가락으로 조작될 수 있어
+     안전망으로 1024px 이하에서 폼 input/버튼 타깃을 키움.
+   =========================================================================== */
+@media (max-width: 1024px) {
+  /* iOS Safari: 폼 input의 font-size가 16px 미만이면 포커스 시 자동 줌 발생 */
+  .d-list-range-input,
+  .d-list-sort-trigger {
+    font-size: var(--font-size-m); /* 16px */
+  }
+}
+
+/* 터치 디바이스: tristate 버튼을 44px로 키움 (사이드바 안 시각 균형은
+   상하 row gap 으로 흡수) */
+@media (pointer: coarse) {
+  .d-list-tristate-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .d-list-tristate-btns {
+    gap: var(--space-2);
+  }
+}
+
+/* ===========================================================================
+   접근성 / 모션 감소 옵션 존중
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .d-list-grid-cell,
+  .d-list-sort-chevron,
+  .d-list-bool-switch,
+  .d-list-bool-thumb,
+  .d-list-sidebar-reset,
+  .d-list-tristate-btn,
+  .d-list-empty-btn,
+  .d-list-search-chip,
+  .d-list-radio-row {
+    transition: none;
+  }
+  .d-list-grid-cell:hover {
+    transform: none;
+  }
+}

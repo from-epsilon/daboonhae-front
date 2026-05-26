@@ -1,0 +1,70 @@
+// 데스크탑 비교 컬럼 헤더 (각 제품의 상단 카드)
+// - 썸네일(160px 정사각) + 브랜드 + 제품명 + ScoreGauge 80px + 우상단 X
+// - 제품명/썸네일 클릭 → 디테일 페이지로 이동
+// - 이미지 실패 시 placeholder
+import { useState } from 'react';
+import { ScoreGauge } from '../../ds/ScoreGauge.jsx';
+import { IconClose } from '../../ds/Icons.jsx';
+
+// 이미지 로딩 실패 시 fallback (외부 의존성 차단)
+function Thumb({ src, alt }) {
+  const [failed, setFailed] = useState(false);
+  if (failed || !src) {
+    return <div className="d-compare-thumb d-compare-thumb--ph" aria-hidden="true" />;
+  }
+  return (
+    <img
+      className="d-compare-thumb"
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      loading="lazy"
+    />
+  );
+}
+
+// 우상단 X 버튼 (SRP)
+function RemoveButton({ name, onClick }) {
+  return (
+    <button
+      type="button"
+      className="d-compare-col-x"
+      aria-label={`${name} 비교에서 제거`}
+      onClick={onClick}
+    >
+      <IconClose size={14} />
+    </button>
+  );
+}
+
+// 첫 번째 컬럼은 "기준 제품"으로 시각 강조 — soft-green 배경 + 좌측 액센트 바
+export function CompareHeaderRow({ product, onRemove, onOpen, isAnchor }) {
+  // 상세 이동 핸들러 (가드 포함)
+  const handleOpen = () => {
+    if (typeof onOpen === 'function') onOpen(product.id);
+  };
+
+  const className = `d-compare-col-header${isAnchor ? ' d-compare-col-header--anchor' : ''}`;
+
+  return (
+    <div className={className}>
+      {isAnchor && (
+        <span className="d-compare-col-anchor-tag" aria-label="기준 제품">기준</span>
+      )}
+      <RemoveButton name={product.name} onClick={() => onRemove(product.id)} />
+      <button
+        type="button"
+        className="d-compare-col-open"
+        onClick={handleOpen}
+        aria-label={`${product.name} 상세 보기`}
+      >
+        <Thumb src={product.thumb} alt={product.name} />
+        <div className="d-compare-col-brand">{product.brand}</div>
+        <div className="d-compare-col-name">{product.name}</div>
+      </button>
+      <div className="d-compare-col-score">
+        <ScoreGauge value={product.score} size={72} />
+      </div>
+    </div>
+  );
+}
