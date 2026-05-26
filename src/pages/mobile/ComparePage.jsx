@@ -10,13 +10,12 @@
 //   → CompareSummary (자동 비교 한 줄)
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProductById } from '../../data/mockProducts.js';
+import { useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { CompareColumnHeader } from '../../components/mobile/compare/CompareColumnHeader.jsx';
 import { CompareCell } from '../../components/mobile/compare/CompareCell.jsx';
-import { CompareScoreCell } from '../../components/mobile/compare/CompareScoreCell.jsx';
 import { CompareTagsCell } from '../../components/mobile/compare/CompareTagsCell.jsx';
 import { AddSlot } from '../../components/mobile/compare/AddSlot.jsx';
 import { EmptyCompare } from '../../components/mobile/compare/EmptyCompare.jsx';
@@ -24,7 +23,6 @@ import { CompareSummary } from '../../components/mobile/compare/CompareSummary.j
 import {
   COMPARE_METRICS,
   getBestIndices,
-  getBestScoreIndices,
   buildCompareSummary,
 } from '../../components/mobile/compare/compareUtils.js';
 import './ComparePage.css';
@@ -38,13 +36,12 @@ function LabelCell({ label, size = 'md' }) {
 }
 
 // 비교 그리드 본문 (SRP로 분리 — 라벨 컬럼 + 데이터 컬럼들 + AddSlot)
-function CompareGrid({ products, bestByKey, bestScoreSet, onRemove, onOpen, onAdd, canAdd, remaining }) {
+function CompareGrid({ products, bestByKey, onRemove, onOpen, onAdd, canAdd, remaining }) {
   return (
     <div className="m-compare-grid">
       {/* 좌측 sticky 라벨 컬럼 */}
       <div className="m-compare-label-col">
         <LabelCell label="" size="lg" />
-        <LabelCell label="다분해 점수" size="lg" />
         {COMPARE_METRICS.map((m) => (
           <LabelCell key={m.key} label={m.label} />
         ))}
@@ -58,9 +55,6 @@ function CompareGrid({ products, bestByKey, bestScoreSet, onRemove, onOpen, onAd
             <div key={p.id} className="m-compare-data-col">
               {/* 헤더 셀 (썸네일/브랜드/이름/X) */}
               <CompareColumnHeader product={p} onRemove={onRemove} onOpen={onOpen} />
-
-              {/* 점수 셀 */}
-              <CompareScoreCell value={p.score} isBest={bestScoreSet.has(idx)} />
 
               {/* 영양소 셀들 */}
               {COMPARE_METRICS.map((m) => {
@@ -96,11 +90,11 @@ function CompareGrid({ products, bestByKey, bestScoreSet, onRemove, onOpen, onAd
 export default function ComparePageMobile() {
   const navigate = useNavigate();
   const { ids, remove, clear, max } = useCompare();
+  const { products: allProducts } = useProducts();
 
-  // raw → DS 형식 변환 (id 변동 시만 재계산)
   const products = useMemo(
-    () => ids.map(getProductById).filter(Boolean).map(getAdapted),
-    [ids],
+    () => ids.map(id => allProducts.find(p => String(p.id) === String(id))).filter(Boolean).map(getAdapted),
+    [ids, allProducts],
   );
 
   // 각 지표별 우수값 인덱스 Set 사전 계산 (렌더마다 N*M 반복 방지)
@@ -115,12 +109,6 @@ export default function ComparePageMobile() {
     }
     return out;
   }, [products]);
-
-  // 점수 best 인덱스
-  const bestScoreSet = useMemo(
-    () => new Set(getBestScoreIndices(products)),
-    [products],
-  );
 
   // 자동 요약 문장
   const summary = useMemo(() => buildCompareSummary(products), [products]);
@@ -172,7 +160,6 @@ export default function ComparePageMobile() {
           <CompareGrid
             products={products}
             bestByKey={bestByKey}
-            bestScoreSet={bestScoreSet}
             onRemove={handleRemove}
             onOpen={handleOpenDetail}
             onAdd={handleAdd}

@@ -5,7 +5,6 @@
 //   - onClick: 카드 전체 클릭 핸들러 (디테일 진입)
 //   - layout: 'grid' (홈/리스트 그리드) | 'list' (리스트 페이지)
 //   - onCompare: 비교함 담기 콜백 (미지정 시 + 버튼 미표시)
-import { scoreColor } from '../../data/adapters.js';
 import { Badge } from './Badge.jsx';
 import { MacroRow } from './MacroRow.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
@@ -40,31 +39,6 @@ function ThumbImage({ src, alt }) {
         display: 'block',
       }}
     />
-  );
-}
-
-// 점수 뱃지 (썸네일 좌상단 오버레이)
-function ScoreOverlay({ score, big = false }) {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: big ? 8 : 4,
-        top: big ? 8 : 4,
-        background: 'white',
-        borderRadius: 'var(--radius-pill)',
-        padding: big ? '3px 9px' : '2px 7px',
-        fontFamily: 'var(--font-numeric)',
-        fontWeight: 700,
-        fontSize: big ? 13 : 12,
-        color: scoreColor(score),
-        border: `${big ? 1.5 : 1}px solid ${scoreColor(score)}`,
-        lineHeight: 1,
-        zIndex: 1,
-      }}
-    >
-      {score.toFixed(1)}
-    </div>
   );
 }
 
@@ -133,7 +107,6 @@ function FoodCardList({ food, onClick, onCompare, inCompare }) {
         }}
       >
         <ThumbImage src={food.thumb} alt={food.name} />
-        <ScoreOverlay score={food.score} />
         <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
@@ -193,7 +166,6 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare }) {
         }}
       >
         <ThumbImage src={food.thumb} alt={food.name} />
-        <ScoreOverlay score={food.score} big />
         <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div style={{ padding: '10px 4px', display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -259,16 +231,15 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare }) {
             ))}
           <TrustBadgeRow trustBadges={food.trustBadges} />
         </div>
-        {/* 분석 점수 + 후기 N건 — 카드 trust 신호 (크몽 패턴) */}
-        <ReviewMeta score={food.score} reviewCount={food.reviewCount} />
+        {/* 후기 N건 — 카드 trust 신호 */}
       </div>
     </div>
   );
 }
 
-// 카드 하단 trust 신호 — "★ 8.6 분석 점수 · 후기 24건"
-// - reviewCount 가 없으면 "후기 수집 중" 라벨 (가짜 평점/리뷰 노출 방지)
-function ReviewMeta({ score, reviewCount }) {
+// 카드 하단 trust 신호 — "후기 24건"
+// - reviewCount 가 없으면 "후기 수집 중" 라벨
+function ReviewMeta({ reviewCount }) {
   const hasReviews = typeof reviewCount === 'number' && reviewCount > 0;
   return (
     <div
@@ -282,12 +253,6 @@ function ReviewMeta({ score, reviewCount }) {
         lineHeight: 1.3,
       }}
     >
-      <span style={{ color: '#f5b400', fontSize: 12, lineHeight: 1 }} aria-hidden>
-        ★
-      </span>
-      <b style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{score?.toFixed(1) ?? '-'}</b>
-      <span style={{ color: 'var(--text-tertiary)' }}>분석 점수</span>
-      <span style={{ color: 'var(--text-tertiary)', margin: '0 2px' }}>·</span>
       <span>{hasReviews ? `후기 ${reviewCount}건` : '후기 수집 중'}</span>
     </div>
   );

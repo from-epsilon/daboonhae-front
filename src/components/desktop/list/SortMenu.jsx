@@ -5,7 +5,6 @@ import { ChevronDown, Check } from 'lucide-react';
 // - 네이티브 select 대신 디자인 토큰 일관성 위해 커스텀
 // - 외부 클릭 시 닫힘, ESC 닫힘, 키보드 접근성 기본 보장
 const OPTIONS = [
-  { key: 'ranking', label: '추천순' },
   { key: 'calories_asc', label: '칼로리 낮은 순' },
   { key: 'protein_desc', label: '단백질 높은 순' },
   { key: 'sugar_asc', label: '당류 낮은 순' },

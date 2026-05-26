@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getProductById } from '../data/mockProducts.js';
+import { useProductById, useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { Button } from '../components/ds/Button.jsx';
 import { IconBack } from '../components/ds/Icons.jsx';
-import { ScoreGauge } from '../components/ds/ScoreGauge.jsx';
+
 import { Check } from 'lucide-react';
 import ProductThumb from '../components/global/ProductThumb.jsx';
 import { NutritionTable } from '../components/desktop/detail/NutritionTable.jsx';
@@ -103,9 +103,8 @@ function MacroStrip({ protein = 0, carbs = 0, fat = 0, calories = 0 }) {
 // #3 섹션 앵커 탭
 const SECTIONS = [
   { id: 'nutrition', label: '영양성분' },
-  { id: 'ingredients', label: '성분' },
+  { id: 'ingredients', label: '원재료' },
   { id: 'analysis', label: '분석 리포트' },
-  { id: 'reviews', label: '후기' },
 ];
 
 function SectionNav({ activeId, navRef }) {
@@ -188,12 +187,14 @@ export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { has, toggle, isFull, max } = useCompare();
+  const { loading } = useProducts();
   const activeSection = useActiveSection(id);
   const navRef = useRef(null);
 
-  const raw = getProductById(id);
+  const raw = useProductById(id);
   const product = raw ? getAdapted(raw) : null;
 
+  if (loading) return <div className="page" style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
   if (!product) return <EmptyState />;
 
   const inCart = has(product.id);
@@ -222,9 +223,6 @@ export default function DetailPage() {
             <h1 className="d-detail-header-name">{product.name}</h1>
             <span className="d-detail-header-serving">{product.serving}</span>
           </div>
-          <div className="d-detail-header-score">
-            <ScoreGauge value={product.score} size={72} />
-          </div>
           <QuickGlance nutrition={n} />
           <div className="d-detail-header-actions">
             <CompareButton inCart={inCart} onClick={handleToggleCompare} />
@@ -243,14 +241,12 @@ export default function DetailPage() {
           <NutritionTable nutrition={n} serving={product.serving} />
         </div>
         <div id="ingredients">
-          <IngredientList ingredients={product.ingredients} />
+          <IngredientList ingredients={product.ingredients} rawText={raw?.rawIngredients} />
         </div>
         <div id="analysis">
-          <AnalysisReport rawProduct={raw} />
+          <AnalysisReport />
         </div>
-        <div id="reviews">
-          <ReviewSection productId={product.id} />
-        </div>
+        <ReviewSection productId={product.id} />
         <RelatedProducts
           currentProduct={raw}
           onNavigate={(nextId) => navigate(`/product/${nextId}`)}

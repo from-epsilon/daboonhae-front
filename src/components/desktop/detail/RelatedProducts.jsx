@@ -4,19 +4,16 @@
 // - 결과 없으면 노출 안 함
 import { FoodCard } from '../../ds/FoodCard.jsx';
 import { getAdapted } from '../../../data/adapters.js';
-import { PRODUCTS } from '../../../data/mockProducts.js';
-
-// 같은 카테고리의 다른 제품 — 최대 limit개 (점수 내림차순)
-function pickRelated(currentId, category, limit = 3) {
-  if (!category) return [];
-  return PRODUCTS
-    .filter((p) => p.id !== currentId && p.category === category)
-    .sort((a, b) => (b.rankingScore ?? 0) - (a.rankingScore ?? 0))
-    .slice(0, limit);
-}
+import { useProducts } from '../../../store/ProductsContext.jsx';
 
 export function RelatedProducts({ currentProduct, onNavigate, limit = 3 }) {
-  const related = pickRelated(currentProduct?.id, currentProduct?.category, limit);
+  const { products: PRODUCTS } = useProducts();
+  const related = currentProduct?.category
+    ? PRODUCTS
+        .filter((p) => p.id !== currentProduct.id && p.category === currentProduct.category)
+        .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+        .slice(0, limit)
+    : [];
   if (related.length === 0) return null;
 
   return (

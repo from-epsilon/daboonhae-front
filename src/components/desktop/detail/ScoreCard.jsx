@@ -2,20 +2,10 @@
 // - 페이지 시그니처 ScoreGauge 160px
 // - Trust 배지 + 자동 태그 + MacroRow + CTA 2개
 // - sticky 컨테이너 안에 들어가므로 자체 wrapper는 단순 div
-import { ScoreGauge } from '../../ds/ScoreGauge.jsx';
 import { Badge } from '../../ds/Badge.jsx';
 import { MacroRow } from '../../ds/MacroRow.jsx';
 import { Button } from '../../ds/Button.jsx';
 import { IconCheck, IconPlus } from '../../ds/Icons.jsx';
-import { scoreColor } from '../../../data/adapters.js';
-
-// 점수 → 한국어 평가 라벨 (도덕적 어휘 금지, 모바일과 일치)
-function scoreVerdict(score) {
-  const color = scoreColor(score);
-  if (color === 'var(--green-500)') return '추천';
-  if (color === 'var(--orange-500)') return '보통';
-  return '주의';
-}
 
 // 우측 컬럼 헤더 — 브랜드/이름/용량
 function ProductTitle({ brand, name, serving }) {
@@ -25,24 +15,6 @@ function ProductTitle({ brand, name, serving }) {
       <h1 className="d-detail-info-name">{name}</h1>
       {serving && <div className="d-detail-info-serving">{serving} 기준</div>}
     </header>
-  );
-}
-
-// 점수 블록 — 큰 ScoreGauge + 캡션
-function ScoreBlock({ score }) {
-  return (
-    <div className="d-detail-info-score">
-      <ScoreGauge value={score} size={160} />
-      <div className="d-detail-info-score-caption">
-        <span className="d-detail-info-score-label">다분해 점수</span>
-        <span
-          className="d-detail-info-score-verdict"
-          style={{ color: scoreColor(score) }}
-        >
-          {scoreVerdict(score)}
-        </span>
-      </div>
-    </div>
   );
 }
 
@@ -144,7 +116,6 @@ export function ScoreCard({
         name={product.name}
         serving={product.serving}
       />
-      <ScoreBlock score={product.score} />
       <TrustBadges trustBadges={product.trustBadges} />
       <TagsLine tags={product.tags} />
       <MacroBlock macros={product.macros} />

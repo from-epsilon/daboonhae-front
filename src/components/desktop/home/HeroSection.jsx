@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { IconSearch } from '../../ds/Icons.jsx';
-import { PRODUCTS } from '../../../data/mockProducts.js';
+import { useProducts } from '../../../store/ProductsContext.jsx';
 
 // 임시 추천 키워드 — 우리 서비스(저당/다이어트 식품 비교) 맥락에 맞춰 합리적 가설로 채움
 // 산출물에서 별도 정리되어 사용자가 검토/변경 가능
@@ -31,8 +31,8 @@ export default function HeroSection({ onSearch, keywords = POPULAR }) {
     submit(query);
   };
 
-  // 좌측 비주얼 무게 보강 — eyebrow에 실제 분석 제품 수 노출
-  const productCount = PRODUCTS.length;
+  const { products } = useProducts();
+  const productCount = products.length;
 
   return (
     <section className="d-home-hero-left">

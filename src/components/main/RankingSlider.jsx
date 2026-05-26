@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { PRODUCTS } from '../../data/mockProducts.js';
+import { useProducts } from '../../store/ProductsContext.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import ProductThumb from '../global/ProductThumb.jsx';
 
@@ -11,14 +11,15 @@ import ProductThumb from '../global/ProductThumb.jsx';
 // - 목적이 'all'이면 전체 랭킹, 특정 목적이면 그 목적에 맞는 제품으로 필터링
 export default function RankingSlider() {
   const { purposeId } = usePurpose();
+  const { products: PRODUCTS } = useProducts();
   const trackRef = useRef(null);
 
   const ranked = useMemo(() => {
     const pool = purposeId === 'all'
       ? PRODUCTS
-      : PRODUCTS.filter((p) => p.purposesFit.includes(purposeId));
+      : PRODUCTS.filter((p) => p.purposesFit?.includes(purposeId));
     return [...pool].sort((a, b) => b.rankingScore - a.rankingScore).slice(0, 10);
-  }, [purposeId]);
+  }, [purposeId, PRODUCTS]);
 
   const scrollByPage = (direction) => {
     const track = trackRef.current;

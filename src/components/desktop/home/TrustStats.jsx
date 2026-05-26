@@ -6,7 +6,7 @@
 //   · 식단 목적 종류    : PURPOSES + 전체 (실값)
 // - "BETA" 배지를 헤더에 노출 → mock 단계임을 투명하게 알림 (신뢰 손상 방지)
 import { useMemo } from 'react';
-import { PRODUCTS } from '../../../data/mockProducts.js';
+import { useProducts } from '../../../store/ProductsContext.jsx';
 import { PURPOSES, ALL_PURPOSE } from '../../../data/purposes.jsx';
 import { IconCheck } from '../../ds/Icons.jsx';
 
@@ -32,7 +32,7 @@ function countValidNutritionKeys(product) {
 }
 
 export default function TrustStats() {
-  // 모든 통계를 실제 데이터로부터 도출 — hard-code 최소화
+  const { products: PRODUCTS } = useProducts();
   const stats = useMemo(() => {
     const productCount = PRODUCTS.length;
     const categories = new Set(PRODUCTS.map((p) => p.category).filter(Boolean));
@@ -45,7 +45,7 @@ export default function TrustStats() {
         : 0;
     const purposeCount = PURPOSES.length + (ALL_PURPOSE ? 1 : 0);
     return { productCount, categoryCount: categories.size, avgNutritionKeys, purposeCount };
-  }, []);
+  }, [PRODUCTS]);
 
   return (
     <section className="d-home-trust" aria-label="다분해 신뢰 지표">

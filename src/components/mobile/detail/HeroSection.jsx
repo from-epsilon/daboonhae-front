@@ -2,10 +2,8 @@
 // - 좌측: 정사각 이미지 (1:1)
 // - 우측: 브랜드/이름/용량 + 큰 ScoreGauge (다분해 점수) + Trust 배지
 // - 점수가 페이지 시그니처라 ScoreGauge를 132px로 크게 노출
-import { ScoreGauge } from '../../ds/ScoreGauge.jsx';
 import { Badge } from '../../ds/Badge.jsx';
 import { IconCheck } from '../../ds/Icons.jsx';
-import { scoreColor } from '../../../data/adapters.js';
 
 // 이미지 영역 — 정사각 흰 배경 + 1px 보더
 function HeroImage({ src, alt }) {
@@ -42,13 +40,6 @@ export function HeroSection({ product }) {
   const brand = product?.brand ?? '';
   const name = product?.name ?? '';
   const serving = product?.serving ?? '';
-  const score = product?.score ?? 0;
-  // 한국어 라벨 — 다분해 점수 표기
-  const scoreLabel = scoreColor(score) === 'var(--green-500)'
-    ? '추천'
-    : scoreColor(score) === 'var(--orange-500)'
-      ? '보통'
-      : '주의';
 
   return (
     <section className="m-detail-hero">
@@ -58,18 +49,6 @@ export function HeroSection({ product }) {
           <div className="m-detail-hero-brand">{brand}</div>
           <h1 className="m-detail-hero-name">{name}</h1>
           {serving && <div className="m-detail-hero-serving">{serving} 기준</div>}
-        </div>
-        <div className="m-detail-hero-score">
-          <ScoreGauge value={score} size={132} />
-          <div className="m-detail-hero-score-caption">
-            <span className="m-detail-hero-score-label">다분해 점수</span>
-            <span
-              className="m-detail-hero-score-verdict"
-              style={{ color: scoreColor(score) }}
-            >
-              {scoreLabel}
-            </span>
-          </div>
         </div>
         <TrustRow trustBadges={product?.trustBadges} />
       </div>

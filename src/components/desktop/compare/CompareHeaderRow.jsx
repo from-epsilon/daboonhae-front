@@ -3,7 +3,6 @@
 // - 제품명/썸네일 클릭 → 디테일 페이지로 이동
 // - 이미지 실패 시 placeholder
 import { useState } from 'react';
-import { ScoreGauge } from '../../ds/ScoreGauge.jsx';
 import { IconClose } from '../../ds/Icons.jsx';
 
 // 이미지 로딩 실패 시 fallback (외부 의존성 차단)
@@ -62,9 +61,6 @@ export function CompareHeaderRow({ product, onRemove, onOpen, isAnchor }) {
         <div className="d-compare-col-brand">{product.brand}</div>
         <div className="d-compare-col-name">{product.name}</div>
       </button>
-      <div className="d-compare-col-score">
-        <ScoreGauge value={product.score} size={72} />
-      </div>
     </div>
   );
 }

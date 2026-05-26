@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCompare } from '../store/CompareContext.jsx';
-import { PRODUCTS } from '../data/mockProducts.js';
+import { useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
 import { FOOD_CATEGORIES, ALL_FILTERS } from '../data/purposes.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
@@ -13,6 +13,7 @@ import './ListPage.css';
 
 export default function ListPage() {
   const compare = useCompare();
+  const { products: PRODUCTS, loading } = useProducts();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const q = searchParams.get('q') ?? '';
@@ -24,7 +25,7 @@ export default function ListPage() {
   useEffect(() => {
     if (categoryParam) setSubCategory(categoryParam);
   }, [categoryParam]);
-  const [sortKey, setSortKey] = useState('ranking');
+  const [sortKey, setSortKey] = useState('calories_asc');
 
   const activeFilterCount = countActiveFilters(filterState);
   const hasActiveSubCategory = subCategory !== 'all';
@@ -38,14 +39,16 @@ export default function ListPage() {
   const clearSearch = () => navigate('/list');
 
   const products = useMemo(() => {
-    let result = q ? searchProducts(q) : [...PRODUCTS];
+    let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
     if (subCategory !== 'all') {
       result = result.filter((p) => p.category === subCategory);
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, subCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, subCategory, filterState, sortKey]);
+
+  if (loading) return <div className="d-list-page" style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
 
   return (
     <div className="d-list-page">
@@ -143,6 +146,7 @@ function applyFilters(products, specs, value) {
 function passSingleFilter(product, spec, v) {
   if (spec.type === 'range') return passRange(product, spec, v);
   if (spec.type === 'tristate') return passTriState(product, spec.key, v);
+  if (spec.type === 'exclude_only') return passTriState(product, spec.key, v);
   if (spec.type === 'bool') return passBool(product, spec, v);
   return true;
 }
@@ -181,7 +185,6 @@ function getIngredientList(product, key) {
 function applySort(products, sortKey) {
   const arr = [...products];
   switch (sortKey) {
-    case 'ranking': return arr.sort((a, b) => b.rankingScore - a.rankingScore);
     case 'calories_asc': return arr.sort((a, b) => (a.nutrition.calories ?? 0) - (b.nutrition.calories ?? 0));
     case 'protein_desc': return arr.sort((a, b) => (b.nutrition.protein ?? 0) - (a.nutrition.protein ?? 0));
     case 'sugar_asc': return arr.sort((a, b) => (a.nutrition.sugar ?? 0) - (b.nutrition.sugar ?? 0));

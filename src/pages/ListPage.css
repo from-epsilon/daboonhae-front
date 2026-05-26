@@ -60,19 +60,11 @@
    사이드바 필터
    =========================================================================== */
 .d-list-sidebar {
-  position: sticky;
-  top: 84px;
   align-self: start;
   background: var(--bg-white);
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-md);
   padding: var(--space-5) var(--space-5) var(--space-4);
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.d-list-sidebar::-webkit-scrollbar { display: none;
 }
 
 /* 사이드바 헤더 — 타이틀 + 초기화 */
@@ -140,12 +132,15 @@
 
 /* ---------- 필터 섹션 ---------- */
 .d-list-filter-section {
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--border-tertiary);
+  padding: var(--space-1) 0;
 }
-
-.d-list-filter-section:last-child {
-  border-bottom: none;
+.d-list-filter-section + .d-list-filter-section--tristate,
+.d-list-filter-section + .d-list-filter-section--bool,
+.d-list-filter-section--tristate + .d-list-filter-section,
+.d-list-filter-section--bool + .d-list-filter-section {
+  border-top: 1px solid var(--border-tertiary);
+  padding-top: var(--space-4);
+  margin-top: var(--space-1);
 }
 
 .d-list-filter-section-label {
@@ -239,7 +234,7 @@
   min-width: 0;
   font-family: var(--font-numeric);
   font-size: var(--font-size-s);
-  padding: 8px 10px;
+  padding: 5px 10px;
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-sm);
   background: var(--bg-white);

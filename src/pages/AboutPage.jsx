@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { BarChart3, Scale, ShieldCheck, Users } from 'lucide-react';
-import { PRODUCTS } from '../data/mockProducts.js';
+import { useProducts } from '../store/ProductsContext.jsx';
 import './AboutPage.css';
 
 const FEATURES = [
@@ -27,7 +27,8 @@ const FEATURES = [
 ];
 
 export default function AboutPage() {
-  const productCount = PRODUCTS.length;
+  const { products } = useProducts();
+  const productCount = products.length;
 
   return (
     <div className="page d-about">

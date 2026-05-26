@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSuggestions } from '../../data/searchIndex.js';
+import { useProducts } from '../../store/ProductsContext.jsx';
 
 // 메인 검색바
 // - 자동완성 드롭다운 + 키보드 탐색(↑↓ Enter Esc)
@@ -13,8 +14,9 @@ export default function SearchBar() {
   const listboxId = 'search-suggestions-listbox';
   const navigate = useNavigate();
   const blurTimerRef = useRef(null);
+  const { products } = useProducts();
 
-  const suggestions = useMemo(() => (query ? getSuggestions(query, 8) : []), [query]);
+  const suggestions = useMemo(() => (query ? getSuggestions(query, products, 8) : []), [query, products]);
   const showDropdown = focused && query.trim().length > 0;
 
   // 입력이 바뀌거나 후보가 줄면 activeIndex가 범위를 벗어날 수 있으므로 리셋

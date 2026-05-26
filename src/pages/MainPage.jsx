@@ -8,16 +8,14 @@
 // - 데스크탑 셸(App.jsx DesktopShell) 안에서 렌더 → Header/CompareTrayBar/Feedback FAB는 셸 책임
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PRODUCTS } from '../data/mockProducts.js';
+import { useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { IconChevron } from '../components/ds/Icons.jsx';
 
-import HeroBanner from '../components/desktop/home/HeroBanner.jsx';
-import PromoBanner from '../components/desktop/home/PromoBanner.jsx';
+import MainBanner from '../components/desktop/home/MainBanner.jsx';
 import CategoryIconGrid from '../components/desktop/home/CategoryIconGrid.jsx';
 import FoodGrid from '../components/desktop/home/FoodGrid.jsx';
-import Testimonials from '../components/desktop/home/Testimonials.jsx';
 import Footer from '../components/desktop/home/Footer.jsx';
 
 import './MainPage.css';
@@ -62,9 +60,9 @@ function useRecent(adapted) {
 export default function MainPage() {
   const navigate = useNavigate();
   const { toggle } = useCompare();
+  const { products: PRODUCTS, loading } = useProducts();
 
-  // raw 제품 → DS 형식 (47개) — 마운트 시 1회 메모
-  const adapted = useMemo(() => PRODUCTS.map(getAdapted), []);
+  const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
   const recommended = useRecommended(adapted);
   const recent = useRecent(adapted);
 
@@ -80,13 +78,14 @@ export default function MainPage() {
   // 더보기 → 리스트
   const handleMore = () => navigate('/list');
 
+  if (loading) return <div className="d-home" style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
+
   return (
     <div className="d-home">
-      {/* 1. 상단 split: 좌 히어로 배너 + 우 순환 프로모 배너 */}
-      <div className="d-home-top">
-        <HeroBanner />
-        <PromoBanner />
-      </div>
+      <MainBanner
+        ctaHref="/list"
+        onCtaClick={(e) => { e.preventDefault(); navigate('/list'); }}
+      />
 
       {/* 2. 카테고리 아이콘 그리드 — 가로 9칸 (8 + 전체보기) */}
       <CategoryIconGrid
@@ -124,10 +123,7 @@ export default function MainPage() {
         />
       </section>
 
-      {/* 7. 사용자 후기 슬라이드 */}
-      <Testimonials />
-
-      {/* 8. 푸터 — 회사 정보 / 약관 / 문의 */}
+      {/* 푸터 */}
       <Footer />
     </div>
   );

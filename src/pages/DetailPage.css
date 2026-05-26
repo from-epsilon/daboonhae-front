@@ -61,11 +61,7 @@
   display: flex; align-items: center; gap: 20px;
 }
 .d-detail-header-thumb {
-  flex-shrink: 0; width: 80px; height: 80px;
-}
-.d-detail-header-thumb > * {
-  width: 80px !important; height: 80px !important;
-  border-radius: var(--radius-md);
+  flex-shrink: 0;
 }
 .d-detail-header-info {
   flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
@@ -203,30 +199,27 @@
 }
 .d-detail-card-sub { font-size: 13px; color: var(--text-tertiary); font-family: var(--font-numeric); }
 
-/* ───────── #1 영양성분 Bento Grid ───────── */
-.d-detail-nutri-grid {
+/* ───────── 영양성분 리스트 ───────── */
+.d-detail-nutri-list {
   list-style: none; margin: 0; padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: auto;
-  gap: 8px;
+  display: flex; flex-direction: column;
 }
 .d-detail-nutri-cell {
-  background: var(--bg-card-ui); border-radius: var(--radius-md);
-  padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-tertiary);
 }
-.d-detail-nutri-cell.is-hero {
-  grid-column: span 2;
-  padding: 16px 18px;
-  background: var(--green-50);
+.d-detail-nutri-cell:last-child { border-bottom: none; }
+.d-detail-nutri-cell.is-indent {
+  padding-left: 20px;
 }
-.d-detail-nutri-cell.is-hero .d-detail-nutri-cell-num { font-size: 28px; }
+.d-detail-nutri-cell.is-indent .d-detail-nutri-cell-label { color: var(--text-tertiary); }
 .d-detail-nutri-cell-label {
-  display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-primary); font-weight: 500;
 }
 .d-detail-nutri-cell-value { display: flex; align-items: baseline; gap: 2px; }
 .d-detail-nutri-cell-num {
-  font-family: var(--font-numeric); font-size: 20px; font-weight: 700; color: var(--text-primary);
+  font-family: var(--font-numeric); font-size: 15px; font-weight: 700; color: var(--text-primary);
 }
 .d-detail-nutri-cell-unit { font-size: 12px; color: var(--text-secondary); margin-left: 2px; }
 
@@ -269,6 +262,29 @@
 }
 .d-detail-report-card-body.is-empty { font-size: 14px; color: var(--text-tertiary); margin: 0; }
 
+/* 분석 리포트 — 준비 중 블러 */
+.d-detail-report-locked { position: relative; min-height: 180px; }
+.d-detail-report-locked-blur {
+  filter: blur(6px); opacity: 0.4; pointer-events: none; user-select: none;
+}
+.d-detail-report-locked-fake {
+  display: flex; flex-direction: column; gap: 14px; padding: 8px 0;
+}
+.d-detail-report-locked-bar {
+  height: 14px; border-radius: 7px; background: var(--gray-200);
+}
+.d-detail-report-locked-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; color: var(--text-secondary);
+}
+.d-detail-report-locked-title {
+  font-size: 16px; font-weight: 700; color: var(--text-primary);
+}
+.d-detail-report-locked-sub {
+  font-size: 13px; color: var(--text-tertiary);
+}
+
 /* 원료/성분 */
 .d-detail-ingr-grid {
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
@@ -286,53 +302,120 @@
   border-radius: var(--radius-md); font-size: 13px;
 }
 
-/* 후기 */
-.d-detail-review-grid {
-  display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start;
+/* 성분 참고 정보 리스트 */
+.d-detail-ingr-notes { margin-top: 16px; border-top: 1px solid var(--border-tertiary); padding-top: 12px; }
+.d-detail-ingr-notes-list {
+  list-style: none; margin: 12px 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: 10px;
 }
-.d-detail-review-form {
+.d-detail-ingr-notes-item {
+  display: flex; gap: 12px; font-size: 13px; line-height: 1.6;
+}
+.d-detail-ingr-notes-label {
+  flex-shrink: 0; width: 72px; font-weight: 600; color: var(--text-primary);
+}
+.d-detail-ingr-notes-text { color: var(--text-secondary); }
+
+/* 원재료명 raw text 토글 */
+.d-detail-ingr-raw { margin-top: 16px; border-top: 1px solid var(--border-tertiary); padding-top: 12px; }
+.d-detail-ingr-raw-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  padding: 0; transition: color 0.15s;
+}
+.d-detail-ingr-raw-toggle:hover { color: var(--text-primary); }
+.d-detail-ingr-raw-chevron { transition: transform 0.2s; }
+.d-detail-ingr-raw-chevron.is-open { transform: rotate(180deg); }
+.d-detail-ingr-raw-text {
+  margin: 12px 0 0; font-size: 13px; line-height: 1.7;
+  color: var(--text-secondary); word-break: keep-all;
+}
+
+/* ───────── 후기 (재설계) ───────── */
+.d-review-form {
   background: var(--bg-card-ui); border-radius: var(--radius-md);
-  padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 14px;
+  padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;
+  margin-bottom: 20px;
 }
-.d-detail-review-form-title {
-  font-family: var(--font-display); font-size: 14px; font-weight: 700;
-  color: var(--text-primary); margin: 0;
+.d-review-form--done {
+  align-items: center; justify-content: center; min-height: 100px; gap: 8px;
 }
-.d-detail-review-field { display: flex; flex-direction: column; gap: 6px; }
-.d-detail-review-field-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-.d-detail-review-rating { display: flex; gap: 6px; }
-.d-detail-review-bool {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary);
+.d-review-done-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--green-50); color: var(--brand-green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700;
 }
-.d-detail-review-textarea {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--border-tertiary);
+.d-review-done-text { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.d-review-form-row {
+  display: flex; gap: 24px; align-items: flex-start;
+}
+.d-review-field { display: flex; flex-direction: column; gap: 6px; }
+.d-review-field-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.d-review-stars { display: flex; gap: 2px; }
+.d-review-star {
+  background: none; border: none; padding: 2px; cursor: pointer;
+  color: var(--gray-300); transition: color 0.1s;
+}
+.d-review-star.is-filled { color: var(--orange-400); }
+.d-review-star:hover { color: var(--orange-300); }
+.d-review-repurchase-btns { display: flex; gap: 4px; }
+.d-review-repurchase-btn {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-tertiary); background: var(--bg-white);
+  font-size: 13px; font-weight: 700; color: var(--text-tertiary);
+  cursor: pointer; transition: all 0.15s;
+}
+.d-review-repurchase-btn:hover { border-color: var(--text-secondary); }
+.d-review-repurchase-btn.is-active.is-yes {
+  background: var(--green-50); border-color: var(--brand-green); color: var(--brand-green);
+}
+.d-review-repurchase-btn.is-active.is-no {
+  background: var(--red-50); border-color: var(--red-500); color: var(--red-500);
+}
+.d-review-form-bottom { display: flex; gap: 12px; align-items: flex-end; }
+.d-review-textarea {
+  flex: 1; padding: 10px 14px; border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-md); background: var(--bg-white);
-  font: inherit; font-size: 13px; color: var(--text-primary); resize: vertical; min-height: 80px;
+  font: inherit; font-size: 13px; color: var(--text-primary); resize: none;
 }
-.d-detail-review-textarea:focus { outline: none; border-color: var(--text-secondary); }
-.d-detail-review-submit-row { display: flex; justify-content: flex-end; }
-.d-detail-review-list {
-  list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;
+.d-review-textarea:focus { outline: none; border-color: var(--brand-green); }
+.d-review-submit {
+  flex-shrink: 0; padding: 10px 20px; border-radius: var(--radius-md);
+  background: var(--gray-900); color: white;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background-color 0.15s;
 }
-.d-detail-review-item {
-  background: var(--bg-white); border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md); padding: 14px 16px;
+.d-review-submit:hover { background: var(--gray-800); }
+.d-review-submit:disabled { background: var(--gray-200); color: var(--text-tertiary); cursor: default; }
+
+.d-review-list { display: flex; flex-direction: column; gap: 12px; }
+.d-review-item {
+  padding: 16px 0; border-bottom: 1px solid var(--border-tertiary);
   display: flex; flex-direction: column; gap: 8px;
 }
-.d-detail-review-meta {
-  display: flex; flex-wrap: wrap; gap: 12px;
-  font-size: 12px; color: var(--text-secondary); font-family: var(--font-numeric);
+.d-review-item:last-child { border-bottom: none; }
+.d-review-item-top { display: flex; justify-content: space-between; align-items: center; }
+.d-review-item-ratings {
+  display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary);
+  font-family: var(--font-numeric);
 }
-.d-detail-review-repurchase { display: inline-flex; align-items: center; gap: 3px; }
-.d-detail-review-repurchase.is-yes { color: var(--green-700); }
-.d-detail-review-repurchase.is-no { color: var(--text-tertiary); }
-.d-detail-review-text { margin: 0; font-size: 14px; color: var(--text-primary); line-height: 1.6; }
-.d-detail-review-empty {
-  padding: 40px 16px; text-align: center; background: var(--bg-card-ui);
-  border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 6px;
+.d-review-item-ratings b { color: var(--text-primary); margin-left: 2px; }
+.d-review-item-repurchase {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 500;
 }
-.d-detail-review-empty-msg { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
-.d-detail-review-empty-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
+.d-review-item-repurchase.is-yes { color: var(--green-700); }
+.d-review-item-repurchase.is-no { color: var(--text-tertiary); }
+.d-review-item-date { font-size: 12px; color: var(--text-tertiary); font-family: var(--font-numeric); }
+.d-review-item-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-primary); }
+.d-review-empty {
+  padding: 40px 16px; text-align: center;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.d-review-empty-msg { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin: 0; }
+.d-review-empty-sub { font-size: 13px; color: var(--text-tertiary); margin: 0; }
 
 /* #7 관련 제품 hover */
 .d-detail-related { display: flex; flex-direction: column; gap: 12px; }
@@ -357,12 +440,10 @@
   .d-detail-quick { border-left: none; padding-left: 0; padding-top: 12px; border-top: 1px solid var(--border-tertiary); width: 100%; justify-content: space-around; }
   .d-detail-header-actions { flex-direction: row; width: 100%; }
   .d-detail-header-actions > * { flex: 1; text-align: center; }
-  .d-detail-review-grid { grid-template-columns: 1fr; }
+  .d-review-form-row { flex-wrap: wrap; }
   .d-detail-related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
-  .d-detail-nutri-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .d-detail-nutri-cell.is-hero { grid-column: span 2; }
   .d-detail-ingr-grid { grid-template-columns: 1fr; }
   .d-detail-related-grid { grid-template-columns: 1fr; }
   .d-detail-macro-legend { flex-direction: column; gap: 8px; }

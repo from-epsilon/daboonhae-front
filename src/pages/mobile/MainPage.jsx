@@ -4,7 +4,7 @@
 // - 페이지 자체는 AppBar + 본문만 책임
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PRODUCTS } from '../../data/mockProducts.js';
+import { useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
@@ -43,9 +43,9 @@ export default function MainPageMobile() {
   // 컨텍스트 expose 키는 setPurpose (id를 받음). 프롬프트의 setPurposeId와 동일 의도.
   const { setPurpose } = usePurpose();
   const { toggle, count } = useCompare();
+  const { products: PRODUCTS, loading } = useProducts();
 
-  // raw 제품 → DS 형식 변환 (47개) — 마운트 시 1회 메모
-  const adapted = useMemo(() => PRODUCTS.map(getAdapted), []);
+  const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
   const recommended = useRecommended(adapted);
   const recent = useRecent(adapted);
 
@@ -63,6 +63,8 @@ export default function MainPageMobile() {
   };
   // FoodCard 의 + 버튼 → 비교함 토글
   const handleToggleCompare = (food) => toggle(food.id);
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
 
   return (
     <>

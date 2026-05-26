@@ -3,7 +3,7 @@
 // - 모바일 셸은 디테일에서 BottomNav 숨김 (App.jsx 처리). 본문 하단은 sticky CTA용 padding 확보
 // - AppBar/CTA는 페이지가 직접 렌더
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProductById } from '../../data/mockProducts.js';
+import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
@@ -68,10 +68,11 @@ export default function DetailPageMobile() {
   const { purpose, purposeId } = usePurpose();
 
   // raw 제품 → DS 형식 변환 (adapter는 raw도 들고 있어 분석에 그대로 활용 가능)
-  const raw = getProductById(id);
+  const { loading } = useProducts();
+  const raw = useProductById(id);
   const product = raw ? getAdapted(raw) : null;
 
-  // 제품 없음 → 안내 + 홈 이동
+  if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
   if (!product) {
     return (
       <>

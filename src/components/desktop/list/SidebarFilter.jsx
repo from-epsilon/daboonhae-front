@@ -66,8 +66,9 @@ function SubCategorySection({ subCategories, value, onChange }) {
 
 // 단일 필터 섹션 (label + 타입별 컨트롤)
 function FilterSection({ spec, value, onChange }) {
+  const typeClass = spec.type !== 'range' ? ` d-list-filter-section--${spec.type}` : '';
   return (
-    <div className="d-list-filter-section">
+    <div className={`d-list-filter-section${typeClass}`}>
       <div className="d-list-filter-section-label">{spec.label}</div>
       {renderControl(spec, value, onChange)}
     </div>
@@ -78,6 +79,7 @@ function FilterSection({ spec, value, onChange }) {
 function renderControl(spec, v, onChange) {
   if (spec.type === 'range') return <RangeControl spec={spec} value={v} onChange={onChange} />;
   if (spec.type === 'tristate') return <TriStateControl spec={spec} value={v ?? {}} onChange={onChange} />;
+  if (spec.type === 'exclude_only') return <ExcludeOnlyControl spec={spec} value={v ?? {}} onChange={onChange} />;
   if (spec.type === 'bool') return <BoolToggle value={!!v} onChange={onChange} />;
   return null;
 }
@@ -171,6 +173,41 @@ function TriStateRow({ option, state, onSet }) {
           <X size={14} aria-hidden />
         </button>
       </div>
+    </div>
+  );
+}
+
+// exclude_only: X 버튼만 (제외 전용)
+function ExcludeOnlyControl({ spec, value, onChange }) {
+  const toggle = (option) => {
+    const next = { ...value };
+    if (next[option] === 'exclude') {
+      delete next[option];
+    } else {
+      next[option] = 'exclude';
+    }
+    onChange(next);
+  };
+
+  return (
+    <div className="d-list-tristate">
+      {spec.options.map((opt) => (
+        <div key={opt} className="d-list-tristate-row">
+          <span className="d-list-tristate-label">{opt}</span>
+          <div className="d-list-tristate-btns">
+            <button
+              type="button"
+              className={`d-list-tristate-btn d-list-tristate-exclude ${value[opt] === 'exclude' ? 'is-active' : ''}`}
+              onClick={() => toggle(opt)}
+              aria-label={`${opt} 제외`}
+              aria-pressed={value[opt] === 'exclude'}
+              title="제외"
+            >
+              <X size={14} aria-hidden />
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

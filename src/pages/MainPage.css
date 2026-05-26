@@ -9,59 +9,62 @@
 .d-home {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 40px 96px;
+  padding: 12px 40px 96px;
   display: flex;
   flex-direction: column;
   gap: 80px;
 }
 
-/* ─────────────── 히어로 배너 (풀폭) ─────────────── */
+/* ─────────────── 히어로 배너 (이미지) ─────────────── */
 .d-home-hero-banner {
-  background: linear-gradient(135deg, var(--green-50) 0%, var(--bg-white) 60%);
-  border-radius: var(--radius-lg);
-  padding: 36px 48px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  min-height: 400px;
+  cursor: pointer;
+  position: relative;
 }
-.d-home-hero-banner-inner {
-  max-width: 640px;
+.d-home-hero-banner-img {
+  width: 100%; height: 100%;
+  min-height: 400px;
+  object-fit: cover;
+  display: block;
 }
-.d-home-hero-banner-eyebrow {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--green-600);
-  margin: 0 0 12px;
+/* 이미지 없을 때 fallback */
+.d-home-hero-banner-fallback {
+  display: none;
+  width: 100%; min-height: 400px;
+  background: linear-gradient(135deg, var(--green-50) 0%, var(--gray-50) 100%);
+  align-items: center; justify-content: center;
+  padding: 48px;
 }
-.d-home-hero-banner-headline {
+.d-home-hero-banner-fallback-inner {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 16px;
+}
+.d-home-hero-banner-fallback-title {
   font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--text-primary);
-  margin: 0 0 16px;
+  font-size: 36px; font-weight: 700; line-height: 1.35;
+  color: var(--text-primary); margin: 0;
 }
-.d-home-hero-banner-accent {
-  color: var(--brand-green);
+.d-home-hero-banner-fallback-accent { color: var(--brand-green); }
+.d-home-hero-banner-fallback-sub {
+  font-size: 15px; color: var(--text-secondary); margin: 0;
 }
-.d-home-hero-banner-sub {
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  margin: 0 0 28px;
+.d-home-hero-banner-fallback-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: var(--gray-900); color: white;
+  font-size: 15px; font-weight: 700; border-radius: var(--radius-pill);
 }
-.d-home-hero-banner-cta {
-  padding: 14px 28px;
-  background: var(--brand-green);
-  color: white;
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: var(--radius-pill);
-  transition: background-color 0.15s;
+.d-home-hero-banner-fallback-hint {
+  font-size: 12px; color: var(--text-tertiary); margin: 0;
+  padding: 8px 16px; background: var(--gray-100); border-radius: var(--radius-md);
 }
-.d-home-hero-banner-cta:hover {
-  background: var(--green-600);
+@media (max-width: 960px) {
+  .d-home-hero-banner-fallback-title { font-size: 28px; }
 }
 
-.d-home > .d-home-top + .d-home-cat-grid {
-  margin-top: -48px;
+.d-home > .mb + .d-home-cat-grid {
+  margin-top: -56px;
 }
 
 .d-home-top {

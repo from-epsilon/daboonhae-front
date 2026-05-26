@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IconSearch } from '../ds/Icons.jsx';
+
+const HIDE_SEARCH_PATHS = ['/about', '/faq', '/contact'];
 
 function HeaderSearchBar() {
   const [query, setQuery] = useState('');
@@ -29,11 +31,13 @@ function HeaderSearchBar() {
 }
 
 export default function Header() {
+  const { pathname } = useLocation();
+  const hideSearch = HIDE_SEARCH_PATHS.includes(pathname);
   return (
     <header className="header">
       <div className="header-inner">
         <Link to="/" className="header-logo"><span className="header-logo-black">다</span>분<span className="header-logo-black">해</span><span className="header-logo-dot">.</span></Link>
-        <HeaderSearchBar />
+        {!hideSearch && <HeaderSearchBar />}
       </div>
     </header>
   );

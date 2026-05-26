@@ -17,7 +17,7 @@ import { FilterSheet, countActiveFilters } from '../../components/mobile/list/Fi
 import { SortSheet, getSortShortLabel } from '../../components/mobile/list/SortSheet.jsx';
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
-import { PRODUCTS } from '../../data/mockProducts.js';
+import { useProducts } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
 import { PURPOSES, ALL_PURPOSE, FOOD_CATEGORIES } from '../../data/purposes.jsx';
@@ -109,6 +109,7 @@ function applySort(products, sortKey) {
 export default function ListPageMobile() {
   const { purpose, purposeId, setPurpose } = usePurpose();
   const { count: compareCount, toggle: toggleCompare } = useCompare();
+  const { products: PRODUCTS, loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const q = searchParams.get('q') ?? '';
@@ -161,7 +162,7 @@ export default function ListPageMobile() {
 
   // 결과 계산 — 검색 → 목적 적합도 → 세부 카테고리 → 필터 → 정렬
   const products = useMemo(() => {
-    let result = q ? searchProducts(q) : [...PRODUCTS];
+    let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
     if (purposeId !== 'all') {
       result = result.filter((p) => p.purposesFit?.includes(purposeId));
     }
@@ -171,7 +172,7 @@ export default function ListPageMobile() {
     result = applyFilters(result, purpose.filters, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, purposeId, purpose.filters, subCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, purposeId, purpose.filters, subCategory, filterState, sortKey]);
 
   return (
     <div className="m-list-root">

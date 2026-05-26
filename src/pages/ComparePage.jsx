@@ -14,7 +14,7 @@
 // 모바일 폴더의 compareUtils.js는 순수 utility라 데스크탑에서도 그대로 import (수정 금지)
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProductById } from '../data/mockProducts.js';
+import { useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { CompareTable } from '../components/desktop/compare/CompareTable.jsx';
@@ -23,7 +23,6 @@ import { EmptyCompare } from '../components/desktop/compare/EmptyCompare.jsx';
 import {
   COMPARE_METRICS,
   getBestIndices,
-  getBestScoreIndices,
   buildCompareSummary,
 } from '../components/mobile/compare/compareUtils.js';
 import './ComparePage.css';
@@ -63,11 +62,11 @@ function PageHeader({ count, max, onClear }) {
 export default function ComparePage() {
   const navigate = useNavigate();
   const { ids, remove, clear, max } = useCompare();
+  const { products: allProducts } = useProducts();
 
-  // raw → DS 형식 변환 (id 변동 시만 재계산)
   const products = useMemo(
-    () => ids.map(getProductById).filter(Boolean).map(getAdapted),
-    [ids],
+    () => ids.map(id => allProducts.find(p => String(p.id) === String(id))).filter(Boolean).map(getAdapted),
+    [ids, allProducts],
   );
 
   // 각 지표별 우수값 인덱스 Set 사전 계산 (렌더마다 N*M 반복 방지)
@@ -82,12 +81,6 @@ export default function ComparePage() {
     }
     return out;
   }, [products]);
-
-  // 점수 best 인덱스
-  const bestScoreSet = useMemo(
-    () => new Set(getBestScoreIndices(products)),
-    [products],
-  );
 
   // 자동 요약 문장
   const summary = useMemo(() => buildCompareSummary(products), [products]);
@@ -114,7 +107,6 @@ export default function ComparePage() {
           <CompareTable
             products={products}
             bestByKey={bestByKey}
-            bestScoreSet={bestScoreSet}
             metrics={COMPARE_METRICS}
             onRemove={handleRemove}
             onOpen={handleOpenDetail}

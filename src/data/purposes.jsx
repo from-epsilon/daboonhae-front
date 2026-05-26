@@ -14,7 +14,7 @@ export const FOOD_CATEGORIES = [
   '소시지/햄',
   '셰이크',
   '과자',
-  '제로음료',
+  '제로 음료',
 ];
 
 export const PURPOSES = [
@@ -94,7 +94,7 @@ export const PURPOSES = [
     filters: [
       { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 800 },
       { key: 'protein', type: 'range', label: '단백질(g) 이상', min: 0, max: 40 },
-      { key: 'allergens', type: 'tristate', label: '알레르겐', options: ['유당', '대두', '글루텐', '견과류'] },
+      { key: 'allergens', type: 'exclude_only', label: '알레르기 유발 성분', options: ['유당', '대두', '글루텐', '견과류'] },
     ],
     reportSections: [
       { id: 'meal_balance', title: '한 끼 영양 균형' },
@@ -104,20 +104,17 @@ export const PURPOSES = [
   },
 ];
 
-// 전체 모드: 모든 성격의 필터를 합침 (key 기준 중복 제거)
-export const ALL_FILTERS = (() => {
-  const seen = new Set();
-  const result = [];
-  for (const p of PURPOSES) {
-    for (const f of p.filters) {
-      if (!seen.has(f.key)) {
-        seen.add(f.key);
-        result.push(f);
-      }
-    }
-  }
-  return result;
-})();
+export const ALL_FILTERS = [
+  { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 800 },
+  { key: 'protein', type: 'range', label: '단백질(g)', min: 0, max: 50 },
+  { key: 'carbs', type: 'range', label: '탄수화물(g)', min: 0, max: 80 },
+  { key: 'fat', type: 'range', label: '지방(g)', min: 0, max: 30 },
+  { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 30 },
+  { key: 'sweeteners', type: 'tristate', label: '대체당', options: ['말티톨', '아스파탐', '수크랄로스', '스테비아', '알룰로스'] },
+  { key: 'proteinSources', type: 'tristate', label: '단백질 원료', options: ['WPI', 'WPC', '카제인', '대두', '닭고기', '계란'] },
+  { key: 'allergens', type: 'exclude_only', label: '알레르기 유발 성분', options: ['유당', '대두', '글루텐', '견과류'] },
+  { key: 'lactoseFree', type: 'bool', label: '유당 free' },
+];
 
 export const ALL_PURPOSE = {
   id: 'all',

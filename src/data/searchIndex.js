@@ -2,10 +2,6 @@
 // - alias 사전: 영어 ↔ 한국어 매칭, 띄어쓰기 무시
 // - 매칭 규칙은 이 파일에서만 관리 (추후 필드 추가/스코어링 변경 용이)
 
-import { PRODUCTS } from './mockProducts.js';
-
-// 검색어 ↔ 표준 토큰 매핑 사전 (양방향)
-// 키: 소문자·공백제거된 입력, 값: 매칭에 사용할 한국어 정규화 토큰들
 const ALIAS = {
   protein: ['단백질', '프로틴'],
   프로틴: ['단백질', 'protein'],
@@ -27,12 +23,10 @@ const ALIAS = {
   konjac: ['곤약'],
 };
 
-// 입력 정규화: 소문자 + 공백 제거
 function normalize(text) {
   return String(text ?? '').toLowerCase().replace(/\s+/g, '');
 }
 
-// 입력어를 alias 사전을 이용해 확장 (자기자신 + alias 토큰들)
 function expandQueryTokens(query) {
   const norm = normalize(query);
   if (!norm) return [];
@@ -43,7 +37,6 @@ function expandQueryTokens(query) {
   return [...tokens];
 }
 
-// 제품을 검색 가능한 단일 문자열로 (제품명 + 브랜드 + 카테고리 + 원료 + 대체당)
 function buildSearchableText(product) {
   const parts = [
     product.name,
@@ -55,19 +48,17 @@ function buildSearchableText(product) {
   return normalize(parts.join(' '));
 }
 
-// 검색 실행: 매칭된 제품 배열 반환
-export function searchProducts(query) {
+export function searchProducts(query, products) {
   const tokens = expandQueryTokens(query);
   if (tokens.length === 0) return [];
-  return PRODUCTS.filter((product) => {
+  return products.filter((product) => {
     const haystack = buildSearchableText(product);
     return tokens.some((t) => haystack.includes(t));
   });
 }
 
-// 자동완성 후보 (제품명·브랜드 기준, 최대 N개)
-export function getSuggestions(query, limit = 8) {
-  const results = searchProducts(query);
+export function getSuggestions(query, products, limit = 8) {
+  const results = searchProducts(query, products);
   return results.slice(0, limit).map((p) => ({
     id: p.id,
     name: p.name,

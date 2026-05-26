@@ -9,7 +9,6 @@
 //   4) 자동 태그 행
 //   5) Trust 배지 행 (공식 영양정보)
 import { CompareHeaderRow } from './CompareHeaderRow.jsx';
-import { CompareScoreRow } from './CompareScoreRow.jsx';
 import { CompareMetricRow } from './CompareMetricRow.jsx';
 import { CompareTagsRow, CompareTrustRow } from './CompareTagsRow.jsx';
 import { CompareAddSlot } from './CompareAddSlot.jsx';
@@ -23,7 +22,6 @@ function buildGridTemplate(dataColCount) {
 export function CompareTable({
   products,
   bestByKey,
-  bestScoreSet,
   metrics,
   onRemove,
   onOpen,
@@ -55,16 +53,7 @@ export function CompareTable({
         {canAdd && <CompareAddSlot onClick={onAdd} remaining={remaining} />}
       </div>
 
-      {/* 2) 다분해 점수 행 */}
-      <CompareScoreRow
-        label="다분해 점수"
-        products={products}
-        bestSet={bestScoreSet}
-        rowStyle={rowStyle}
-        hasAdd={canAdd}
-      />
-
-      {/* 3) 영양소 행들 */}
+      {/* 2) 영양소 행들 */}
       {metrics.map((m) => (
         <CompareMetricRow
           key={m.key}

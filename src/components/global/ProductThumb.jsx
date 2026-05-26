@@ -9,12 +9,12 @@ export default function ProductThumb({ product, size = 'card', className = '' })
   const initials = getInitials(label);
   const { bg, fg } = getBrandColors(seed);
 
-  // 실제 이미지가 있으면 그대로 렌더
-  if (product?.thumbnail) {
+  const imgSrc = product?.thumbnail || product?.thumb;
+  if (imgSrc) {
     return (
       <img
         className={`product-thumb product-thumb-${size} ${className}`}
-        src={product.thumbnail}
+        src={imgSrc}
         alt=""
         aria-hidden
         loading="lazy"
