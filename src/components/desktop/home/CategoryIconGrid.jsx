@@ -22,7 +22,7 @@ const CATEGORIES = [
   { id: 'sausage', label: '소시지/햄', iconSrc: '/icons/cat-sausage.png', Icon: Ham, gradientA: '#FFCDD2', gradientB: '#E53935' },
   { id: 'shake', label: '셰이크', iconSrc: '/icons/cat-shake.png', Icon: CupSoda, gradientA: '#E1BEE7', gradientB: '#8E24AA' },
   { id: 'snack', label: '과자', iconSrc: '/icons/cat-snack.png', Icon: Cookie, gradientA: '#FFF9C4', gradientB: '#FBC02D' },
-  { id: 'zero-drink', label: '제로음료', iconSrc: '/icons/cat-zero-drink.png', Icon: GlassWater, gradientA: '#BBDEFB', gradientB: '#1E88E5' },
+  { id: 'zero-drink', label: '제로 음료', iconSrc: '/icons/cat-zero-drink.png', Icon: GlassWater, gradientA: '#BBDEFB', gradientB: '#1E88E5' },
 ];
 
 function CategoryItem({ label, iconSrc, Icon, gradientA, gradientB, onClick }) {

@@ -100,7 +100,7 @@ export default function MainPage() {
             'sausage': '소시지/햄',
             'shake': '셰이크',
             'snack': '과자',
-            'zero-drink': '제로음료',
+            'zero-drink': '제로 음료',
           };
           const label = labelById[catId] ?? catId;
           handleCategoryPick(label);

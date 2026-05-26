@@ -105,6 +105,7 @@ const SECTIONS = [
   { id: 'nutrition', label: '영양성분' },
   { id: 'ingredients', label: '원재료' },
   { id: 'analysis', label: '분석 리포트' },
+  { id: 'reviews', label: '후기' },
 ];
 
 function SectionNav({ activeId, navRef }) {
@@ -241,12 +242,14 @@ export default function DetailPage() {
           <NutritionTable nutrition={n} serving={product.serving} />
         </div>
         <div id="ingredients">
-          <IngredientList ingredients={product.ingredients} rawText={raw?.rawIngredients} />
+          <IngredientList ingredients={product.ingredients} rawText={raw?._raw?.ingredientsText} />
         </div>
         <div id="analysis">
           <AnalysisReport />
         </div>
-        <ReviewSection productId={product.id} />
+        <div id="reviews">
+          <ReviewSection productId={product.id} />
+        </div>
         <RelatedProducts
           currentProduct={raw}
           onNavigate={(nextId) => navigate(`/product/${nextId}`)}

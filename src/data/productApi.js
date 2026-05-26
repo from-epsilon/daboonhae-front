@@ -12,10 +12,18 @@ const NUTRIENT_KEY = {
   sugars_g: 'sugar',
   fat_g: 'fat',
   dietary_fiber: 'fiber',
+  sodium_mg: 'sodium',
+  trans_fat_g: 'transFat',
+  saturated_fat_g: 'saturatedFat',
+  cholesterol_mg: 'cholesterol',
+  src_알룰로오스_g: 'allulose',
 };
 
 function parseNutrition(foodNutrients) {
-  const n = { calories: 0, protein: 0, carbs: 0, sugar: 0, fat: 0, fiber: 0, bcaa: 0 };
+  const n = {
+    calories: 0, protein: 0, carbs: 0, sugar: 0, fat: 0, fiber: 0, bcaa: 0,
+    sodium: 0, transFat: 0, saturatedFat: 0, cholesterol: 0, allulose: undefined,
+  };
   for (const fn of foodNutrients ?? []) {
     const key = NUTRIENT_KEY[fn.nutrient_code];
     if (key) n[key] = fn.amount ?? 0;
