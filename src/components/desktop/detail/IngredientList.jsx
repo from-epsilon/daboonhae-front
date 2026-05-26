@@ -24,7 +24,7 @@ function ItemWithTooltip({ label, info }) {
   );
 }
 
-function IngrSection({ label, items, emptyLabel = '없음' }) {
+function IngrSection({ label, items, emptyLabel = '정보 없음' }) {
   const hasItems = Array.isArray(items) && items.length > 0;
   return (
     <div className="d-detail-ingr-col">
@@ -92,9 +92,9 @@ export function IngredientList({ ingredients, rawText }) {
       </header>
       <div className="d-detail-ingr-grid">
         <IngrSection label="단백질 원료" items={ing.proteinSources} />
-        <IngrSection label="대체당" items={ing.sweeteners} emptyLabel="사용 안 함" />
+        <IngrSection label="대체당" items={ing.sweeteners} />
         <IngrSection label="알레르기 유발 성분" items={ing.allergens} />
-        <IngrSection label="기타" items={otherItems.length > 0 ? otherItems : null} emptyLabel="없음" />
+        <IngrSection label="기타" items={otherItems.length > 0 ? otherItems : null} />
       </div>
       <SweetenerNotice sweeteners={ing.sweeteners} />
       <RawTextToggle rawText={rawText} />

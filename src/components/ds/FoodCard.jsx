@@ -125,6 +125,9 @@ function FoodCardList({ food, onClick, onCompare, inCompare }) {
         >
           {food.name}
         </div>
+        {food.serving && (
+          <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
+        )}
         <MacroRow {...food.macros} compact />
         {/* list 레이아웃: tags 전부 + trust 1개 */}
         <div
@@ -143,7 +146,7 @@ function FoodCardList({ food, onClick, onCompare, inCompare }) {
 }
 
 // grid 레이아웃: 1:1 썸네일 + 하단 텍스트
-function FoodCardGrid({ food, onClick, onCompare, inCompare }) {
+function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey }) {
   return (
     <div
       onClick={onClick}
@@ -185,7 +188,9 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare }) {
         >
           {food.name}
         </div>
-        {/* 핵심 metric 강조 라인 — 칼로리를 hero로 키워 첫눈에 위계가 잡히게 */}
+        {food.serving && (
+          <div style={{ fontSize: 'var(--font-size-xxs)', color: 'var(--text-tertiary)' }}>{food.serving}</div>
+        )}
         <div
           style={{
             display: 'flex',
@@ -195,28 +200,16 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare }) {
             fontFamily: 'var(--font-numeric)',
           }}
         >
-          <span
-            style={{
-              fontSize: 18,
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              lineHeight: 1,
-            }}
-          >
+          <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
             {food.macros.kcal}
           </span>
           <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>kcal</span>
-          <span
-            style={{
-              marginLeft: 'auto',
-              fontSize: 'var(--font-size-xs)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            단백질{' '}
-            <b style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
-              {food.macros.protein}g
-            </b>
+          <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>
+            {getMetrics(food).map((m) => (
+              <span key={m.label}>
+                {m.label} <b style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{m.value ?? '-'}{m.unit}</b>
+              </span>
+            ))}
           </span>
         </div>
         {/* grid 레이아웃: tags 2개 + trust 1개 */}
@@ -235,6 +228,23 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare }) {
       </div>
     </div>
   );
+}
+
+// 정렬 기준 → metric 매핑
+const SORT_METRIC = {
+  protein_desc: (f) => ({ label: '단백질', value: f.macros?.protein, unit: 'g' }),
+  sugar_asc: (f) => ({ label: '당류', value: f.nutrition?.sugar, unit: 'g' }),
+  carbs_asc: (f) => ({ label: '탄수화물', value: f.macros?.carbs, unit: 'g' }),
+};
+
+// 카테고리별 기본 metric
+function getMetrics(food) {
+  const m = food.macros ?? {};
+  return [
+    { label: '탄', value: m.carbs, unit: 'g' },
+    { label: '단', value: m.protein, unit: 'g' },
+    { label: '지', value: m.fat, unit: 'g' },
+  ];
 }
 
 // 카드 하단 trust 신호 — "후기 24건"
@@ -258,10 +268,10 @@ function ReviewMeta({ reviewCount }) {
   );
 }
 
-export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare }) {
+export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, sortKey }) {
   if (!food) return null;
   if (layout === 'list') {
     return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
   }
-  return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
+  return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} sortKey={sortKey} />;
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 const ALL_OPTIONS = [
+  { key: 'default', label: '기본 정렬' },
   { key: 'calories_asc', label: '칼로리 낮은 순' },
   { key: 'protein_desc', label: '단백질 높은 순' },
   { key: 'carbs_asc', label: '탄수화물 낮은 순' },

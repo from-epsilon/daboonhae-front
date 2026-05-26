@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 
 const NUTRI_INFO = {
@@ -15,7 +15,6 @@ const NUTRI_INFO = {
   protein_g: '단백질 함량입니다. 단백질 제품이라면 칼로리 대비 단백질이 충분한지 보는 게 중요해요.',
 };
 
-// 필수 영양성분 표시 순서 + 들여쓰기
 const REQUIRED_ORDER = [
   { code: 'energy_kcal',     indent: false },
   { code: 'sodium_mg',       indent: false },
@@ -32,10 +31,16 @@ const REQUIRED_ORDER = [
 
 const REQUIRED_CODES = new Set(REQUIRED_ORDER.map(r => r.code));
 
-function formatValue(fn) {
-  if (fn.amount_text) return fn.amount_text;
+function formatValue(fn, ratio) {
+  if (ratio === 1) {
+    if (fn.amount_text) return fn.amount_text;
+    const unit = fn.unit || fn.nutrients?.default_unit || '';
+    return fn.amount != null ? `${fn.amount}${unit}` : '-';
+  }
+  if (fn.amount == null) return '-';
+  const converted = Math.round(fn.amount * ratio * 10) / 10;
   const unit = fn.unit || fn.nutrients?.default_unit || '';
-  return fn.amount != null ? `${fn.amount}${unit}` : '-';
+  return `${converted}${unit}`;
 }
 
 function NutritionCell({ label, display, info, indent }) {
@@ -59,7 +64,39 @@ function NutritionCell({ label, display, info, indent }) {
   );
 }
 
-export function NutritionTable({ nutrition, serving, foodNutrients }) {
+function BasisToggle({ basis, onChangeBasis, servingUnit }) {
+  const unit = servingUnit?.includes('ml') ? 'ml' : 'g';
+  const options = [
+    { key: 'serving', label: '1회 제공량' },
+    { key: 'per100', label: `100${unit} 기준` },
+  ];
+  return (
+    <div className="d-detail-nutri-toggle">
+      {options.map((o) => (
+        <button
+          key={o.key}
+          type="button"
+          className={`d-detail-nutri-toggle-btn${basis === o.key ? ' is-active' : ''}`}
+          onClick={() => onChangeBasis(o.key)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function NutritionTable({ nutrition, serving, foodNutrients, servingSize, servingUnit }) {
+  const [basis, setBasis] = useState('serving');
+
+  const ratio = useMemo(() => {
+    if (basis === 'serving' || !servingSize || servingSize <= 0) return 1;
+    return 100 / servingSize;
+  }, [basis, servingSize]);
+
+  const unit = servingUnit?.includes('ml') ? 'ml' : 'g';
+  const basisLabel = basis === 'serving' ? serving : `100${unit}`;
+
   const rows = useMemo(() => {
     if (!foodNutrients || foodNutrients.length === 0) return [];
 
@@ -70,20 +107,18 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
 
     const result = [];
 
-    // 필수 영양성분 (고정 순서)
     for (const spec of REQUIRED_ORDER) {
       const fn = byCode[spec.code];
       if (!fn) continue;
       result.push({
         key: spec.code,
         label: fn.nutrients?.name_ko || spec.code,
-        display: formatValue(fn),
+        display: formatValue(fn, ratio),
         info: NUTRI_INFO[spec.code],
         indent: spec.indent,
       });
     }
 
-    // 추가 영양성분 (display_order 순)
     const extras = foodNutrients
       .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code))
       .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999));
@@ -92,20 +127,22 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
       result.push({
         key: fn.nutrient_code,
         label: fn.nutrients?.name_ko || fn.nutrient_code,
-        display: formatValue(fn),
+        display: formatValue(fn, ratio),
         info: null,
         indent: false,
       });
     }
 
     return result;
-  }, [foodNutrients]);
+  }, [foodNutrients, ratio]);
 
   return (
     <section className="d-detail-card d-detail-nutri">
       <header className="d-detail-card-head">
         <h2 className="d-detail-card-title">영양성분</h2>
-        {serving && <span className="d-detail-card-sub">{serving} 기준</span>}
+        {servingSize > 0 && (
+          <BasisToggle basis={basis} onChangeBasis={setBasis} servingUnit={servingUnit} />
+        )}
       </header>
       <ul className="d-detail-nutri-list">
         {rows.map((r) => (

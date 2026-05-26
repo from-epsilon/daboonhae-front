@@ -156,6 +156,7 @@ export function getAdapted(product) {
     name: product.name,
     thumb: product.thumbnail,
     serving: product.volume,
+    category: product.category,
     macros: toMacros(product),
     score: toDsScore(product),
     reviewCount: getMockReviewCount(product),

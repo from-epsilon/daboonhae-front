@@ -93,6 +93,11 @@ function transformProduct(food) {
       crossContaminationText: food.cross_contamination_text ?? '',
       barcode: food.barcode ?? '',
       foodNutrients: food.food_nutrients ?? [],
+      servingSize: food.serving_size ?? null,
+      servingUnit: food.serving_unit ?? '',
+      nutritionBasis: food.nutrition_values_basis ?? '',
+      nutritionBasisAmount: food.nutrition_basis_amount ?? null,
+      nutritionBasisUnit: food.nutrition_basis_unit ?? '',
     },
   };
 }

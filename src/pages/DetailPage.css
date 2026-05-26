@@ -202,6 +202,23 @@
 .d-detail-card-sub { font-size: 13px; color: var(--text-tertiary); font-family: var(--font-numeric); }
 
 /* ───────── 영양성분 리스트 ───────── */
+.d-detail-nutri-head-right {
+  display: flex; align-items: center; gap: 12px;
+}
+.d-detail-nutri-toggle {
+  display: flex; border: 1px solid var(--border-tertiary); border-radius: var(--radius-md); overflow: hidden;
+}
+.d-detail-nutri-toggle-btn {
+  padding: 5px 12px; font-size: 12px; font-weight: 600;
+  background: var(--bg-white); color: var(--text-tertiary);
+  border: none; cursor: pointer; transition: all 0.15s;
+}
+.d-detail-nutri-toggle-btn:not(:last-child) { border-right: 1px solid var(--border-tertiary); }
+.d-detail-nutri-toggle-btn.is-active {
+  background: var(--gray-900); color: white;
+}
+.d-detail-nutri-toggle-btn:hover:not(.is-active) { background: var(--gray-50); }
+
 .d-detail-nutri-list {
   list-style: none; margin: 0; padding: 0;
   display: flex; flex-direction: column;
@@ -436,10 +453,19 @@
 
 /* #7 관련 제품 hover */
 .d-detail-related { display: flex; flex-direction: column; gap: 12px; }
+.d-detail-related-header {
+  display: flex; justify-content: space-between; align-items: center;
+}
 .d-detail-related-title {
   font-family: var(--font-display); font-size: 16px; font-weight: 700;
   color: var(--text-primary); margin: 0;
 }
+.d-detail-related-more {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 13px; font-weight: 600; color: var(--text-tertiary);
+  transition: color 0.15s, gap 0.15s;
+}
+.d-detail-related-more:hover { color: var(--brand-green); gap: 8px; }
 .d-detail-related-grid {
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
 }

@@ -76,7 +76,7 @@ function MacroStrip({ protein = 0, carbs = 0, fat = 0, calories = 0 }) {
   return (
     <div className="d-detail-macro">
       <div className="d-detail-macro-head">
-        <span className="d-detail-macro-title">매크로 비율</span>
+        <span className="d-detail-macro-title">탄단지 비율</span>
         <span className="d-detail-macro-kcal"><b>{calories}</b> kcal</span>
       </div>
       <div className="d-detail-macro-bar">
@@ -239,7 +239,13 @@ export default function DetailPage() {
 
       <div className="d-detail-sections">
         <div id="nutrition">
-          <NutritionTable nutrition={n} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />
+          <NutritionTable
+            nutrition={n}
+            serving={product.serving}
+            foodNutrients={raw?._raw?.foodNutrients}
+            servingSize={raw?._raw?.servingSize}
+            servingUnit={raw?._raw?.servingUnit}
+          />
         </div>
         <div id="ingredients">
           <IngredientList ingredients={product.ingredients} rawText={raw?._raw?.ingredientsText} />

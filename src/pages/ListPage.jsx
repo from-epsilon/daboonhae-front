@@ -25,7 +25,7 @@ export default function ListPage() {
   useEffect(() => {
     if (categoryParam) setSubCategory(categoryParam);
   }, [categoryParam]);
-  const [sortKey, setSortKey] = useState('calories_asc');
+  const [sortKey, setSortKey] = useState('default');
 
   const activeFilterCount = countActiveFilters(filterState);
   const hasActiveSubCategory = subCategory !== 'all';
@@ -110,6 +110,7 @@ export default function ListPage() {
                 products={products}
                 onCardClick={(id) => navigate(`/product/${id}`)}
                 onCompare={(id) => compare.toggle(id)}
+                sortKey={sortKey}
               />
             )}
           </section>

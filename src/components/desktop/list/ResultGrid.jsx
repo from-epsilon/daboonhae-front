@@ -9,6 +9,7 @@ export default function ResultGrid({
   onCompare,
   isLoading = false,
   skeletonCount = 8,
+  sortKey,
 }) {
   const { has } = useCompare();
   if (isLoading) {
@@ -36,6 +37,7 @@ export default function ResultGrid({
               onClick={() => onCardClick(p.id)}
               onCompare={() => onCompare(p.id)}
               inCompare={has(p.id)}
+              sortKey={sortKey}
             />
           </div>
         );
