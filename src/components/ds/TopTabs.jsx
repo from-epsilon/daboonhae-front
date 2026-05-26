@@ -17,6 +17,8 @@ export function TopTabs({ tabs = [], active = 0, onSelect }) {
         padding: '0 8px',
         borderBottom: '1px solid var(--border-tertiary)',
         overflowX: 'auto',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
         flexShrink: 0,
       }}
     >

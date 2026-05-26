@@ -10,7 +10,7 @@ export default function PurposeToggle() {
   const options = [ALL_PURPOSE, ...PURPOSES];
 
   return (
-    <div className="purpose-toggle" role="tablist" aria-label="식단 목적 선택">
+    <div className="purpose-toggle" role="tablist" aria-label="탐색 성격 선택">
       {options.map((p) => (
         <button
           key={p.id}

@@ -5,13 +5,11 @@ import { X } from 'lucide-react';
 // - subCategory가 'all'이 아니면 1개 칩
 // - filterState의 각 spec/option을 개별 칩으로 펼침
 export default function ActiveFilterChips({
-  subCategory,
-  onClearSubCategory,
   specs,
   value,
   onChange,
 }) {
-  const chips = collectChips({ subCategory, onClearSubCategory, specs, value, onChange });
+  const chips = collectChips({ specs, value, onChange });
   if (chips.length === 0) return null;
 
   return (
@@ -34,16 +32,8 @@ export default function ActiveFilterChips({
 }
 
 // ───────── chip 생성 (순수 함수)
-function collectChips({ subCategory, onClearSubCategory, specs, value, onChange }) {
+function collectChips({ specs, value, onChange }) {
   const chips = [];
-
-  if (subCategory && subCategory !== 'all') {
-    chips.push({
-      id: `cat:${subCategory}`,
-      label: subCategory,
-      onRemove: onClearSubCategory,
-    });
-  }
 
   if (!specs || !value) return chips;
 

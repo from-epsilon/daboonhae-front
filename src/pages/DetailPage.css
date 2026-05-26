@@ -1,703 +1,369 @@
-/* ============================================================================
-   데스크탑 DetailPage 전용 스타일 (Round 4)
-   - prefix: .d-detail-*
-   - DS 토큰만 사용 (--gray-*, --green-*, --blue-*, --orange-*, --red-*,
-     --border-tertiary, --text-*, --bg-*, --font-*, --radius-*, --space-*)
-   - 그라데이션 금지, 그림자 최소, 1px 보더 + 12px radius 카드 톤
-   - 도덕적 어휘 금지 (좋다/나쁘다 → '추천/보통/주의' 정도)
-   - 데스크탑 전용. 모바일은 pages/mobile/DetailPage.css 별도
-   ============================================================================ */
+/* 데스크탑 DetailPage — 정보 중심 + UX 개선 */
 
-/* ───────────────────────── 페이지 컨테이너 ───────────────────────── */
-/* .page (global.css) 기반 — max-width 1240px, padding 24px 16px */
-.d-detail {
-  /* 페이지 전체 세로 흐름 — 컬럼 사이 여유 */
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
+.d-detail { display: flex; flex-direction: column; gap: 20px; }
 
-/* ─────────────────── 상단: 뒤로 가기 + breadcrumb ─────────────────── */
-.d-detail-back {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-secondary);
+/* ───────── 정보 툴팁 (? 아이콘 hover) ───────── */
+.d-detail-tooltip-wrap {
+  position: relative; display: inline-flex; align-items: center; cursor: help;
 }
-.d-detail-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  transition: background-color 0.15s;
-  cursor: pointer;
+.d-detail-tooltip-icon {
+  color: var(--text-tertiary); transition: color 0.15s;
 }
-.d-detail-back-btn:hover {
-  background: var(--gray-100);
+.d-detail-tooltip-wrap:hover .d-detail-tooltip-icon { color: var(--brand-green); }
+.d-detail-tooltip {
+  display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%);
+  width: 220px; padding: 10px 12px;
+  background: var(--gray-900); color: white;
+  font-size: 12px; line-height: 1.5; font-weight: 400;
+  border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+  z-index: var(--z-dropdown); pointer-events: none;
 }
-.d-detail-back-crumb {
-  color: var(--text-tertiary);
+.d-detail-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--gray-900);
 }
-.d-detail-back-crumb-sep {
-  margin: 0 6px;
-  color: var(--gray-300);
-}
+.d-detail-tooltip-wrap:hover .d-detail-tooltip { display: block; }
+.d-detail-ingr-col-label { display: flex; align-items: center; gap: 4px; }
 
-/* ───────────────────────── 빈 상태 ───────────────────────── */
+/* ───────── #9 Breadcrumb ───────── */
+.d-detail-breadcrumb {
+  display: flex; align-items: center; gap: 0; font-size: 13px;
+}
+.d-detail-breadcrumb-link {
+  color: var(--text-tertiary); padding: 4px 2px;
+  transition: color 0.15s;
+}
+.d-detail-breadcrumb-link:hover { color: var(--brand-green); }
+.d-detail-breadcrumb-sep { margin: 0 6px; color: var(--gray-300); }
+.d-detail-breadcrumb-current { color: var(--text-primary); font-weight: 600; }
+
+/* 빈 상태 */
 .d-detail-empty {
-  padding: 96px 16px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
+  padding: 96px 16px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
 }
-.d-detail-empty-msg {
-  font-size: 16px;
-  color: var(--text-secondary);
-  margin: 0;
-}
+.d-detail-empty-msg { font-size: 16px; color: var(--text-secondary); margin: 0; }
 .d-detail-empty-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 18px;
-  border: 1px solid var(--border-secondary);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-weight: 600;
-  font-size: 14px;
-  transition: border-color 0.15s, color 0.15s;
+  display: inline-flex; align-items: center;
+  padding: 10px 18px; border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-md); color: var(--text-primary);
+  font-weight: 600; font-size: 14px; transition: border-color 0.15s, color 0.15s;
 }
-.d-detail-empty-link:hover {
-  border-color: var(--brand-green);
-  color: var(--brand-green);
+.d-detail-empty-link:hover { border-color: var(--brand-green); color: var(--brand-green); }
+
+/* ───────── 제품 헤더 ───────── */
+.d-detail-header {
+  padding: 24px; background: var(--bg-white);
+  border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);
+}
+.d-detail-header-top {
+  display: flex; align-items: center; gap: 20px;
+}
+.d-detail-header-thumb { flex-shrink: 0; }
+.d-detail-header-thumb .product-thumb-compact { width: 80px; height: 80px; }
+.d-detail-header-info {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+}
+.d-detail-header-brand { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.d-detail-header-name {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  line-height: 1.3; color: var(--text-primary); margin: 0;
+  word-break: keep-all; overflow-wrap: anywhere;
+}
+.d-detail-header-serving { font-size: 12px; color: var(--text-tertiary); font-family: var(--font-numeric); }
+.d-detail-header-score { flex-shrink: 0; }
+
+/* #2 Quick Glance */
+.d-detail-quick {
+  display: flex; gap: 16px; flex-shrink: 0;
+  padding-left: 16px; border-left: 1px solid var(--border-tertiary);
+}
+.d-detail-quick-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.d-detail-quick-label { font-size: 11px; color: var(--text-tertiary); }
+.d-detail-quick-value { font-family: var(--font-numeric); font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.d-detail-quick-unit { font-size: 11px; font-weight: 400; color: var(--text-tertiary); margin-left: 1px; }
+
+/* 헤더 액션 */
+.d-detail-header-actions {
+  flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; align-items: stretch;
 }
 
-/* ───────────────────── 본문 2단 레이아웃 ─────────────────────
-   - 좌측 40% (이미지+관련 제품) / 우측 60% (정보+CTA+점수)
-   - 우측 sticky로 스크롤 따라가게 (좌측이 길어져도 시야에 유지)
-   - 좁은 폭(<=960px)에서는 1단으로 무너짐 + sticky 해제 */
-.d-detail-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 420fr) minmax(0, 580fr);
-  gap: 32px;
-  align-items: start;
+/* #5 비교함 버튼 + 피드백 */
+.d-detail-compare-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 18px; min-width: 140px; border-radius: var(--radius-md);
+  border: 1px solid var(--border-tertiary); background: var(--bg-white);
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
-.d-detail-col-left {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.d-detail-compare-btn:hover { border-color: var(--brand-green); color: var(--brand-green); }
+.d-detail-compare-btn.is-active {
+  background: var(--green-50); border-color: var(--brand-green); color: var(--brand-green);
 }
-.d-detail-col-right {
-  min-width: 0;
-  position: sticky;
-  /* 헤더 높이(~60px) + 여유 */
-  top: 76px;
-  align-self: start;
-  /* 내용이 viewport보다 길면 자체 스크롤 */
-  max-height: calc(100vh - 96px);
-  overflow-y: auto;
+@keyframes compare-flash {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.d-detail-compare-btn.is-flash { animation: compare-flash 0.4s ease; }
+
+/* #6 구매 버튼 (활성/비활성) */
+.d-detail-header-buy {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 20px; border-radius: var(--radius-md);
+  background: var(--brand-cta); color: white;
+  font-size: 13px; font-weight: 700; white-space: nowrap;
+  transition: filter 0.15s; cursor: pointer;
+}
+.d-detail-header-buy:hover { filter: brightness(1.08); }
+.d-detail-header-buy.is-disabled {
+  background: var(--gray-200); color: var(--text-tertiary);
+  cursor: default; pointer-events: none;
 }
 
-/* ───────────────────── 좌측: ProductHero ─────────────────────
-   - 큰 정사각 이미지 + 액션 라인 (찜/공유)
-   - 흰 배경 + 1px 보더 + 12px radius 카드 톤 */
-.d-detail-hero {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* ───────── #8 매크로 스트립 ───────── */
+.d-detail-macro {
+  padding: 20px 24px; background: var(--bg-white);
+  border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);
+  display: flex; flex-direction: column; gap: 12px;
 }
-.d-detail-hero-img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  /* 최대 사이즈 제한 — 너무 커지면 답답함 */
-  max-width: 480px;
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.d-detail-macro-head {
+  display: flex; justify-content: space-between; align-items: baseline;
 }
-.d-detail-hero-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.d-detail-macro-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.d-detail-macro-kcal { font-family: var(--font-numeric); font-size: 13px; color: var(--text-secondary); }
+.d-detail-macro-kcal b { color: var(--text-primary); font-size: 18px; margin-right: 2px; }
+.d-detail-macro-bar {
+  display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--gray-100);
 }
-.d-detail-hero-img.is-empty {
-  color: var(--text-tertiary);
-  font-size: 13px;
-  background: var(--bg-off-white);
+.d-detail-macro-seg {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  min-width: 0; transition: width 0.3s ease;
 }
-.d-detail-hero-actions {
-  display: flex;
-  gap: 8px;
-  max-width: 480px;
+.d-detail-macro-seg-pct {
+  font-size: 9px; font-weight: 700; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
-.d-detail-hero-action {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 14px;
-  min-height: 40px;
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+.d-detail-macro-legend {
+  display: flex; gap: 24px; font-size: 12px; font-family: var(--font-numeric);
 }
-.d-detail-hero-action:hover {
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
+.d-detail-macro-legend-item { display: flex; align-items: center; gap: 6px; }
+.d-detail-macro-dot {
+  width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
 }
+.d-detail-macro-legend-label { color: var(--text-secondary); }
+.d-detail-macro-legend-item b { color: var(--text-primary); }
+.d-detail-macro-legend-pct { color: var(--text-tertiary); font-size: 11px; }
 
-/* ───────────────────── 좌측: 관련 제품 ───────────────────── */
-.d-detail-related {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 8px;
-}
-.d-detail-related-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-}
-.d-detail-related-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-/* ───────────────────── 우측: ScoreCard ─────────────────────
-   - 단일 카드 안에 정보 블록들이 순차 — 평면, 그림자 X */
-.d-detail-info {
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-lg);
-  padding: 28px 28px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* 헤더: 브랜드/이름/용량 */
-.d-detail-info-head {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.d-detail-info-brand {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-.d-detail-info-name {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--text-primary);
-  margin: 2px 0;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-}
-.d-detail-info-serving {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  font-family: var(--font-numeric);
-}
-
-/* 점수 블록 — 시그니처 */
-.d-detail-info-score {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 12px 0;
-  border-top: 1px solid var(--border-tertiary);
+/* ───────── #3 섹션 앵커 탭 (sticky) ───────── */
+.d-detail-section-nav {
+  position: sticky; top: 64px; z-index: var(--z-sticky);
+  background: var(--c-surface);
+  display: flex; gap: 0;
   border-bottom: 1px solid var(--border-tertiary);
+  padding: 0;
 }
-.d-detail-info-score-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+#nutrition, #analysis, #ingredients, #reviews {
+  scroll-margin-top: 190px;
 }
-.d-detail-info-score-label {
-  font-family: var(--font-display);
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-weight: 500;
+.d-detail-section-nav-item {
+  padding: 12px 18px; font-size: 14px; font-weight: 500;
+  color: var(--text-tertiary); position: relative;
+  transition: color 0.15s; white-space: nowrap;
 }
-.d-detail-info-score-verdict {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
+.d-detail-section-nav-item:hover { color: var(--text-primary); }
+.d-detail-section-nav-item.is-active {
+  color: var(--text-primary); font-weight: 700;
 }
-
-/* 신뢰 배지 */
-.d-detail-info-trust {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-}
-.d-detail-info-trust-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--blue-700);
+.d-detail-section-nav-item.is-active::after {
+  content: ''; position: absolute; bottom: -1px; left: 12px; right: 12px;
+  height: 2px; background: var(--gray-900); border-radius: 2px;
 }
 
-/* 자동 태그 라인 */
-.d-detail-info-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+/* ───────── 섹션 컨테이너 ───────── */
+.d-detail-sections { display: flex; flex-direction: column; gap: 24px; }
 
-/* 매크로 블록 — 카드 안 작은 패널 */
-.d-detail-info-macro {
-  background: var(--bg-card-ui);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.d-detail-info-macro-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-.d-detail-info-macro-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.d-detail-info-macro-kcal {
-  font-family: var(--font-numeric);
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.d-detail-info-macro-kcal b {
-  color: var(--text-primary);
-  font-weight: 700;
-  font-size: 16px;
-  margin-right: 2px;
-}
-
-/* CTA 그룹 — secondary 비교함 + primary 구매 */
-.d-detail-info-cta {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 4px;
-}
-.d-detail-info-buy {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 20px;
-  border-radius: var(--radius-md);
-  background: var(--brand-cta);
-  color: white;
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  transition: filter 0.15s;
-  cursor: pointer;
-}
-.d-detail-info-buy:hover {
-  filter: brightness(1.08);
-}
-.d-detail-info-cta-hint {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin: 0;
-  text-align: center;
-}
-
-/* ───────────────────── 풀폭 섹션 컨테이너 ───────────────────── */
-.d-detail-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* 공용 카드 (영양표 / 분석 / 원료 / 후기) — 평면 톤 */
+/* 공용 카드 */
 .d-detail-card {
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-lg);
-  padding: 24px 28px;
+  background: var(--bg-white); border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg); padding: 24px 28px;
 }
 .d-detail-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 16px;
+  display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;
 }
 .d-detail-card-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  font-family: var(--font-display); font-size: 18px; font-weight: 700;
+  color: var(--text-primary); margin: 0;
+  display: inline-flex; align-items: center; gap: 8px;
 }
-.d-detail-card-sub {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  font-family: var(--font-numeric);
-}
+.d-detail-card-sub { font-size: 13px; color: var(--text-tertiary); font-family: var(--font-numeric); }
 
-/* ───────────────────── 영양성분 (NutritionTable) ───────────────────── */
+/* ───────── #1 영양성분 Bento Grid ───────── */
 .d-detail-nutri-grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  list-style: none; margin: 0; padding: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: auto;
   gap: 8px;
 }
 .d-detail-nutri-cell {
-  background: var(--bg-card-ui);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+  background: var(--bg-card-ui); border-radius: var(--radius-md);
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0;
 }
+.d-detail-nutri-cell.is-hero {
+  grid-column: span 2;
+  padding: 16px 18px;
+  background: var(--green-50);
+}
+.d-detail-nutri-cell.is-hero .d-detail-nutri-cell-num { font-size: 28px; }
 .d-detail-nutri-cell-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary);
 }
-.d-detail-nutri-cell-value {
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-}
+.d-detail-nutri-cell-value { display: flex; align-items: baseline; gap: 2px; }
 .d-detail-nutri-cell-num {
-  font-family: var(--font-numeric);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: var(--font-numeric); font-size: 20px; font-weight: 700; color: var(--text-primary);
 }
-.d-detail-nutri-cell-unit {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-left: 2px;
-}
+.d-detail-nutri-cell-unit { font-size: 12px; color: var(--text-secondary); margin-left: 2px; }
 
-/* ───────────────────── 분석 리포트 (AnalysisReport) ───────────────────── */
+/* ───────── #4 분석 리포트 (접이식) ───────── */
 .d-detail-report-head {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  margin-bottom: 18px;
+  flex-direction: column; align-items: flex-start; gap: 4px; margin-bottom: 18px;
 }
-.d-detail-report-title {
-  color: var(--text-primary);
-}
-.d-detail-report-hint {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-.d-detail-report-grid {
-  display: grid;
-  gap: 12px;
-}
+.d-detail-report-title { color: var(--text-primary); }
+.d-detail-report-hint { font-size: 13px; color: var(--text-secondary); margin: 0; }
+.d-detail-report-grid { display: flex; flex-direction: column; gap: 8px; }
 .d-detail-report-card {
-  background: var(--bg-card-ui);
-  border-radius: var(--radius-md);
-  padding: 18px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
+  background: var(--bg-card-ui); border-radius: var(--radius-md);
+  overflow: hidden;
 }
-.d-detail-report-card-title {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
+.d-detail-report-card-toggle {
+  width: 100%; padding: 14px 18px; background: none; border: none;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; font-family: var(--font-display); font-size: 15px;
+  font-weight: 700; color: var(--text-primary); transition: background-color 0.15s;
+}
+.d-detail-report-card-toggle:hover { background: var(--gray-100); }
+.d-detail-report-card-chevron {
+  transition: transform 0.2s; color: var(--text-tertiary);
+}
+.d-detail-report-card-chevron.is-open { transform: rotate(180deg); }
+.d-detail-report-card-body {
+  padding: 0 18px 16px; display: flex; flex-direction: column; gap: 6px;
 }
 .d-detail-report-card-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 6px;
 }
 .d-detail-report-card-line {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  position: relative;
-  padding-left: 12px;
+  font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+  position: relative; padding-left: 12px;
 }
-/* 가벼운 불릿 — 그림 X */
 .d-detail-report-card-line::before {
-  content: '';
-  position: absolute;
-  left: 2px;
-  top: 10px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--gray-400);
+  content: ''; position: absolute; left: 2px; top: 10px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--gray-400);
 }
-.d-detail-report-card-body.is-empty {
-  font-size: 14px;
-  color: var(--text-tertiary);
-  margin: 0;
-}
+.d-detail-report-card-body.is-empty { font-size: 14px; color: var(--text-tertiary); margin: 0; }
 
-/* ───────────────────── 원료 / 성분 (IngredientList) ───────────────────── */
+/* 원료/성분 */
 .d-detail-ingr-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
 }
 .d-detail-ingr-col {
-  background: var(--bg-card-ui);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
+  background: var(--bg-card-ui); border-radius: var(--radius-md);
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0;
 }
-.d-detail-ingr-col-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-.d-detail-ingr-col-values {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.d-detail-ingr-empty {
-  font-size: 13px;
-  color: var(--text-tertiary);
-}
+.d-detail-ingr-col-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+.d-detail-ingr-col-values { display: flex; flex-wrap: wrap; gap: 6px; }
+.d-detail-ingr-empty { font-size: 13px; color: var(--text-tertiary); }
 .d-detail-ingr-notice {
-  margin-top: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: var(--orange-50);
-  color: var(--orange-700);
-  border-radius: var(--radius-md);
-  font-size: 13px;
+  margin-top: 12px; display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; background: var(--orange-50); color: var(--orange-700);
+  border-radius: var(--radius-md); font-size: 13px;
 }
 
-/* ───────────────────── 후기 (ReviewSection) ───────────────────── */
+/* 후기 */
 .d-detail-review-grid {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
-  align-items: start;
+  display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start;
 }
 .d-detail-review-form {
-  background: var(--bg-card-ui);
-  border-radius: var(--radius-md);
-  padding: 18px 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  background: var(--bg-card-ui); border-radius: var(--radius-md);
+  padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 14px;
 }
 .d-detail-review-form-title {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
+  font-family: var(--font-display); font-size: 14px; font-weight: 700;
+  color: var(--text-primary); margin: 0;
 }
-.d-detail-review-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.d-detail-review-field-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.d-detail-review-rating {
-  display: flex;
-  gap: 6px;
-}
+.d-detail-review-field { display: flex; flex-direction: column; gap: 6px; }
+.d-detail-review-field-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.d-detail-review-rating { display: flex; gap: 6px; }
 .d-detail-review-bool {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-primary);
+  display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary);
 }
 .d-detail-review-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md);
-  background: var(--bg-white);
-  font: inherit;
-  font-size: 13px;
-  color: var(--text-primary);
-  resize: vertical;
-  min-height: 80px;
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md); background: var(--bg-white);
+  font: inherit; font-size: 13px; color: var(--text-primary); resize: vertical; min-height: 80px;
 }
-.d-detail-review-textarea:focus {
-  outline: none;
-  border-color: var(--text-secondary);
-}
-.d-detail-review-submit-row {
-  display: flex;
-  justify-content: flex-end;
-}
-
+.d-detail-review-textarea:focus { outline: none; border-color: var(--text-secondary); }
+.d-detail-review-submit-row { display: flex; justify-content: flex-end; }
 .d-detail-review-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;
 }
 .d-detail-review-item {
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  background: var(--bg-white); border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
 }
 .d-detail-review-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-family: var(--font-numeric);
+  display: flex; flex-wrap: wrap; gap: 12px;
+  font-size: 12px; color: var(--text-secondary); font-family: var(--font-numeric);
 }
-.d-detail-review-repurchase {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-.d-detail-review-repurchase.is-yes {
-  color: var(--green-700);
-}
-.d-detail-review-repurchase.is-no {
-  color: var(--text-tertiary);
-}
-.d-detail-review-text {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-primary);
-  line-height: 1.6;
-}
+.d-detail-review-repurchase { display: inline-flex; align-items: center; gap: 3px; }
+.d-detail-review-repurchase.is-yes { color: var(--green-700); }
+.d-detail-review-repurchase.is-no { color: var(--text-tertiary); }
+.d-detail-review-text { margin: 0; font-size: 14px; color: var(--text-primary); line-height: 1.6; }
 .d-detail-review-empty {
-  padding: 40px 16px;
-  text-align: center;
-  background: var(--bg-card-ui);
-  border-radius: var(--radius-md);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  padding: 40px 16px; text-align: center; background: var(--bg-card-ui);
+  border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 6px;
 }
-.d-detail-review-empty-msg {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+.d-detail-review-empty-msg { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
+.d-detail-review-empty-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+/* #7 관련 제품 hover */
+.d-detail-related { display: flex; flex-direction: column; gap: 12px; }
+.d-detail-related-title {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  color: var(--text-primary); margin: 0;
 }
-.d-detail-review-empty-sub {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0;
+.d-detail-related-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
+}
+.d-detail-related-grid > div {
+  transition: box-shadow 0.15s, border-color 0.15s;
+  border-radius: var(--radius-md); cursor: pointer;
+}
+.d-detail-related-grid > div:hover {
+  box-shadow: var(--shadow-md);
 }
 
-/* ───────────────────── 반응형 ─────────────────────
-   - <=1100px: 관련 제품 그리드 2컬럼
-   - <=960px: 본문 1단으로 무너지고 sticky 해제 */
-@media (max-width: 1100px) {
-  .d-detail-related-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .d-detail-nutri-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .d-detail-ingr-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+/* 반응형 */
 @media (max-width: 960px) {
-  .d-detail-layout {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .d-detail-col-right {
-    position: static;
-    top: auto;
-    max-height: none;
-    overflow-y: visible;
-  }
-  .d-detail-hero-img {
-    max-width: 100%;
-  }
-  .d-detail-hero-actions {
-    max-width: 100%;
-  }
-  .d-detail-review-grid {
-    grid-template-columns: 1fr;
-  }
+  .d-detail-header-top { flex-wrap: wrap; }
+  .d-detail-quick { border-left: none; padding-left: 0; padding-top: 12px; border-top: 1px solid var(--border-tertiary); width: 100%; justify-content: space-around; }
+  .d-detail-header-actions { flex-direction: row; width: 100%; }
+  .d-detail-header-actions > * { flex: 1; text-align: center; }
+  .d-detail-review-grid { grid-template-columns: 1fr; }
+  .d-detail-related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
-  .d-detail-nutri-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .d-detail-ingr-grid {
-    grid-template-columns: 1fr;
-  }
-  .d-detail-related-grid {
-    grid-template-columns: 1fr;
-  }
+  .d-detail-nutri-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .d-detail-nutri-cell.is-hero { grid-column: span 2; }
+  .d-detail-ingr-grid { grid-template-columns: 1fr; }
+  .d-detail-related-grid { grid-template-columns: 1fr; }
+  .d-detail-macro-legend { flex-direction: column; gap: 8px; }
 }
 
-/* 모션 민감 사용자 — 전환 효과 최소화 (global.css와 호환) */
 @media (prefers-reduced-motion: reduce) {
-  .d-detail-back-btn,
-  .d-detail-hero-action,
-  .d-detail-empty-link,
-  .d-detail-info-buy {
-    transition-duration: 0.01ms;
-  }
+  .d-detail-compare-btn.is-flash { animation: none; }
+  .d-detail-macro-seg { transition: none; }
 }

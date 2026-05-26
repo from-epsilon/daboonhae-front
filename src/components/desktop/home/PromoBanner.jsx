@@ -37,27 +37,30 @@ const AUTO_ADVANCE_MS = 6000;
 
 // 한 카드의 렌더 — accent 클래스로 톤 변형
 // - depth: 0 = 가장 앞, 1 = 한 칸 뒤, 2 = 두 칸 뒤
-function PromoCard({ slide, depth, total, current }) {
+function PromoCard({ slide, depth, total, current, onPrev, onNext, onPick }) {
   const className = `d-home-promo-card d-home-promo-card--${slide.accent} d-home-promo-card--depth-${depth}`;
   return (
     <div className={className} aria-hidden={depth > 0}>
       {depth === 0 && (
         <>
           <span className="d-home-promo-eyebrow">{slide.eyebrow}</span>
-          {/* heading 위계: HeroSection 의 h1 다음 — h2 사용 (a11y: h1→h3 skip 방지) */}
           <h2 className="d-home-promo-title">{slide.title}</h2>
           <p className="d-home-promo-sub">{slide.sub}</p>
-          {/* 시각 요소 자리 — 추후 이미지/일러스트 교체 가능 */}
           <div className="d-home-promo-illus" aria-hidden="true">
             <span className="d-home-promo-illus-circle d-home-promo-illus-circle--1" />
             <span className="d-home-promo-illus-circle d-home-promo-illus-circle--2" />
             <span className="d-home-promo-illus-circle d-home-promo-illus-circle--3" />
           </div>
-          <div className="d-home-promo-pagination">
-            <span className="d-home-promo-pagination-num">
-              {current + 1} <span className="d-home-promo-pagination-sep">/</span>{' '}
-              <span className="d-home-promo-pagination-total">{total}</span>
-            </span>
+          <div className="d-home-promo-controls">
+            <Dots total={total} current={current} onPick={onPick} />
+            <div className="d-home-promo-nav">
+              <button type="button" className="d-home-promo-nav-btn" onClick={onPrev} aria-label="이전 배너">
+                <ChevronLeft size={16} />
+              </button>
+              <button type="button" className="d-home-promo-nav-btn" onClick={onNext} aria-label="다음 배너">
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </>
       )}
@@ -125,7 +128,6 @@ export default function PromoBanner({ slides = DEFAULT_SLIDES, initialIndex = 0 
       onBlurCapture={handleResume}
     >
       <div className="d-home-promo-stack">
-        {/* 뒤에서부터 그려야 z-index 자연 (depth=2 → depth=0 순서) */}
         {[...visibleSlides].reverse().map(({ slide, depth }) => (
           <PromoCard
             key={`${slide.id}-${depth}`}
@@ -133,29 +135,11 @@ export default function PromoBanner({ slides = DEFAULT_SLIDES, initialIndex = 0 
             depth={depth}
             total={total}
             current={current}
+            onPrev={() => go(-1)}
+            onNext={() => go(1)}
+            onPick={goTo}
           />
         ))}
-      </div>
-      <div className="d-home-promo-controls">
-        <Dots total={total} current={current} onPick={goTo} />
-        <div className="d-home-promo-nav">
-          <button
-            type="button"
-            className="d-home-promo-nav-btn"
-            onClick={() => go(-1)}
-            aria-label="이전 배너"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            type="button"
-            className="d-home-promo-nav-btn"
-            onClick={() => go(1)}
-            aria-label="다음 배너"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
       </div>
     </aside>
   );

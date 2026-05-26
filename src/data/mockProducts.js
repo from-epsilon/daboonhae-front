@@ -13,9 +13,9 @@ export const PRODUCTS = [
     "volume": "100g",
     "category": "닭가슴살",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 109,
@@ -79,7 +79,7 @@ export const PRODUCTS = [
     "volume": "100g",
     "category": "닭가슴살",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss"
     ],
     "nutrition": {
@@ -115,7 +115,7 @@ export const PRODUCTS = [
     "category": "곤약·면",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 120,
@@ -145,7 +145,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 29,
@@ -180,9 +180,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "계란·간편식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -220,8 +220,8 @@ export const PRODUCTS = [
     "volume": "350g",
     "category": "시리얼·그래놀라",
     "purposesFit": [
-      "muscle",
-      "glucose",
+      "protein",
+      "low_sugar",
       "meal_replacement"
     ],
     "nutrition": {
@@ -261,7 +261,7 @@ export const PRODUCTS = [
     "category": "프로틴 드링크",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 90,
@@ -297,7 +297,7 @@ export const PRODUCTS = [
     "category": "프로틴 드링크",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -332,9 +332,9 @@ export const PRODUCTS = [
     "volume": "245ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 135,
@@ -442,9 +442,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -479,9 +479,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 125,
@@ -517,9 +517,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 110,
@@ -554,9 +554,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -591,9 +591,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -628,9 +628,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 98,
@@ -665,9 +665,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 109,
@@ -702,9 +702,9 @@ export const PRODUCTS = [
     "volume": "330ml",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 168,
@@ -738,9 +738,9 @@ export const PRODUCTS = [
     "volume": "350g",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 182,
@@ -774,9 +774,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "간식",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -811,7 +811,7 @@ export const PRODUCTS = [
     "volume": "70g",
     "category": "프로틴 바",
     "purposesFit": [
-      "muscle",
+      "protein",
       "meal_replacement"
     ],
     "nutrition": {
@@ -849,9 +849,9 @@ export const PRODUCTS = [
     "volume": "330ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 99,
@@ -887,7 +887,7 @@ export const PRODUCTS = [
     "volume": "190ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle"
+      "protein"
     ],
     "nutrition": {
       "calories": 190,
@@ -923,9 +923,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -963,9 +963,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 100,
@@ -1004,9 +1004,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 100,
@@ -1044,9 +1044,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -1083,9 +1083,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -1122,9 +1122,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 105,
@@ -1161,9 +1161,9 @@ export const PRODUCTS = [
     "volume": "250ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 106,
@@ -1201,7 +1201,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 80,
@@ -1237,7 +1237,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 80,
@@ -1274,7 +1274,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 75,
@@ -1310,7 +1310,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 75,
@@ -1347,7 +1347,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 100,
@@ -1383,7 +1383,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 60,
@@ -1422,7 +1422,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 170,
@@ -1463,7 +1463,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 150,
@@ -1503,7 +1503,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 150,
@@ -1544,7 +1544,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 145,
@@ -1585,7 +1585,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 175,
@@ -1621,7 +1621,7 @@ export const PRODUCTS = [
     "volume": "100g",
     "category": "닭가슴살",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss"
     ],
     "nutrition": {
@@ -1657,7 +1657,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 159,
@@ -1694,7 +1694,7 @@ export const PRODUCTS = [
     "category": "간식",
     "purposesFit": [
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 153,
@@ -1731,9 +1731,9 @@ export const PRODUCTS = [
     "volume": "350ml",
     "category": "프로틴 드링크",
     "purposesFit": [
-      "muscle",
+      "protein",
       "weight_loss",
-      "glucose"
+      "low_sugar"
     ],
     "nutrition": {
       "calories": 125,

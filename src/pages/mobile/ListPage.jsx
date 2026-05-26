@@ -20,7 +20,7 @@ import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
 import { PRODUCTS } from '../../data/mockProducts.js';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
-import { PURPOSES, ALL_PURPOSE } from '../../data/purposes.jsx';
+import { PURPOSES, ALL_PURPOSE, FOOD_CATEGORIES } from '../../data/purposes.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
 import './ListPage.css';
@@ -186,7 +186,7 @@ export default function ListPageMobile() {
         onSelect={handleTabSelect}
       />
       <SubCategoryChips
-        categories={purpose.subCategories}
+        categories={FOOD_CATEGORIES}
         value={subCategory}
         onChange={setSubCategory}
       />

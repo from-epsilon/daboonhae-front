@@ -84,11 +84,11 @@ export default function MainPageMobile() {
 
         <div className="m-home-divider" aria-hidden="true" />
 
-        {/* 2. 목적별 둘러보기 — 2x2 그리드 */}
+        {/* 2. 탐색 성격별로 둘러보기 — 2x2 그리드 */}
         <section className="m-home-section">
           <SectionHeader
-            title="목적별 둘러보기"
-            subtitle="내 목표에 맞는 식품을 빠르게 찾아보세요"
+            title="탐색 성격별 둘러보기"
+            subtitle="내 관심사에 맞는 식품을 빠르게 찾아보세요"
           />
           <PurposeGrid onSelect={handlePurposePick} />
         </section>

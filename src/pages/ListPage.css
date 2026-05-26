@@ -8,32 +8,50 @@
 
 /* ---------- 컨테이너 ---------- */
 .d-list-page {
-  background: var(--bg-white);
   min-height: 100%;
-  padding: 0 var(--space-6) var(--space-12);
 }
 
 .d-list-page-inner {
   max-width: 1240px;
   margin: 0 auto;
+  padding: 0 40px 96px;
 }
 
-/* ---------- 상단 목적 탭 ---------- */
-.d-list-tabs-wrap {
+/* ---------- 결과 타이틀 ---------- */
+.d-list-result-title {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 700; color: var(--text-primary);
+}
+
+/* ---------- 식품유형 카테고리 탭 ---------- */
+.d-list-category-chips {
+  display: flex; gap: 4px;
+  padding: var(--space-3) 0;
+  margin-bottom: var(--space-2);
   border-bottom: 1px solid var(--border-tertiary);
-  margin-bottom: var(--space-6);
 }
-
-/* TopTabs 내부 padding 0 처리 — 전체 폭 활용 */
-.d-list-tabs-wrap > div {
-  padding: 0 !important;
-  border-bottom: none !important;
+.d-list-category-chip {
+  padding: 10px 14px;
+  background: none; border: none;
+  font-size: 14px; color: var(--text-tertiary);
+  cursor: pointer; position: relative;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.d-list-category-chip:hover { color: var(--text-primary); }
+.d-list-category-chip.is-active {
+  color: var(--text-primary); font-weight: 700;
+}
+.d-list-category-chip.is-active::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 8px; right: 8px;
+  height: 2px; background: var(--gray-900); border-radius: 2px;
 }
 
 /* ---------- 2단 본문 ---------- */
 .d-list-body {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 200px 1fr;
   gap: var(--space-8);
   align-items: start;
 }
@@ -43,14 +61,18 @@
    =========================================================================== */
 .d-list-sidebar {
   position: sticky;
-  top: var(--space-4);
+  top: 84px;
   align-self: start;
   background: var(--bg-white);
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-md);
   padding: var(--space-5) var(--space-5) var(--space-4);
-  max-height: calc(100vh - var(--space-8));
+  max-height: calc(100vh - 100px);
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.d-list-sidebar::-webkit-scrollbar { display: none;
 }
 
 /* 사이드바 헤더 — 타이틀 + 초기화 */
@@ -368,6 +390,12 @@
   flex-wrap: wrap;
   min-width: 0;
 }
+.d-list-result-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
 
 .d-list-result-purpose {
   font-family: var(--font-display);
@@ -378,16 +406,11 @@
 }
 
 .d-list-result-count {
-  font-family: var(--font-body);
-  font-size: var(--font-size-s);
-  color: var(--text-secondary);
-}
-
-.d-list-result-count strong {
   font-family: var(--font-numeric);
-  font-weight: var(--fw-bold);
-  color: var(--text-primary);
-  margin: 0 2px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brand-green);
+  margin-left: 6px;
 }
 
 /* 검색어 칩 */

@@ -70,7 +70,7 @@ function ScoreOverlay({ score, big = false }) {
 
 // 비교함 추가 버튼 (썸네일 우하단)
 // - 시각 크기 26x26, 의사요소로 hit-area 44x44 확장
-function CompareButton({ food, onCompare }) {
+function CompareButton({ food, onCompare, inCompare }) {
   if (!onCompare) return null;
   return (
     <button
@@ -79,11 +79,11 @@ function CompareButton({ food, onCompare }) {
         e.stopPropagation();
         onCompare(food);
       }}
-      aria-label={`${food.name} 비교함에 담기`}
-      title="비교함에 담기"
-      className="d-foodcard-compare"
+      aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
+      title={inCompare ? '비교함에서 빼기' : '비교함에 담기'}
+      className={`d-foodcard-compare${inCompare ? ' is-in-compare' : ''}`}
     >
-      <IconPlus size={14} />
+      {inCompare ? <IconCheck size={14} /> : <IconPlus size={14} />}
     </button>
   );
 }
@@ -109,7 +109,7 @@ function TrustBadgeRow({ trustBadges }) {
 }
 
 // list 레이아웃: 가로 88x88 썸네일 + 텍스트 영역
-function FoodCardList({ food, onClick, onCompare }) {
+function FoodCardList({ food, onClick, onCompare, inCompare }) {
   return (
     <div
       onClick={onClick}
@@ -134,7 +134,7 @@ function FoodCardList({ food, onClick, onCompare }) {
       >
         <ThumbImage src={food.thumb} alt={food.name} />
         <ScoreOverlay score={food.score} />
-        <CompareButton food={food} onCompare={onCompare} />
+        <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
@@ -170,7 +170,7 @@ function FoodCardList({ food, onClick, onCompare }) {
 }
 
 // grid 레이아웃: 1:1 썸네일 + 하단 텍스트
-function FoodCardGrid({ food, onClick, onCompare }) {
+function FoodCardGrid({ food, onClick, onCompare, inCompare }) {
   return (
     <div
       onClick={onClick}
@@ -194,7 +194,7 @@ function FoodCardGrid({ food, onClick, onCompare }) {
       >
         <ThumbImage src={food.thumb} alt={food.name} />
         <ScoreOverlay score={food.score} big />
-        <CompareButton food={food} onCompare={onCompare} />
+        <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div style={{ padding: '10px 4px', display: 'flex', flexDirection: 'column', gap: 4 }}>
         <div style={{ fontSize: 'var(--font-size-xxs)', color: 'var(--text-secondary)' }}>{food.brand}</div>
@@ -293,11 +293,10 @@ function ReviewMeta({ score, reviewCount }) {
   );
 }
 
-export function FoodCard({ food, onClick, layout = 'grid', onCompare }) {
-  // food 누락 방어: null 렌더 (Round 3 페이지에서 키 누락 시 빈칸)
+export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare }) {
   if (!food) return null;
   if (layout === 'list') {
-    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} />;
+    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
   }
-  return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} />;
+  return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
 }

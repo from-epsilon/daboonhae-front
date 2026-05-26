@@ -1,12 +1,8 @@
 import { FoodCard } from '../../ds/FoodCard.jsx';
 import { FoodCardSkeleton } from '../../ds/Skeleton.jsx';
 import { getAdapted } from '../../../data/adapters.js';
+import { useCompare } from '../../../store/CompareContext.jsx';
 
-// 데스크탑 결과 그리드
-// - 4컬럼 고정 (CSS grid-template-columns), 화면 1024~1280 사이에선 3컬럼으로 자동 축소
-// - FoodCard layout="grid" 사용
-// - 카드 클릭 → 디테일, + 버튼 → 비교함 토글
-// - isLoading=true 면 skeletonCount 만큼 placeholder 카드 렌더 (CLS 방지)
 export default function ResultGrid({
   products,
   onCardClick,
@@ -14,6 +10,7 @@ export default function ResultGrid({
   isLoading = false,
   skeletonCount = 8,
 }) {
+  const { has } = useCompare();
   if (isLoading) {
     return (
       <div className="d-list-grid">
@@ -38,6 +35,7 @@ export default function ResultGrid({
               layout="grid"
               onClick={() => onCardClick(p.id)}
               onCompare={() => onCompare(p.id)}
+              inCompare={has(p.id)}
             />
           </div>
         );

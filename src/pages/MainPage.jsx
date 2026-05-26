@@ -10,14 +10,12 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PRODUCTS } from '../data/mockProducts.js';
 import { getAdapted } from '../data/adapters.js';
-import { usePurpose } from '../store/PurposeContext.jsx';
 import { useCompare } from '../store/CompareContext.jsx';
 import { IconChevron } from '../components/ds/Icons.jsx';
 
-import HeroSection from '../components/desktop/home/HeroSection.jsx';
+import HeroBanner from '../components/desktop/home/HeroBanner.jsx';
 import PromoBanner from '../components/desktop/home/PromoBanner.jsx';
 import CategoryIconGrid from '../components/desktop/home/CategoryIconGrid.jsx';
-import PurposeCards from '../components/desktop/home/PurposeCards.jsx';
 import FoodGrid from '../components/desktop/home/FoodGrid.jsx';
 import TrustStats from '../components/desktop/home/TrustStats.jsx';
 import Testimonials from '../components/desktop/home/Testimonials.jsx';
@@ -64,7 +62,6 @@ function useRecent(adapted) {
 // ─────────────── 메인 페이지 컴포넌트
 export default function MainPage() {
   const navigate = useNavigate();
-  const { setPurpose } = usePurpose();
   const { toggle } = useCompare();
 
   // raw 제품 → DS 형식 (47개) — 마운트 시 1회 메모
@@ -72,17 +69,7 @@ export default function MainPage() {
   const recommended = useRecommended(adapted);
   const recent = useRecent(adapted);
 
-  // ───────── 핸들러 (단일 책임)
-  // 히어로 검색 → 리스트 페이지로 (쿼리 동봉)
-  const handleSearch = (query) => {
-    if (query) navigate(`/list?q=${encodeURIComponent(query)}`);
-    else navigate('/list');
-  };
-  // 목적 카드 클릭 → 컨텍스트 set + 리스트로
-  const handlePurposePick = (purposeId) => {
-    setPurpose(purposeId);
-    navigate('/list');
-  };
+  // ───────── 핸들러
   // 카테고리 칩 클릭 → 리스트로 (카테고리 쿼리)
   const handleCategoryPick = (category) => {
     navigate(`/list?category=${encodeURIComponent(category)}`);
@@ -96,25 +83,26 @@ export default function MainPage() {
 
   return (
     <div className="d-home">
-      {/* 1. 상단 split: 좌 2/3 히어로(검색+키워드) + 우 1/3 프로모션 카드 스택 */}
+      {/* 1. 상단 split: 좌 히어로 배너 + 우 순환 프로모 배너 */}
       <div className="d-home-top">
-        <HeroSection onSearch={handleSearch} />
+        <HeroBanner />
         <PromoBanner />
       </div>
 
       {/* 2. 카테고리 아이콘 그리드 — 가로 9칸 (8 + 전체보기) */}
       <CategoryIconGrid
         onSelect={(catId) => {
-          // CategoryIconGrid는 카테고리 id 를 넘기지만, 리스트 페이지는 한글 카테고리명을 받음
-          // → id → 라벨 매핑은 컴포넌트 안에 두지 않고 부모(MainPage)에서 처리
           const labelById = {
-            'protein-drink': '프로틴 드링크',
-            'protein-bar': '프로틴 바',
-            'zero-drink': '제로 음료',
-            'konjac': '곤약·면',
+            'cereal': '시리얼/그래놀라',
             'chicken': '닭가슴살',
-            'lunchbox': '저칼로리 도시락',
-            'shake': '쉐이크',
+            'energy-bar': '에너지바',
+            'icecream': '아이스크림',
+            'rice-noodle': '밥/면류',
+            'protein-drink': '단백질 음료',
+            'sausage': '소시지/햄',
+            'shake': '셰이크',
+            'snack': '과자',
+            'zero-drink': '제로음료',
           };
           const label = labelById[catId] ?? catId;
           handleCategoryPick(label);
@@ -122,16 +110,7 @@ export default function MainPage() {
         onSelectAll={() => navigate('/list')}
       />
 
-      {/* 3. 목적별로 둘러보기 — 빠른 진입점 */}
-      <section className="d-home-section">
-        <SectionHeader
-          title="목적별로 둘러보기"
-          subtitle="내 목표에 맞는 다이어트 식품을 빠르게 찾아보세요"
-        />
-        <PurposeCards onSelect={handlePurposePick} />
-      </section>
-
-      {/* 4. 추천 식품 — 4컬럼 × 3행 (12개) */}
+      {/* 3. 추천 식품 — 4컬럼 × 3행 (12개) */}
       <section className="d-home-section">
         <SectionHeader
           title="추천 식품"

@@ -1,21 +1,13 @@
-// 데스크탑 디테일 페이지 (Round 4)
-// 구조:
-//   - 상단: 뒤로 가기 링크 (간단한 breadcrumb 톤)
-//   - 본문 2단(40 / 60):
-//       좌측: ProductHero(큰 이미지 + 액션 라인) + RelatedProducts(같은 카테고리)
-//       우측(sticky): ScoreCard(브랜드/이름/점수/태그/매크로/CTA)
-//   - 풀폭 섹션 (본문 아래, 1240px max-width 안):
-//       NutritionTable / AnalysisReport / IngredientList / ReviewSection
-// 모바일과 분리됨 (모바일은 pages/mobile/DetailPage.jsx, sticky CTA + 카드 스택)
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getProductById } from '../data/mockProducts.js';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
-import { usePurpose } from '../store/PurposeContext.jsx';
 import { Button } from '../components/ds/Button.jsx';
 import { IconBack } from '../components/ds/Icons.jsx';
-import { ProductHero } from '../components/desktop/detail/ProductHero.jsx';
-import { ScoreCard } from '../components/desktop/detail/ScoreCard.jsx';
+import { ScoreGauge } from '../components/ds/ScoreGauge.jsx';
+import { Check } from 'lucide-react';
+import ProductThumb from '../components/global/ProductThumb.jsx';
 import { NutritionTable } from '../components/desktop/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
 import { IngredientList } from '../components/desktop/detail/IngredientList.jsx';
@@ -23,7 +15,6 @@ import { ReviewSection } from '../components/desktop/detail/ReviewSection.jsx';
 import { RelatedProducts } from '../components/desktop/detail/RelatedProducts.jsx';
 import './DetailPage.css';
 
-// 제품 없음 안내 — 홈으로 이동
 function EmptyState() {
   return (
     <div className="page d-detail-empty">
@@ -33,21 +24,163 @@ function EmptyState() {
   );
 }
 
-// 상단 뒤로 가기 — breadcrumb 톤 (간단)
-function BackLine({ onBack, category }) {
+// #9 풀 breadcrumb
+function Breadcrumb({ category, productName, onBack }) {
   return (
-    <div className="d-detail-back">
-      <button type="button" className="d-detail-back-btn" onClick={onBack}>
-        <IconBack size={16} />
-        <span>뒤로</span>
-      </button>
+    <nav className="d-detail-breadcrumb" aria-label="경로">
+      <Link to="/" className="d-detail-breadcrumb-link">홈</Link>
+      <span className="d-detail-breadcrumb-sep">/</span>
+      <Link to="/list" className="d-detail-breadcrumb-link">제품 목록</Link>
       {category && (
-        <span className="d-detail-back-crumb">
-          <span className="d-detail-back-crumb-sep">/</span>
-          {category}
-        </span>
+        <>
+          <span className="d-detail-breadcrumb-sep">/</span>
+          <Link to={`/list?category=${encodeURIComponent(category)}`} className="d-detail-breadcrumb-link">{category}</Link>
+        </>
       )}
+      <span className="d-detail-breadcrumb-sep">/</span>
+      <span className="d-detail-breadcrumb-current">{productName}</span>
+    </nav>
+  );
+}
+
+// #2 Quick Glance 수치
+function QuickGlance({ nutrition }) {
+  const items = [
+    { label: '칼로리', value: nutrition?.calories, unit: 'kcal' },
+    { label: '단백질', value: nutrition?.protein, unit: 'g' },
+    { label: '당류', value: nutrition?.sugar, unit: 'g' },
+  ];
+  return (
+    <div className="d-detail-quick">
+      {items.map((item) => (
+        <div key={item.label} className="d-detail-quick-item">
+          <span className="d-detail-quick-label">{item.label}</span>
+          <span className="d-detail-quick-value">
+            {item.value ?? '-'}<span className="d-detail-quick-unit">{item.unit}</span>
+          </span>
+        </div>
+      ))}
     </div>
+  );
+}
+
+// #8 매크로 비율 바 + 퍼센트 라벨
+function MacroStrip({ protein = 0, carbs = 0, fat = 0, calories = 0 }) {
+  const total = protein + carbs + fat;
+  const pct = (v) => total > 0 ? Math.round((v / total) * 100) : 0;
+  const segments = [
+    { label: '단백질', value: protein, color: 'var(--green-500)', pct: pct(protein) },
+    { label: '탄수화물', value: carbs, color: 'var(--orange-400)', pct: pct(carbs) },
+    { label: '지방', value: fat, color: 'var(--blue-400)', pct: pct(fat) },
+  ];
+  return (
+    <div className="d-detail-macro">
+      <div className="d-detail-macro-head">
+        <span className="d-detail-macro-title">매크로 비율</span>
+        <span className="d-detail-macro-kcal"><b>{calories}</b> kcal</span>
+      </div>
+      <div className="d-detail-macro-bar">
+        {segments.map((s) => (
+          <div key={s.label} className="d-detail-macro-seg" style={{ width: `${s.pct}%`, background: s.color }}>
+            {s.pct >= 15 && <span className="d-detail-macro-seg-pct">{s.pct}%</span>}
+          </div>
+        ))}
+      </div>
+      <div className="d-detail-macro-legend">
+        {segments.map((s) => (
+          <div key={s.label} className="d-detail-macro-legend-item">
+            <span className="d-detail-macro-dot" style={{ background: s.color }} />
+            <span className="d-detail-macro-legend-label">{s.label}</span>
+            <b>{s.value}g</b>
+            <span className="d-detail-macro-legend-pct">{s.pct}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// #3 섹션 앵커 탭
+const SECTIONS = [
+  { id: 'nutrition', label: '영양성분' },
+  { id: 'ingredients', label: '성분' },
+  { id: 'analysis', label: '분석 리포트' },
+  { id: 'reviews', label: '후기' },
+];
+
+function SectionNav({ activeId, navRef }) {
+  const handleClick = (e, id) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    const nav = navRef?.current;
+    if (!el) return;
+    const navH = nav ? nav.offsetHeight : 0;
+    const headerH = 64;
+    const offset = headerH + navH + 12;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
+  return (
+    <nav className="d-detail-section-nav" ref={navRef} aria-label="섹션 이동">
+      {SECTIONS.map((s) => (
+        <a
+          key={s.id}
+          href={`#${s.id}`}
+          onClick={(e) => handleClick(e, s.id)}
+          className={`d-detail-section-nav-item${activeId === s.id ? ' is-active' : ''}`}
+        >
+          {s.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function useActiveSection(productId) {
+  const [activeId, setActiveId] = useState('nutrition');
+  useEffect(() => {
+    setActiveId('nutrition');
+    const timer = setTimeout(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          if (visible.length > 0) {
+            setActiveId(visible[0].target.id);
+          }
+        },
+        { rootMargin: '-140px 0px -60% 0px' },
+      );
+      for (const s of SECTIONS) {
+        const el = document.getElementById(s.id);
+        if (el) observer.observe(el);
+      }
+      return () => observer.disconnect();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [productId]);
+  return activeId;
+}
+
+// #5 비교함 버튼 + 애니메이션 피드백
+function CompareButton({ inCart, onClick }) {
+  const [flash, setFlash] = useState(false);
+  const handleClick = () => {
+    onClick();
+    setFlash(true);
+    setTimeout(() => setFlash(false), 600);
+  };
+  return (
+    <button
+      type="button"
+      className={`d-detail-compare-btn${inCart ? ' is-active' : ''}${flash ? ' is-flash' : ''}`}
+      onClick={handleClick}
+    >
+      {inCart && <Check size={16} />}
+      <span>{inCart ? '비교함 빼기' : '비교함 담기'}</span>
+    </button>
   );
 }
 
@@ -55,20 +188,17 @@ export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { has, toggle, isFull, max } = useCompare();
-  const { purpose } = usePurpose();
+  const activeSection = useActiveSection(id);
+  const navRef = useRef(null);
 
-  // raw 제품 → DS 형식 변환 (adapter는 raw 도 포함하므로 분석 그대로 활용)
   const raw = getProductById(id);
   const product = raw ? getAdapted(raw) : null;
 
-  // 제품 없음 — 빈 상태
-  if (!product) {
-    return <EmptyState />;
-  }
+  if (!product) return <EmptyState />;
 
   const inCart = has(product.id);
+  const n = product.nutrition ?? {};
 
-  // 비교함 토글 — 가득 차고 새로 담으려 하면 안내
   const handleToggleCompare = () => {
     if (!inCart && isFull) {
       window.alert(`비교함은 최대 ${max}개까지 담을 수 있어요.`);
@@ -77,49 +207,61 @@ export default function DetailPage() {
     toggle(product.id);
   };
 
-  // 관련 제품 클릭 — 디테일로 이동 (같은 라우트 push)
-  const handleRelatedNavigate = (nextId) => {
-    navigate(`/product/${nextId}`);
-  };
-
-  // 뒤로 가기 — 히스토리 1단계, 없으면 메인
-  const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate('/');
-  };
-
   return (
     <div className="page d-detail">
-      <BackLine onBack={handleBack} category={raw?.category} />
+      <Breadcrumb category={raw?.category} productName={product.name} />
 
-      {/* 본문 2단: 좌측 이미지/관련 + 우측 정보(sticky) */}
-      <div className="d-detail-layout">
-        <div className="d-detail-col-left">
-          <ProductHero product={product} />
-          <RelatedProducts
-            currentProduct={raw}
-            onNavigate={handleRelatedNavigate}
-            limit={3}
-          />
+      {/* 제품 헤더 — 컴팩트 한 줄 + Quick Glance */}
+      <div className="d-detail-header">
+        <div className="d-detail-header-top">
+          <div className="d-detail-header-thumb">
+            <ProductThumb product={product} size="compact" />
+          </div>
+          <div className="d-detail-header-info">
+            <span className="d-detail-header-brand">{product.brand}</span>
+            <h1 className="d-detail-header-name">{product.name}</h1>
+            <span className="d-detail-header-serving">{product.serving}</span>
+          </div>
+          <div className="d-detail-header-score">
+            <ScoreGauge value={product.score} size={72} />
+          </div>
+          <QuickGlance nutrition={n} />
+          <div className="d-detail-header-actions">
+            <CompareButton inCart={inCart} onClick={handleToggleCompare} />
+            {raw?.purchaseUrl ? (
+              <a href={raw.purchaseUrl} target="_blank" rel="noopener noreferrer" className="d-detail-header-buy">
+                구매하러 가기
+              </a>
+            ) : (
+              <span className="d-detail-header-buy is-disabled">준비 중</span>
+            )}
+          </div>
         </div>
-        <aside className="d-detail-col-right">
-          <ScoreCard
-            product={product}
-            inCart={inCart}
-            isFull={isFull}
-            max={max}
-            onToggleCompare={handleToggleCompare}
-            purchaseUrl={raw?.purchaseUrl}
-          />
-        </aside>
       </div>
 
-      {/* 풀폭 섹션들 — 가로 전체 활용 */}
+      <MacroStrip protein={n.protein} carbs={n.carbs} fat={n.fat} calories={n.calories} />
+
+      {/* 섹션 앵커 탭 */}
+      <SectionNav activeId={activeSection} navRef={navRef} />
+
       <div className="d-detail-sections">
-        <NutritionTable nutrition={product.nutrition} serving={product.serving} />
-        <AnalysisReport rawProduct={raw} purpose={purpose} />
-        <IngredientList ingredients={product.ingredients} />
-        <ReviewSection productId={product.id} />
+        <div id="nutrition">
+          <NutritionTable nutrition={n} serving={product.serving} />
+        </div>
+        <div id="ingredients">
+          <IngredientList ingredients={product.ingredients} />
+        </div>
+        <div id="analysis">
+          <AnalysisReport rawProduct={raw} />
+        </div>
+        <div id="reviews">
+          <ReviewSection productId={product.id} />
+        </div>
+        <RelatedProducts
+          currentProduct={raw}
+          onNavigate={(nextId) => navigate(`/product/${nextId}`)}
+          limit={4}
+        />
       </div>
     </div>
   );

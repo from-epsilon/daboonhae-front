@@ -1,41 +1,48 @@
-import { Salad, Dumbbell, Droplet, UtensilsCrossed, Search } from 'lucide-react';
+import { CandyOff, Dumbbell, TrendingDown, UtensilsCrossed, Search } from 'lucide-react';
 
-// 목적(purpose) 메타데이터 일원화
-// - 아이콘/라벨/세부 카테고리/필터 스펙/카드·비교에서 강조할 수치/리포트 섹션 키
-// - 목적 추가·수정 시 이 파일만 손대면 됨 (UI는 이 메타를 받아 자동으로 다른 모양을 렌더)
-// - Icon은 Lucide 컴포넌트(대문자) — 사용처에서 <p.Icon size={...} />로 렌더
+// 탐색 성격(purpose) 메타데이터
+// - 식품유형 카테고리는 성격과 무관하게 고정 (FOOD_CATEGORIES)
+// - 각 성격은 필터 스펙/강조 수치/리포트 섹션만 다르게 적용
+
+export const FOOD_CATEGORIES = [
+  '시리얼/그래놀라',
+  '닭가슴살',
+  '에너지바',
+  '아이스크림',
+  '밥/면류',
+  '단백질 음료',
+  '소시지/햄',
+  '셰이크',
+  '과자',
+  '제로음료',
+];
 
 export const PURPOSES = [
   {
-    id: 'weight_loss',
-    label: '체중감량',
-    Icon: Salad,
-    subCategories: ['샐러드', '저칼로리 도시락', '곤약·면', '제로 음료', '간식'],
-    // 카드/비교 행에서 강조할 핵심 수치 (좌 → 우 순서)
+    id: 'low_sugar',
+    label: '저당/제로슈거',
+    Icon: CandyOff,
     highlightMetrics: [
-      { key: 'calories', label: '칼로리', unit: 'kcal' },
       { key: 'sugar', label: '당류', unit: 'g' },
+      { key: 'calories', label: '칼로리', unit: 'kcal' },
       { key: 'carbs', label: '탄수화물', unit: 'g' },
       { key: 'fiber', label: '식이섬유', unit: 'g' },
     ],
-    // 필터 항목 (FilterPanel이 이 스펙대로 자동 렌더)
     filters: [
+      { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 20 },
       { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 600 },
-      { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 30 },
       { key: 'sweeteners', type: 'tristate', label: '대체당', options: ['말티톨', '아스파탐', '수크랄로스', '스테비아', '알룰로스'] },
     ],
-    // 분석 리포트 섹션 — id로 analyzer 함수 매칭, title은 UI 표시용
     reportSections: [
-      { id: 'calorie_sugar', title: '칼로리·당류 분석' },
+      { id: 'sugar_warning', title: '당류·대체당 분석' },
       { id: 'carb_fiber', title: '탄수화물·식이섬유 균형' },
-      { id: 'weight_loss_fit', title: '체중감량 적합도' },
+      { id: 'glucose_fit', title: '저당 적합도' },
     ],
   },
   {
-    id: 'muscle',
-    label: '근성장',
+    id: 'protein',
+    label: '단백질 보충',
     Icon: Dumbbell,
-    subCategories: ['닭가슴살', '프로틴 파우더', '프로틴 드링크', '프로틴 바', '계란·간편식'],
     highlightMetrics: [
       { key: 'protein', label: '단백질', unit: 'g' },
       { key: 'calories', label: '칼로리', unit: 'kcal' },
@@ -54,32 +61,30 @@ export const PURPOSES = [
     ],
   },
   {
-    id: 'glucose',
-    label: '혈당관리',
-    Icon: Droplet,
-    subCategories: ['저GI 간식', '제로 음료', '대체당 디저트', '식이섬유 강화'],
+    id: 'weight_loss',
+    label: '체중감량',
+    Icon: TrendingDown,
     highlightMetrics: [
+      { key: 'calories', label: '칼로리', unit: 'kcal' },
       { key: 'sugar', label: '당류', unit: 'g' },
-      { key: 'sweeteners', label: '대체당', unit: '' },
-      { key: 'fiber', label: '식이섬유', unit: 'g' },
       { key: 'carbs', label: '탄수화물', unit: 'g' },
+      { key: 'fiber', label: '식이섬유', unit: 'g' },
     ],
     filters: [
-      { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 20 },
+      { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 600 },
+      { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 30 },
       { key: 'sweeteners', type: 'tristate', label: '대체당', options: ['말티톨', '아스파탐', '수크랄로스', '스테비아', '알룰로스'] },
-      { key: 'fiber', type: 'range', label: '식이섬유(g) 이상', min: 0, max: 15 },
     ],
     reportSections: [
-      { id: 'sugar_warning', title: '당류·대체당 주의 분석' },
-      { id: 'fiber_glycemic', title: '식이섬유·혈당 영향' },
-      { id: 'glucose_fit', title: '혈당관리 적합도' },
+      { id: 'calorie_sugar', title: '칼로리·당류 분석' },
+      { id: 'carb_fiber', title: '탄수화물·식이섬유 균형' },
+      { id: 'weight_loss_fit', title: '체중감량 적합도' },
     ],
   },
   {
     id: 'meal_replacement',
     label: '식사대용',
     Icon: UtensilsCrossed,
-    subCategories: ['도시락', '쉐이크', '시리얼·그래놀라', '간편 한 끼'],
     highlightMetrics: [
       { key: 'calories', label: '칼로리', unit: 'kcal' },
       { key: 'protein', label: '단백질', unit: 'g' },
@@ -99,27 +104,36 @@ export const PURPOSES = [
   },
 ];
 
-// 목적 미선택 시 사용할 "전체" 모드
-// - 카드는 기본 수치만, 필터는 공통 필터만 노출
+// 전체 모드: 모든 성격의 필터를 합침 (key 기준 중복 제거)
+export const ALL_FILTERS = (() => {
+  const seen = new Set();
+  const result = [];
+  for (const p of PURPOSES) {
+    for (const f of p.filters) {
+      if (!seen.has(f.key)) {
+        seen.add(f.key);
+        result.push(f);
+      }
+    }
+  }
+  return result;
+})();
+
 export const ALL_PURPOSE = {
   id: 'all',
   label: '전체',
   Icon: Search,
-  subCategories: [],
   highlightMetrics: [
     { key: 'calories', label: '칼로리', unit: 'kcal' },
     { key: 'protein', label: '단백질', unit: 'g' },
     { key: 'sugar', label: '당류', unit: 'g' },
   ],
-  filters: [
-    { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 800 },
-  ],
+  filters: ALL_FILTERS,
   reportSections: [
     { id: 'basic_info', title: '기본 영양 정보' },
   ],
 };
 
-// id로 목적 메타데이터 조회 (없으면 ALL_PURPOSE 반환)
 export function getPurpose(id) {
   if (!id || id === 'all') return ALL_PURPOSE;
   return PURPOSES.find((p) => p.id === id) ?? ALL_PURPOSE;

@@ -6,16 +6,12 @@ import { X, RotateCcw, Check } from 'lucide-react';
 // - 세부 카테고리(라디오 리스트) + 목적별 필터(range/tristate/bool)
 // - 부모(ListPage)가 모든 상태를 관리, 여기서는 입력만 전달
 export default function SidebarFilter({
-  subCategories,
-  subCategory,
-  onSubCategoryChange,
   specs,
   value,
   onChange,
   onReset,
   activeCount,
 }) {
-  // 필터 한 항목 갱신
   const updateField = (key, next) => {
     onChange({ ...value, [key]: next });
   };
@@ -23,14 +19,6 @@ export default function SidebarFilter({
   return (
     <aside className="d-list-sidebar">
       <SidebarHeader activeCount={activeCount} onReset={onReset} />
-
-      {subCategories && subCategories.length > 0 && (
-        <SubCategorySection
-          subCategories={subCategories}
-          value={subCategory}
-          onChange={onSubCategoryChange}
-        />
-      )}
 
       {specs && specs.length > 0 ? (
         specs.map((spec) => (
