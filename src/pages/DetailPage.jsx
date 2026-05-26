@@ -239,7 +239,7 @@ export default function DetailPage() {
 
       <div className="d-detail-sections">
         <div id="nutrition">
-          <NutritionTable nutrition={n} serving={product.serving} />
+          <NutritionTable nutrition={n} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />
         </div>
         <div id="ingredients">
           <IngredientList ingredients={product.ingredients} rawText={raw?._raw?.ingredientsText} />

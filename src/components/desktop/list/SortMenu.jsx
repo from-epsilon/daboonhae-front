@@ -1,21 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-// 데스크탑 정렬 메뉴 (커스텀 드롭다운)
-// - 네이티브 select 대신 디자인 토큰 일관성 위해 커스텀
-// - 외부 클릭 시 닫힘, ESC 닫힘, 키보드 접근성 기본 보장
-const OPTIONS = [
+const ALL_OPTIONS = [
   { key: 'calories_asc', label: '칼로리 낮은 순' },
   { key: 'protein_desc', label: '단백질 높은 순' },
+  { key: 'carbs_asc', label: '탄수화물 낮은 순' },
   { key: 'sugar_asc', label: '당류 낮은 순' },
 ];
 
-export default function SortMenu({ value, onChange }) {
+const HIDE_BY_CATEGORY = {
+  '제로 음료': ['protein_desc', 'carbs_asc'],
+  '아이스크림': ['protein_desc'],
+  '셰이크': ['carbs_asc'],
+};
+
+function getOptions(category) {
+  if (!category || category === 'all') return ALL_OPTIONS;
+  const hidden = HIDE_BY_CATEGORY[category];
+  if (!hidden) return ALL_OPTIONS;
+  return ALL_OPTIONS.filter((o) => !hidden.includes(o.key));
+}
+
+export default function SortMenu({ value, onChange, category }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
-  const current = OPTIONS.find((o) => o.key === value) ?? OPTIONS[0];
+  const options = getOptions(category);
+  const current = options.find((o) => o.key === value) ?? options[0];
 
-  // 외부 클릭/ESC 닫기 핸들러
   useOutsideClose(rootRef, () => setOpen(false), open);
 
   const handleSelect = (key) => {
@@ -37,7 +48,7 @@ export default function SortMenu({ value, onChange }) {
       </button>
       {open && (
         <ul className="d-list-sort-menu" role="listbox">
-          {OPTIONS.map((o) => (
+          {options.map((o) => (
             <li key={o.key} role="option" aria-selected={o.key === value}>
               <button
                 type="button"
@@ -55,7 +66,6 @@ export default function SortMenu({ value, onChange }) {
   );
 }
 
-// 외부 클릭 / ESC 키 닫기 훅 (작은 유틸 — 다른 곳 영향 없음)
 function useOutsideClose(ref, onClose, enabled) {
   useEffect(() => {
     if (!enabled) return undefined;

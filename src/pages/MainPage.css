@@ -944,17 +944,37 @@
   font-size: var(--font-size-xxs);
   color: var(--text-tertiary);
 }
-.d-home-footer-note {
+.d-home-footer-legal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+  border-top: 1px solid var(--bg-divider);
+}
+.d-home-footer-disclaimer,
+.d-home-footer-affiliate {
   font-family: var(--font-body);
   font-size: var(--font-size-xxs);
   color: var(--text-tertiary);
-  max-width: 560px;
-  text-align: right;
+  line-height: 1.6;
+  margin: 0;
+}
+.d-home-footer-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.d-home-footer-email:hover {
+  color: var(--green-700);
 }
 
 @media (max-width: 720px) {
   .d-home-footer-bottom { flex-direction: column; align-items: flex-start; }
-  .d-home-footer-note { text-align: left; }
 }
 
 /* ─────────────── Responsive (데스크탑 우선) ─────────────── */

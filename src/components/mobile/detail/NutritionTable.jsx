@@ -1,47 +1,86 @@
-// 모바일 디테일 — 영양성분표 (카드형 표)
-// - 라벨/값 2컬럼, 1행 1라인, 디바이더 1px
-// - 칼로리, 단백질, 탄수화물, 당류, 지방, 식이섬유, BCAA 전부 표시
-// - 값이 없으면 '-' fallback
+import { useMemo } from 'react';
 import { Badge } from '../../ds/Badge.jsx';
 
-// 단일 영양소 row — 라벨 + 값(단위) + 선택적 강조 배지(예: 당류 ↑)
-function NutritionRow({ label, value, unit, emphasis }) {
-  // value가 undefined/null이면 '-' 표기
-  const hasValue = value !== undefined && value !== null;
+const REQUIRED_ORDER = [
+  { code: 'energy_kcal',     indent: false },
+  { code: 'sodium_mg',       indent: false },
+  { code: 'carbohydrate_g',  indent: false },
+  { code: 'sugars_g',        indent: true },
+  { code: 'dietary_fiber',   indent: true },
+  { code: 'src_알룰로오스_g', indent: true },
+  { code: 'fat_g',           indent: false },
+  { code: 'trans_fat_g',     indent: true },
+  { code: 'saturated_fat_g', indent: true },
+  { code: 'cholesterol_mg',  indent: false },
+  { code: 'protein_g',       indent: false },
+];
+
+const REQUIRED_CODES = new Set(REQUIRED_ORDER.map(r => r.code));
+
+function formatValue(fn) {
+  if (fn.amount_text) return fn.amount_text;
+  const unit = fn.unit || fn.nutrients?.default_unit || '';
+  return fn.amount != null ? `${fn.amount}${unit}` : '-';
+}
+
+function getEmphasis(code, amount) {
+  if (amount == null) return null;
+  if (code === 'sugars_g' && amount >= 10) return { variant: 'softOrange', label: '높음' };
+  if (code === 'sugars_g' && amount <= 1) return { variant: 'softGreen', label: '낮음' };
+  if (code === 'protein_g' && amount >= 20) return { variant: 'softGreen', label: '높음' };
+  if (code === 'dietary_fiber' && amount >= 5) return { variant: 'softGreen', label: '높음' };
+  return null;
+}
+
+function NutritionRow({ label, display, emphasis }) {
   return (
     <li className="m-detail-nutri-row">
       <span className="m-detail-nutri-label">{label}</span>
       <span className="m-detail-nutri-value">
         {emphasis && <Badge variant={emphasis.variant}>{emphasis.label}</Badge>}
-        <span className="m-detail-nutri-num">{hasValue ? value : '-'}</span>
-        {hasValue && <span className="m-detail-nutri-unit">{unit}</span>}
+        <span className="m-detail-nutri-num">{display}</span>
       </span>
     </li>
   );
 }
 
-// 강조 룰 — 당류 10g↑ orange, 단백질 20g↑ green
-function getEmphasis(key, value) {
-  if (value === undefined || value === null) return null;
-  if (key === 'sugar' && value >= 10) return { variant: 'softOrange', label: '높음' };
-  if (key === 'sugar' && value <= 1) return { variant: 'softGreen', label: '낮음' };
-  if (key === 'protein' && value >= 20) return { variant: 'softGreen', label: '높음' };
-  if (key === 'fiber' && value >= 5) return { variant: 'softGreen', label: '높음' };
-  return null;
-}
+export function NutritionTable({ nutrition, serving, foodNutrients }) {
+  const rows = useMemo(() => {
+    if (!foodNutrients || foodNutrients.length === 0) return [];
 
-export function NutritionTable({ nutrition, serving }) {
-  const n = nutrition ?? {};
-  // 표시 순서 — 사용자가 가장 먼저 확인하는 칼로리부터
-  const rows = [
-    { key: 'calories', label: '칼로리', unit: 'kcal' },
-    { key: 'protein',  label: '단백질', unit: 'g' },
-    { key: 'carbs',    label: '탄수화물', unit: 'g' },
-    { key: 'sugar',    label: '당류',    unit: 'g' },
-    { key: 'fat',      label: '지방',    unit: 'g' },
-    { key: 'fiber',    label: '식이섬유', unit: 'g' },
-    { key: 'bcaa',     label: 'BCAA',    unit: 'g' },
-  ];
+    const byCode = {};
+    for (const fn of foodNutrients) {
+      byCode[fn.nutrient_code] = fn;
+    }
+
+    const result = [];
+
+    for (const spec of REQUIRED_ORDER) {
+      const fn = byCode[spec.code];
+      if (!fn) continue;
+      result.push({
+        key: spec.code,
+        label: fn.nutrients?.name_ko || spec.code,
+        display: formatValue(fn),
+        emphasis: getEmphasis(spec.code, fn.amount),
+      });
+    }
+
+    const extras = foodNutrients
+      .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code))
+      .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999));
+
+    for (const fn of extras) {
+      result.push({
+        key: fn.nutrient_code,
+        label: fn.nutrients?.name_ko || fn.nutrient_code,
+        display: formatValue(fn),
+        emphasis: null,
+      });
+    }
+
+    return result;
+  }, [foodNutrients]);
 
   return (
     <section className="m-detail-card m-detail-nutri">
@@ -54,9 +93,8 @@ export function NutritionTable({ nutrition, serving }) {
           <NutritionRow
             key={r.key}
             label={r.label}
-            value={n[r.key]}
-            unit={r.unit}
-            emphasis={getEmphasis(r.key, n[r.key])}
+            display={r.display}
+            emphasis={r.emphasis}
           />
         ))}
       </ul>

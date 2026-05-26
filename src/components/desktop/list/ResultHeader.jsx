@@ -1,14 +1,14 @@
 import { X } from 'lucide-react';
 import SortMenu from './SortMenu.jsx';
 
-export default function ResultHeader({ query, count, sortKey, onSortChange, onClearQuery }) {
+export default function ResultHeader({ query, count, sortKey, onSortChange, onClearQuery, category }) {
   return (
     <div className="d-list-result-header">
       <div className="d-list-result-header-left">
         <div className="d-list-result-title">제품 결과 <span className="d-list-result-count">{count}</span></div>
         {query && <SearchChip query={query} onClear={onClearQuery} />}
       </div>
-      <SortMenu value={sortKey} onChange={onSortChange} />
+      <SortMenu value={sortKey} onChange={onSortChange} category={category} />
     </div>
   );
 }

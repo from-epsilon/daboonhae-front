@@ -117,7 +117,7 @@ export default function DetailPageMobile() {
         <TagsRow tags={product.tags} />
 
         {/* 4. 영양성분표 */}
-        <NutritionTable nutrition={product.nutrition} serving={product.serving} />
+        <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />
 
         {/* 5. 분석 리포트 (목적별 룰 기반) */}
         <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} />

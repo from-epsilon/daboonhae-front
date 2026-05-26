@@ -33,7 +33,7 @@ export default function MainBanner({
       <div className="mb__left">
         <span className="mb__brand" aria-label="다분해">
           <BrandMark />
-          <span>다분해</span>
+          <span>다분해.</span>
         </span>
 
         <h1 className="mb__headline">

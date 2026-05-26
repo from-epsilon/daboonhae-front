@@ -39,28 +39,22 @@ function round1(n) {
 // 단백질 태그 (≥20g): 점수는 protein/2.5, 10 상한
 function tagHighProtein(n) {
   if ((n.protein ?? 0) < 20) return null;
-  const s = Math.min(10, n.protein / 2.5);
-  return { v: 'softGreen', label: `고단백 ${round1(s)}` };
+  return { v: 'softGreen', label: '고단백' };
 }
 
-// 저당 태그 (≤3g): 점수는 10 - sugar*0.5, 7 하한
 function tagLowSugar(n) {
   if ((n.sugar ?? Infinity) > 3) return null;
-  const s = Math.max(7, 10 - n.sugar * 0.5);
-  return { v: 'softGreen', label: `저당 ${round1(s)}` };
+  return { v: 'softGreen', label: '저당' };
 }
 
-// 저칼로리 태그 (≤100kcal): 점수 없이 단순 라벨
 function tagLowCalorie(n) {
   if ((n.calories ?? Infinity) > 100) return null;
   return { v: 'softGreen', label: '저칼로리' };
 }
 
-// 고섬유 태그 (≥5g): 점수는 7 + fiber*0.3, 10 상한
 function tagHighFiber(n) {
   if ((n.fiber ?? 0) < 5) return null;
-  const s = Math.min(10, 7 + n.fiber * 0.3);
-  return { v: 'softGreen', label: `고섬유 ${round1(s)}` };
+  return { v: 'softGreen', label: '고섬유' };
 }
 
 // 무가당 태그: 감미료 없음 + 당류 ≤1g

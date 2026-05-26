@@ -1,5 +1,12 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useCompare } from './store/CompareContext.jsx';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 import { useIsMobile } from './hooks/useMediaQuery.js';
 import { BottomNav } from './components/ds/BottomNav.jsx';
 import Header from './components/global/Header.jsx';
@@ -43,6 +50,7 @@ function tabToPath(tabId) {
 function DesktopShell() {
   return (
     <div className="app">
+      <ScrollToTop />
       <Header />
       <main className="app-main">
         <Routes>
@@ -73,6 +81,7 @@ function MobileShell() {
 
   return (
     <div className="mobile-shell">
+      <ScrollToTop />
       <main className="mobile-shell-main">
         <Routes>
           <Route path="/" element={<MainPageMobile />} />

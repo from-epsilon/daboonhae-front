@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Star, RefreshCw, ChevronDown } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 const STORAGE_KEY = 'dabunhae:reviews:v1';
 
@@ -21,37 +21,34 @@ function saveUserReviews(productId, reviews) {
   } catch {}
 }
 
-function StarRating({ value, onChange, label }) {
+function StarRating({ value, onChange }) {
   return (
-    <div className="d-review-field">
-      <span className="d-review-field-label">{label}</span>
-      <div className="d-review-stars">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            type="button"
-            className={`d-review-star${n <= value ? ' is-filled' : ''}`}
-            onClick={() => onChange(n)}
-            aria-label={`${n}점`}
-          >
-            <Star size={18} fill={n <= value ? 'currentColor' : 'none'} />
-          </button>
-        ))}
-      </div>
+    <div className="d-review-stars">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          className={`d-review-star${n <= value ? ' is-filled' : ''}`}
+          onClick={() => onChange(n)}
+          aria-label={`${n}점`}
+        >
+          <Star size={16} fill={n <= value ? 'currentColor' : 'none'} />
+        </button>
+      ))}
     </div>
   );
 }
 
 function ReviewForm({ onSubmit }) {
-  const [draft, setDraft] = useState({ taste: 0, fullness: 0, repurchase: null, text: '' });
+  const [draft, setDraft] = useState({ rating: 0, text: '' });
   const [submitted, setSubmitted] = useState(false);
 
-  const canSubmit = draft.taste > 0 && draft.fullness > 0 && draft.text.trim().length > 0;
+  const canSubmit = draft.rating > 0 && draft.text.trim().length > 0;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     onSubmit(draft);
-    setDraft({ taste: 0, fullness: 0, repurchase: null, text: '' });
+    setDraft({ rating: 0, text: '' });
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 2500);
   };
@@ -67,30 +64,11 @@ function ReviewForm({ onSubmit }) {
 
   return (
     <div className="d-review-form">
-      <div className="d-review-form-row">
-        <StarRating label="맛" value={draft.taste} onChange={(v) => setDraft({ ...draft, taste: v })} />
-        <StarRating label="포만감" value={draft.fullness} onChange={(v) => setDraft({ ...draft, fullness: v })} />
-        <div className="d-review-field">
-          <span className="d-review-field-label">재구매</span>
-          <div className="d-review-repurchase-btns">
-            <button
-              type="button"
-              className={`d-review-repurchase-btn${draft.repurchase === true ? ' is-active is-yes' : ''}`}
-              onClick={() => setDraft({ ...draft, repurchase: true })}
-            >
-              O
-            </button>
-            <button
-              type="button"
-              className={`d-review-repurchase-btn${draft.repurchase === false ? ' is-active is-no' : ''}`}
-              onClick={() => setDraft({ ...draft, repurchase: false })}
-            >
-              X
-            </button>
-          </div>
-        </div>
+      <div className="d-review-form-controls">
+        <span className="d-review-rating-label">평점</span>
+        <StarRating value={draft.rating} onChange={(v) => setDraft({ ...draft, rating: v })} />
       </div>
-      <div className="d-review-form-bottom">
+      <div className="d-review-form-input">
         <textarea
           className="d-review-textarea"
           rows={2}
@@ -103,9 +81,7 @@ function ReviewForm({ onSubmit }) {
           className="d-review-submit"
           disabled={!canSubmit}
           onClick={handleSubmit}
-        >
-          등록
-        </button>
+        >등록</button>
       </div>
     </div>
   );
@@ -113,18 +89,16 @@ function ReviewForm({ onSubmit }) {
 
 function ReviewItem({ review }) {
   const date = review.createdAt ? new Date(review.createdAt).toLocaleDateString('ko-KR') : '';
+  const rating = review.rating ?? review.taste ?? 0;
   return (
     <div className="d-review-item">
-      <div className="d-review-item-top">
-        <div className="d-review-item-ratings">
-          <span className="d-review-item-rating">맛 <b>{review.taste}</b></span>
-          <span className="d-review-item-rating">포만감 <b>{review.fullness}</b></span>
-          {review.repurchase !== null && review.repurchase !== undefined && (
-            <span className={`d-review-item-repurchase ${review.repurchase ? 'is-yes' : 'is-no'}`}>
-              <RefreshCw size={12} />
-              {review.repurchase ? '재구매 의향' : '재구매 없음'}
-            </span>
-          )}
+      <div className="d-review-item-head">
+        <div className="d-review-item-meta">
+          <span className="d-review-item-stars">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Star key={n} size={12} fill={n <= rating ? 'var(--orange-400)' : 'none'} color={n <= rating ? 'var(--orange-400)' : 'var(--gray-300)'} />
+            ))}
+          </span>
         </div>
         {date && <span className="d-review-item-date">{date}</span>}
       </div>
@@ -143,7 +117,7 @@ export function ReviewSection({ productId }) {
 
   const handleSubmit = (draft) => {
     setUserReviews((prev) => [
-      { id: Date.now(), ...draft, text: draft.text.trim(), createdAt: new Date().toISOString() },
+      { id: Date.now(), rating: draft.rating, text: draft.text.trim(), createdAt: new Date().toISOString() },
       ...prev,
     ]);
   };

@@ -25,6 +25,8 @@
 }
 .d-detail-tooltip-wrap:hover .d-detail-tooltip { display: block; }
 .d-detail-ingr-col-label { display: flex; align-items: center; gap: 4px; }
+.d-detail-tooltip-inline { display: inline-flex; margin-left: 3px; vertical-align: middle; }
+.d-detail-ingr-item-wrap { display: inline-flex; }
 
 /* ───────── #9 Breadcrumb ───────── */
 .d-detail-breadcrumb {
@@ -332,28 +334,34 @@
   color: var(--text-secondary); word-break: keep-all;
 }
 
-/* ───────── 후기 (재설계) ───────── */
+/* ───────── 후기 ───────── */
 .d-review-form {
-  background: var(--bg-card-ui); border-radius: var(--radius-md);
-  padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;
-  margin-bottom: 20px;
+  border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);
+  padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;
+  margin-bottom: 24px;
 }
 .d-review-form--done {
-  align-items: center; justify-content: center; min-height: 100px; gap: 8px;
+  align-items: center; justify-content: center; min-height: 80px; gap: 8px;
+  border: 1px dashed var(--green-300); background: var(--green-50);
 }
 .d-review-done-icon {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--green-50); color: var(--brand-green);
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--brand-green); color: white;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700;
+  font-size: 16px; font-weight: 700;
 }
-.d-review-done-text { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.d-review-form-row {
-  display: flex; gap: 24px; align-items: flex-start;
+.d-review-done-text { font-size: 14px; font-weight: 600; color: var(--green-700); }
+
+/* 컨트롤 행: 별점 + 구분선 + 포만감 + 구분선 + 재구매 */
+.d-review-form-controls {
+  display: flex; align-items: center; gap: 16px;
 }
-.d-review-field { display: flex; flex-direction: column; gap: 6px; }
-.d-review-field-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-.d-review-stars { display: flex; gap: 2px; }
+.d-review-form-divider {
+  width: 1px; height: 28px; background: var(--border-tertiary); flex-shrink: 0;
+}
+.d-review-rating-group { display: flex; align-items: center; gap: 8px; }
+.d-review-rating-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+.d-review-stars { display: flex; gap: 1px; }
 .d-review-star {
   background: none; border: none; padding: 2px; cursor: pointer;
   color: var(--gray-300); transition: color 0.1s;
@@ -362,9 +370,9 @@
 .d-review-star:hover { color: var(--orange-300); }
 .d-review-repurchase-btns { display: flex; gap: 4px; }
 .d-review-repurchase-btn {
-  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
   border: 1px solid var(--border-tertiary); background: var(--bg-white);
-  font-size: 13px; font-weight: 700; color: var(--text-tertiary);
+  font-size: 12px; font-weight: 700; color: var(--text-tertiary);
   cursor: pointer; transition: all 0.15s;
 }
 .d-review-repurchase-btn:hover { border-color: var(--text-secondary); }
@@ -374,7 +382,9 @@
 .d-review-repurchase-btn.is-active.is-no {
   background: var(--red-50); border-color: var(--red-500); color: var(--red-500);
 }
-.d-review-form-bottom { display: flex; gap: 12px; align-items: flex-end; }
+
+/* 입력 행: textarea + 등록 버튼 */
+.d-review-form-input { display: flex; gap: 10px; align-items: flex-end; }
 .d-review-textarea {
   flex: 1; padding: 10px 14px; border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-md); background: var(--bg-white);
@@ -382,7 +392,8 @@
 }
 .d-review-textarea:focus { outline: none; border-color: var(--brand-green); }
 .d-review-submit {
-  flex-shrink: 0; padding: 10px 20px; border-radius: var(--radius-md);
+  flex-shrink: 0; padding: 10px 20px; height: fit-content;
+  border-radius: var(--radius-md);
   background: var(--gray-900); color: white;
   font-size: 13px; font-weight: 700; cursor: pointer;
   transition: background-color 0.15s;
@@ -390,32 +401,38 @@
 .d-review-submit:hover { background: var(--gray-800); }
 .d-review-submit:disabled { background: var(--gray-200); color: var(--text-tertiary); cursor: default; }
 
-.d-review-list { display: flex; flex-direction: column; gap: 12px; }
+/* 후기 리스트 */
+.d-review-list { display: flex; flex-direction: column; }
 .d-review-item {
   padding: 16px 0; border-bottom: 1px solid var(--border-tertiary);
   display: flex; flex-direction: column; gap: 8px;
 }
 .d-review-item:last-child { border-bottom: none; }
-.d-review-item-top { display: flex; justify-content: space-between; align-items: center; }
-.d-review-item-ratings {
-  display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary);
+.d-review-item-head { display: flex; justify-content: space-between; align-items: center; }
+.d-review-item-meta { display: flex; align-items: center; gap: 10px; }
+.d-review-item-stars { display: flex; gap: 1px; line-height: 1; }
+.d-review-item-tags {
+  display: flex; gap: 8px; font-size: 12px; color: var(--text-secondary);
   font-family: var(--font-numeric);
 }
-.d-review-item-ratings b { color: var(--text-primary); margin-left: 2px; }
-.d-review-item-repurchase {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 12px; font-weight: 500;
-}
-.d-review-item-repurchase.is-yes { color: var(--green-700); }
-.d-review-item-repurchase.is-no { color: var(--text-tertiary); }
+.d-review-item-tags .is-yes { color: var(--green-700); font-weight: 600; }
+.d-review-item-tags .is-no { color: var(--text-tertiary); }
 .d-review-item-date { font-size: 12px; color: var(--text-tertiary); font-family: var(--font-numeric); }
 .d-review-item-text { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-primary); }
+
 .d-review-empty {
-  padding: 40px 16px; text-align: center;
+  padding: 48px 16px; text-align: center;
   display: flex; flex-direction: column; gap: 4px;
 }
 .d-review-empty-msg { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin: 0; }
 .d-review-empty-sub { font-size: 13px; color: var(--text-tertiary); margin: 0; }
+
+@media (max-width: 720px) {
+  .d-review-form-controls { flex-wrap: wrap; gap: 12px; }
+  .d-review-form-divider { display: none; }
+  .d-review-form-input { flex-direction: column; }
+  .d-review-submit { width: 100%; }
+}
 
 /* #7 관련 제품 hover */
 .d-detail-related { display: flex; flex-direction: column; gap: 12px; }

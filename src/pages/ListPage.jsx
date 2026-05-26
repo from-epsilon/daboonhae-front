@@ -89,6 +89,7 @@ export default function ListPage() {
               sortKey={sortKey}
               onSortChange={setSortKey}
               onClearQuery={clearSearch}
+              category={subCategory}
             />
 
             <ActiveFilterChips
@@ -187,6 +188,7 @@ function applySort(products, sortKey) {
   switch (sortKey) {
     case 'calories_asc': return arr.sort((a, b) => (a.nutrition.calories ?? 0) - (b.nutrition.calories ?? 0));
     case 'protein_desc': return arr.sort((a, b) => (b.nutrition.protein ?? 0) - (a.nutrition.protein ?? 0));
+    case 'carbs_asc': return arr.sort((a, b) => (a.nutrition.carbs ?? 0) - (b.nutrition.carbs ?? 0));
     case 'sugar_asc': return arr.sort((a, b) => (a.nutrition.sugar ?? 0) - (b.nutrition.sugar ?? 0));
     default: return arr;
   }
