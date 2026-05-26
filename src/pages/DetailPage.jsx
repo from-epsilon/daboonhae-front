@@ -228,13 +228,7 @@ export default function DetailPage() {
           <QuickGlance nutrition={n} />
           <div className="d-detail-header-actions">
             <CompareButton inCart={inCart} onClick={handleToggleCompare} />
-            {raw?.purchaseUrl ? (
-              <a href={raw.purchaseUrl} target="_blank" rel="noopener noreferrer" className="d-detail-header-buy">
-                구매하러 가기
-              </a>
-            ) : (
-              <span className="d-detail-header-buy is-disabled">준비 중</span>
-            )}
+            <span className="d-detail-header-buy is-disabled">구매하러 가기 (준비 중)</span>
           </div>
         </div>
       </div>

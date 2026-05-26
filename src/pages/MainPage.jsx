@@ -17,7 +17,6 @@ import HeroBanner from '../components/desktop/home/HeroBanner.jsx';
 import PromoBanner from '../components/desktop/home/PromoBanner.jsx';
 import CategoryIconGrid from '../components/desktop/home/CategoryIconGrid.jsx';
 import FoodGrid from '../components/desktop/home/FoodGrid.jsx';
-import TrustStats from '../components/desktop/home/TrustStats.jsx';
 import Testimonials from '../components/desktop/home/Testimonials.jsx';
 import Footer from '../components/desktop/home/Footer.jsx';
 
@@ -110,25 +109,7 @@ export default function MainPage() {
         onSelectAll={() => navigate('/list')}
       />
 
-      {/* 3. 추천 식품 — 4컬럼 × 3행 (12개) */}
-      <section className="d-home-section">
-        <SectionHeader
-          title="추천 식품"
-          subtitle="영양 균형 점수가 높은 식품을 모았어요"
-          onMore={handleMore}
-        />
-        <FoodGrid
-          items={recommended}
-          onItemClick={handleFoodClick}
-          onCompare={handleToggleCompare}
-          variant="recommend"
-        />
-      </section>
-
-      {/* 5. 신뢰 수치 섹션 */}
-      <TrustStats />
-
-      {/* 6. 최근 추가 식품 — 4컬럼 × 2행 (8개) */}
+      {/* 3. 최근 추가 식품 — 4컬럼 × 2행 (8개) */}
       <section className="d-home-section">
         <SectionHeader
           title="최근 추가된 식품"

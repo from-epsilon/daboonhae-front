@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCompare } from '../store/CompareContext.jsx';
 import { PRODUCTS } from '../data/mockProducts.js';
@@ -16,9 +16,14 @@ export default function ListPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const q = searchParams.get('q') ?? '';
+  const categoryParam = searchParams.get('category') ?? '';
 
-  const [subCategory, setSubCategory] = useState('all');
+  const [subCategory, setSubCategory] = useState(categoryParam || 'all');
   const [filterState, setFilterState] = useState({});
+
+  useEffect(() => {
+    if (categoryParam) setSubCategory(categoryParam);
+  }, [categoryParam]);
   const [sortKey, setSortKey] = useState('ranking');
 
   const activeFilterCount = countActiveFilters(filterState);

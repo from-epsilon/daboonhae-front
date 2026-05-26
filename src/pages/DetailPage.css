@@ -60,8 +60,13 @@
 .d-detail-header-top {
   display: flex; align-items: center; gap: 20px;
 }
-.d-detail-header-thumb { flex-shrink: 0; }
-.d-detail-header-thumb .product-thumb-compact { width: 80px; height: 80px; }
+.d-detail-header-thumb {
+  flex-shrink: 0; width: 80px; height: 80px;
+}
+.d-detail-header-thumb > * {
+  width: 80px !important; height: 80px !important;
+  border-radius: var(--radius-md);
+}
 .d-detail-header-info {
   flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
 }

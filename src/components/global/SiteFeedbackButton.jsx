@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 
-// 우하단 사이트 피드백 버튼 (제품 후기와는 별개)
+// 우하단 의견을 주세요 버튼 (제품 후기와는 별개)
 // - 버튼 클릭 시 텍스트 입력 패널 토글
 // - 제출 동작은 추후 백엔드 연동 (현재는 콘솔 로깅으로 자리만 잡아둠)
 export default function SiteFeedbackButton() {
@@ -25,8 +25,8 @@ export default function SiteFeedbackButton() {
   return (
     <div className="site-feedback">
       {open && (
-        <div className="site-feedback-panel" role="dialog" aria-label="사이트 피드백">
-          <div className="site-feedback-title">사이트 피드백</div>
+        <div className="site-feedback-panel" role="dialog" aria-label="의견을 주세요">
+          <div className="site-feedback-title">의견을 주세요</div>
           {submitted ? (
             <div className="site-feedback-done">고맙습니다! 의견이 전달되었습니다.</div>
           ) : (
@@ -51,10 +51,10 @@ export default function SiteFeedbackButton() {
       <button
         className="site-feedback-fab"
         onClick={() => setOpen((v) => !v)}
-        aria-label="사이트 피드백"
+        aria-label="의견을 주세요"
       >
         <MessageCircle size={16} aria-hidden />
-        <span>사이트 피드백</span>
+        <span>의견을 주세요</span>
       </button>
     </div>
   );

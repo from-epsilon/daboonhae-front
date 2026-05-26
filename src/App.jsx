@@ -10,6 +10,9 @@ import MainPage from './pages/MainPage.jsx';
 import ListPage from './pages/ListPage.jsx';
 import DetailPage from './pages/DetailPage.jsx';
 import ComparePage from './pages/ComparePage.jsx';
+import AboutPage from './pages/AboutPage.jsx';
+import FaqPage from './pages/FaqPage.jsx';
+import ContactPage from './pages/ContactPage.jsx';
 // 모바일 페이지 (Round 3에서 생성됨)
 import MainPageMobile from './pages/mobile/MainPage.jsx';
 import ListPageMobile from './pages/mobile/ListPage.jsx';
@@ -47,6 +50,9 @@ function DesktopShell() {
           <Route path="/list" element={<ListPage />} />
           <Route path="/product/:id" element={<DetailPage />} />
           <Route path="/compare" element={<ComparePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/faq" element={<FaqPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
