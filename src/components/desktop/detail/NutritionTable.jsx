@@ -64,10 +64,11 @@ function NutritionCell({ label, display, info, indent }) {
   );
 }
 
-function BasisToggle({ basis, onChangeBasis, servingUnit }) {
+function BasisToggle({ basis, onChangeBasis, servingSize, servingUnit }) {
   const unit = servingUnit?.includes('ml') ? 'ml' : 'g';
+  const servingLabel = servingSize ? `${servingSize}${unit} 기준` : '1회 제공량';
   const options = [
-    { key: 'serving', label: '1회 제공량' },
+    { key: 'serving', label: servingLabel },
     { key: 'per100', label: `100${unit} 기준` },
   ];
   return (
@@ -141,7 +142,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
       <header className="d-detail-card-head">
         <h2 className="d-detail-card-title">영양성분</h2>
         {servingSize > 0 && (
-          <BasisToggle basis={basis} onChangeBasis={setBasis} servingUnit={servingUnit} />
+          <BasisToggle basis={basis} onChangeBasis={setBasis} servingSize={servingSize} servingUnit={servingUnit} />
         )}
       </header>
       <ul className="d-detail-nutri-list">

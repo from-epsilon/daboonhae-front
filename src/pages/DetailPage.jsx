@@ -70,8 +70,8 @@ function MacroStrip({ protein = 0, carbs = 0, fat = 0, calories = 0 }) {
   const total = protein + carbs + fat;
   const pct = (v) => total > 0 ? Math.round((v / total) * 100) : 0;
   const segments = [
-    { label: '단백질', value: protein, color: 'var(--green-500)', pct: pct(protein) },
     { label: '탄수화물', value: carbs, color: 'var(--orange-400)', pct: pct(carbs) },
+    { label: '단백질', value: protein, color: 'var(--green-500)', pct: pct(protein) },
     { label: '지방', value: fat, color: 'var(--blue-400)', pct: pct(fat) },
   ];
   return (
@@ -103,10 +103,10 @@ function MacroStrip({ protein = 0, carbs = 0, fat = 0, calories = 0 }) {
 
 // #3 섹션 앵커 탭
 const SECTIONS = [
+  { id: 'guide', label: '선택 가이드' },
   { id: 'nutrition', label: '영양성분' },
   { id: 'ingredients', label: '원재료' },
   { id: 'analysis', label: '분석 리포트' },
-  { id: 'guide', label: '선택 가이드' },
   { id: 'reviews', label: '후기' },
 ];
 
@@ -240,6 +240,9 @@ export default function DetailPage() {
       <SectionNav activeId={activeSection} navRef={navRef} />
 
       <div className="d-detail-sections">
+        <div id="guide">
+          <CategoryGuide category={raw?.category} />
+        </div>
         <div id="nutrition">
           <NutritionTable
             nutrition={n}
@@ -254,9 +257,6 @@ export default function DetailPage() {
         </div>
         <div id="analysis">
           <AnalysisReport nutrition={n} ingredients={product.ingredients} category={raw?.category} />
-        </div>
-        <div id="guide">
-          <CategoryGuide category={raw?.category} />
         </div>
         <div id="reviews">
           <ReviewSection productId={product.id} />
