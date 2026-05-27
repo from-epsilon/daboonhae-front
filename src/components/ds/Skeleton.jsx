@@ -22,7 +22,6 @@ export function Skeleton({ width, height, radius = 4, className = '', style }) {
 }
 
 // FoodCard.grid 와 같은 모양으로 비어있는 카드 한 칸을 렌더
-// - 그리드의 셀 placeholder로 그대로 들어감 (.d-list-grid-cell 안에 배치 가능)
 export function FoodCardSkeleton() {
   return (
     <div className="d-skeleton-foodcard" aria-hidden="true">
@@ -32,6 +31,40 @@ export function FoodCardSkeleton() {
         <Skeleton width="90%" height={14} />
         <Skeleton width="70%" height={14} />
         <Skeleton width="60%" height={18} />
+      </div>
+    </div>
+  );
+}
+
+// wide 레이아웃 스켈레톤 (가로형 카드)
+export function FoodCardWideSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        display: 'flex',
+        gap: 20,
+        padding: '20px 0',
+        borderBottom: '1px solid var(--border-tertiary)',
+      }}
+    >
+      <Skeleton width={140} height={140} radius={8} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <Skeleton width="20%" height={11} />
+        <Skeleton width="60%" height={15} />
+        <Skeleton width="15%" height={11} />
+        <Skeleton width="100%" height={6} radius={3} />
+        <Skeleton width="50%" height={12} />
+        <div style={{ display: 'flex', gap: 4 }}>
+          <Skeleton width={48} height={18} radius={3} />
+          <Skeleton width={36} height={18} radius={3} />
+          <Skeleton width={52} height={18} radius={3} />
+        </div>
+        <Skeleton width="40%" height={11} />
+      </div>
+      <div style={{ width: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+        <Skeleton width={40} height={28} radius={4} />
+        <Skeleton width={56} height={28} radius={4} />
       </div>
     </div>
   );

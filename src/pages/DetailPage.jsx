@@ -11,6 +11,7 @@ import ProductThumb from '../components/global/ProductThumb.jsx';
 import { NutritionTable } from '../components/desktop/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
 import { IngredientList } from '../components/desktop/detail/IngredientList.jsx';
+import { CategoryGuide } from '../components/desktop/detail/CategoryGuide.jsx';
 import { ReviewSection } from '../components/desktop/detail/ReviewSection.jsx';
 import { RelatedProducts } from '../components/desktop/detail/RelatedProducts.jsx';
 import './DetailPage.css';
@@ -105,6 +106,7 @@ const SECTIONS = [
   { id: 'nutrition', label: '영양성분' },
   { id: 'ingredients', label: '원재료' },
   { id: 'analysis', label: '분석 리포트' },
+  { id: 'guide', label: '선택 가이드' },
   { id: 'reviews', label: '후기' },
 ];
 
@@ -251,7 +253,10 @@ export default function DetailPage() {
           <IngredientList ingredients={product.ingredients} rawText={raw?._raw?.ingredientsText} />
         </div>
         <div id="analysis">
-          <AnalysisReport />
+          <AnalysisReport nutrition={n} ingredients={product.ingredients} category={raw?.category} />
+        </div>
+        <div id="guide">
+          <CategoryGuide category={raw?.category} />
         </div>
         <div id="reviews">
           <ReviewSection productId={product.id} />

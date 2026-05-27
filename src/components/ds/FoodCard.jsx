@@ -8,6 +8,7 @@
 import { Badge } from './Badge.jsx';
 import { MacroRow } from './MacroRow.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
+import { getCategoryMetrics } from '../../data/purposes.jsx';
 
 // 썸네일 이미지 (URL → img, 빈값 → 회색 placeholder)
 // - 원본 DS는 thumb 가 CSS gradient 문자열이라 background 로 적용했지만
@@ -145,6 +146,232 @@ function FoodCardList({ food, onClick, onCompare, inCompare }) {
   );
 }
 
+// 카테고리별 핵심 영양 지표 (hero 숫자)
+function KeyMetrics({ nutrition, category }) {
+  const metrics = getCategoryMetrics(category);
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 16,
+        fontFamily: 'var(--font-numeric)',
+        color: 'var(--text-secondary)',
+        flexWrap: 'wrap',
+      }}
+    >
+      {metrics.map((m, i) => {
+        const val = nutrition?.[m.key];
+        return (
+          <span key={m.key} style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3 }}>
+            <span style={{ fontSize: 11 }}>{m.label}</span>
+            <b style={{ color: 'var(--text-primary)', fontSize: i === 0 ? 16 : 13, fontWeight: 700 }}>
+              {val ?? '-'}
+            </b>
+            <span style={{ fontSize: 10 }}>{m.unit}</span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+// 세부 영양성분 (hero에 이미 표시된 항목 제외)
+function SubNutrients({ nutrition, category }) {
+  if (!nutrition) return null;
+  const heroKeys = new Set(getCategoryMetrics(category).map((m) => m.key));
+  const ALL_NUTRIENTS = [
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+    { key: 'fat', label: '지방', unit: 'g' },
+    { key: 'saturatedFat', label: '포화지방', unit: 'g' },
+    { key: 'transFat', label: '트랜스지방', unit: 'g' },
+    { key: 'cholesterol', label: '콜레스테롤', unit: 'mg' },
+    { key: 'sodium', label: '나트륨', unit: 'mg' },
+    { key: 'fiber', label: '식이섬유', unit: 'g' },
+  ];
+  const remaining = ALL_NUTRIENTS.filter(
+    (n) => !heroKeys.has(n.key) && nutrition[n.key] !== undefined
+  );
+  if (remaining.length === 0) return null;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 10,
+        flexWrap: 'wrap',
+        fontSize: 11,
+        fontFamily: 'var(--font-numeric)',
+        color: 'var(--text-tertiary)',
+      }}
+    >
+      {remaining.map((n) => (
+        <span key={n.key}>
+          {n.label}{' '}
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+            {nutrition[n.key]}{n.unit}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// 원재료·성분 상세 (감미료, 단백질원, 알레르기, 유당)
+function IngredientDetails({ ingredients }) {
+  if (!ingredients) return null;
+  const sections = [];
+  if (ingredients.sweeteners?.length > 0) {
+    sections.push({ label: '감미료', items: ingredients.sweeteners });
+  }
+  if (ingredients.proteinSources?.length > 0) {
+    sections.push({ label: '단백질원', items: ingredients.proteinSources });
+  }
+  if (ingredients.allergens?.length > 0) {
+    sections.push({ label: '알레르기', items: ingredients.allergens });
+  }
+  if (sections.length === 0 && !ingredients.lactoseFree) return null;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 12,
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        fontSize: 11,
+        color: 'var(--text-tertiary)',
+        lineHeight: 1.5,
+      }}
+    >
+      {sections.map((s) => (
+        <span key={s.label}>
+          <span style={{ color: 'var(--text-secondary)' }}>{s.label}</span>{' '}
+          {s.items.join(' · ')}
+        </span>
+      ))}
+      {ingredients.lactoseFree && (
+        <span style={{ color: 'var(--green-700)', fontWeight: 500 }}>유당 Free</span>
+      )}
+    </div>
+  );
+}
+
+// wide 레이아웃: 가로형 (데스크톱 리스트 전용)
+function FoodCardWide({ food, onClick, onCompare, inCompare }) {
+  return (
+    <div
+      onClick={onClick}
+      className="d-foodcard-wide"
+      style={{
+        display: 'flex',
+        gap: 20,
+        padding: '20px 0',
+        cursor: 'pointer',
+        alignItems: 'flex-start',
+      }}
+    >
+      {/* 썸네일 */}
+      <div
+        style={{
+          width: 140,
+          height: 140,
+          borderRadius: 'var(--radius-md)',
+          flexShrink: 0,
+          overflow: 'hidden',
+          background: 'var(--gray-100)',
+        }}
+      >
+        <ThumbImage src={food.thumb} alt={food.name} />
+      </div>
+
+      {/* 상세 정보 */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
+        {/* 브랜드 + 비교 버튼 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
+          {onCompare && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCompare(food);
+              }}
+              aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '4px 10px',
+                border: inCompare ? '1px solid var(--green-500)' : '1px solid var(--border-tertiary)',
+                borderRadius: 'var(--radius-sm)',
+                background: inCompare ? 'var(--green-50)' : 'var(--bg-white)',
+                color: inCompare ? 'var(--green-700)' : 'var(--text-secondary)',
+                fontSize: 11,
+                fontFamily: 'var(--font-body)',
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {inCompare ? <IconCheck size={12} stroke={2} /> : <IconPlus size={12} stroke={2} />}
+              {inCompare ? '담김' : '비교'}
+            </button>
+          )}
+        </div>
+
+        {/* 상품명 */}
+        <div
+          style={{
+            fontSize: 15,
+            color: 'var(--text-primary)',
+            fontWeight: 600,
+            lineHeight: 1.4,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {food.name}
+        </div>
+
+        {/* 용량 */}
+        {food.serving && (
+          <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
+        )}
+
+        {/* 핵심 영양 지표 (카테고리별) */}
+        <div style={{ marginTop: 2 }}>
+          <KeyMetrics nutrition={food.nutrition} category={food.category} />
+        </div>
+
+        {/* 탄단지 비율 막대 */}
+        <MacroRow {...food.macros} wide />
+
+        {/* 나머지 영양성분 */}
+        <SubNutrients nutrition={food.nutrition} category={food.category} />
+
+        {/* 태그 + 신뢰 배지 */}
+        <div
+          style={{ display: 'flex', gap: 4, marginTop: 2, flexWrap: 'wrap', alignItems: 'center' }}
+        >
+          {food.tags && food.tags.map((t, i) => (
+            <Badge key={i} variant={t.v}>
+              {t.label}
+            </Badge>
+          ))}
+          <TrustBadgeRow trustBadges={food.trustBadges} />
+        </div>
+
+        {/* 원재료·성분 상세 */}
+        <IngredientDetails ingredients={food.ingredients} />
+      </div>
+    </div>
+  );
+}
+
 // grid 레이아웃: 1:1 썸네일 + 하단 텍스트
 function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey }) {
   return (
@@ -272,6 +499,9 @@ export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare,
   if (!food) return null;
   if (layout === 'list') {
     return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
+  }
+  if (layout === 'wide') {
+    return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
   }
   return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} sortKey={sortKey} />;
 }

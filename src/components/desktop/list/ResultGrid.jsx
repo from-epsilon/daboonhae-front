@@ -1,5 +1,5 @@
 import { FoodCard } from '../../ds/FoodCard.jsx';
-import { FoodCardSkeleton } from '../../ds/Skeleton.jsx';
+import { FoodCardWideSkeleton } from '../../ds/Skeleton.jsx';
 import { getAdapted } from '../../../data/adapters.js';
 import { useCompare } from '../../../store/CompareContext.jsx';
 
@@ -8,32 +8,29 @@ export default function ResultGrid({
   onCardClick,
   onCompare,
   isLoading = false,
-  skeletonCount = 8,
+  skeletonCount = 5,
   sortKey,
 }) {
   const { has } = useCompare();
   if (isLoading) {
     return (
-      <div className="d-list-grid">
+      <div className="d-list-wide">
         {Array.from({ length: skeletonCount }).map((_, i) => (
-          <div key={`s-${i}`} className="d-list-grid-cell">
-            <FoodCardSkeleton />
-          </div>
+          <FoodCardWideSkeleton key={`s-${i}`} />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="d-list-grid">
+    <div className="d-list-wide">
       {products.map((p) => {
-        // adapter는 카드 렌더 직전에 호출 — 정렬/필터된 결과만 변환
         const food = getAdapted(p);
         return (
-          <div key={p.id} className="d-list-grid-cell">
+          <div key={p.id} className="d-list-wide-cell">
             <FoodCard
               food={food}
-              layout="grid"
+              layout="wide"
               onClick={() => onCardClick(p.id)}
               onCompare={() => onCompare(p.id)}
               inCompare={has(p.id)}

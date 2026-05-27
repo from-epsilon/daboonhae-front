@@ -112,9 +112,91 @@ function FullRow({ protein, carbs, fat }) {
   );
 }
 
-export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = false }) {
+// wide 변형: 비율 막대 + 수치 한 줄 + kcal 강조 (데스크톱 가로형 카드용)
+function WideRow({ protein, carbs, fat, kcal }) {
+  const total = protein + carbs + fat;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div
+        style={{
+          display: 'flex',
+          height: 6,
+          borderRadius: 3,
+          overflow: 'hidden',
+          background: 'var(--gray-100)',
+        }}
+      >
+        <div style={{ width: `${calcPercent(carbs, total)}%`, background: 'var(--orange-400)' }} />
+        <div style={{ width: `${calcPercent(protein, total)}%`, background: 'var(--green-500)' }} />
+        <div style={{ width: `${calcPercent(fat, total)}%`, background: 'var(--blue-400)' }} />
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 12,
+          fontSize: 12,
+          fontFamily: 'var(--font-numeric)',
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 6,
+              height: 6,
+              borderRadius: 2,
+              background: 'var(--orange-400)',
+              marginRight: 4,
+              verticalAlign: 'middle',
+            }}
+          />
+          탄 <b style={{ color: 'var(--text-primary)' }}>{carbs}g</b>
+        </span>
+        <span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 6,
+              height: 6,
+              borderRadius: 2,
+              background: 'var(--green-500)',
+              marginRight: 4,
+              verticalAlign: 'middle',
+            }}
+          />
+          단 <b style={{ color: 'var(--text-primary)' }}>{protein}g</b>
+        </span>
+        <span>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 6,
+              height: 6,
+              borderRadius: 2,
+              background: 'var(--blue-400)',
+              marginRight: 4,
+              verticalAlign: 'middle',
+            }}
+          />
+          지 <b style={{ color: 'var(--text-primary)' }}>{fat}g</b>
+        </span>
+        <span style={{ marginLeft: 'auto', fontSize: 14 }}>
+          <b style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{kcal}</b>
+          <span style={{ fontSize: 11 }}>kcal</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = false, wide = false }) {
   if (compact) {
     return <CompactRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} />;
+  }
+  if (wide) {
+    return <WideRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} />;
   }
   return <FullRow protein={protein} carbs={carbs} fat={fat} />;
 }

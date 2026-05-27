@@ -135,3 +135,74 @@ export function getPurpose(id) {
   if (!id || id === 'all') return ALL_PURPOSE;
   return PURPOSES.find((p) => p.id === id) ?? ALL_PURPOSE;
 }
+
+// 카테고리별 리스트 카드에서 강조할 핵심 영양 지표
+// key: nutrition 객체의 필드명 (calories, protein, carbs, sugar, fat, fiber, sodium 등)
+export const CATEGORY_KEY_METRICS = {
+  '닭가슴살': [
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'fat', label: '지방', unit: 'g' },
+    { key: 'sodium', label: '나트륨', unit: 'mg' },
+  ],
+  '단백질 음료': [
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+  ],
+  '에너지바': [
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+  ],
+  '제로 음료': [
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+  ],
+  '과자': [
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+    { key: 'fat', label: '지방', unit: 'g' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+  ],
+  '시리얼/그래놀라': [
+    { key: 'fiber', label: '식이섬유', unit: 'g' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+  ],
+  '밥/면류': [
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'sodium', label: '나트륨', unit: 'mg' },
+  ],
+  '소시지/햄': [
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sodium', label: '나트륨', unit: 'mg' },
+    { key: 'fat', label: '지방', unit: 'g' },
+  ],
+  '셰이크': [
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+  ],
+  '아이스크림': [
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sugar', label: '당류', unit: 'g' },
+    { key: 'fat', label: '지방', unit: 'g' },
+  ],
+};
+
+const DEFAULT_KEY_METRICS = [
+  { key: 'calories', label: '칼로리', unit: 'kcal' },
+  { key: 'protein', label: '단백질', unit: 'g' },
+  { key: 'sugar', label: '당류', unit: 'g' },
+  { key: 'fat', label: '지방', unit: 'g' },
+];
+
+export function getCategoryMetrics(category) {
+  return CATEGORY_KEY_METRICS[category] ?? DEFAULT_KEY_METRICS;
+}

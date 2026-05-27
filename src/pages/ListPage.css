@@ -571,41 +571,33 @@
 }
 
 /* ===========================================================================
-   결과 그리드
+   결과 리스트 (가로형 wide 카드)
    =========================================================================== */
-.d-list-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-5);
+.d-list-wide {
+  display: flex;
+  flex-direction: column;
 }
 
-.d-list-grid-cell {
-  min-width: 0;
-  transition: box-shadow 180ms ease, border-color 180ms ease;
+.d-list-wide-cell {
+  border-bottom: 1px solid var(--border-tertiary);
   border-radius: var(--radius-md);
-  border: 1px solid transparent;
+  transition: background-color 180ms ease;
+  margin: 0 -8px;
+  padding: 0 8px;
 }
 
-/* hover lift는 shadow + border 색상으로만 — translate 제거해 layout shift 방지 */
-.d-list-grid-cell:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-tertiary);
+.d-list-wide-cell:last-child {
+  border-bottom: none;
 }
 
-/* 화면이 좁아지면 3컬럼 → 2컬럼 fallback (데스크탑 viewport 안에서 안전망) */
-@media (max-width: 1180px) {
-  .d-list-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.d-list-wide-cell:hover {
+  background-color: var(--gray-50, #fafafa);
 }
 
 @media (max-width: 900px) {
   .d-list-body {
     grid-template-columns: 240px 1fr;
     gap: var(--space-6);
-  }
-  .d-list-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
