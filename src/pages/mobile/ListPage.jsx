@@ -1,12 +1,4 @@
-// 다분해 모바일 리스트/검색 결과 페이지
-// 흐름:
-//   1) AppBar (검색박스 클릭 → SearchSheet)
-//   2) 상단 목적 탭 TopTabs (전체/체중감량/근성장/혈당관리/식사대용)
-//   3) 세부 카테고리 칩 가로 스크롤 (purpose.subCategories)
-//   4) ActionBar (결과 N개 + 정렬 + 필터 진입)
-//   5) FoodCard list 세로 스택 / EmptyState
-//   6) FilterSheet / SortSheet / SearchSheet (모달 시트)
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { TopTabs } from '../../components/ds/TopTabs.jsx';
@@ -17,31 +9,18 @@ import { FilterSheet, countActiveFilters } from '../../components/mobile/list/Fi
 import { SortSheet, getSortShortLabel } from '../../components/mobile/list/SortSheet.jsx';
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
+import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
-import { PURPOSES, ALL_PURPOSE, FOOD_CATEGORIES } from '../../data/purposes.jsx';
-import { usePurpose } from '../../store/PurposeContext.jsx';
+import { ALL_FILTERS } from '../../data/purposes.jsx';
+import { CATEGORY_TABS, getTabCategories } from '../../data/categoryTabs.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import './ListPage.css';
 
-// 상단 목적 탭 라벨 배열 ('전체' + PURPOSES 라벨)
-const TAB_PURPOSES = [ALL_PURPOSE, ...PURPOSES];
-const TAB_LABELS = TAB_PURPOSES.map((p) => p.label);
+const TAB_LABELS = CATEGORY_TABS.map((t) => t.label);
+const PAGE_SIZE = 20;
 
-// purposeId ↔ 탭 인덱스 변환
-function purposeIdToIndex(id) {
-  const i = TAB_PURPOSES.findIndex((p) => p.id === id);
-  return i < 0 ? 0 : i;
-}
-function indexToPurposeId(i) {
-  return TAB_PURPOSES[i]?.id ?? 'all';
-}
-
-// =========================================================== 필터링 로직
-// (데스크탑 ListPage 와 같은 규칙을 모바일 모듈에서 별도 보존 — 데스크탑 파일을 건드리지 않기 위함)
-
-// tristate 필터의 키에 대응하는 제품 성분 배열
 function getIngredientList(product, key) {
   if (key === 'sweeteners') return product.ingredients?.sweeteners ?? [];
   if (key === 'proteinSources') return product.ingredients?.proteinSources ?? [];
@@ -49,7 +28,6 @@ function getIngredientList(product, key) {
   return [];
 }
 
-// 단일 필터 통과 여부
 function passSingleFilter(product, spec, v) {
   if (spec.type === 'range') {
     const target = product.nutrition?.[spec.key];
@@ -75,7 +53,6 @@ function passSingleFilter(product, spec, v) {
   return true;
 }
 
-// 필터 적용
 function applyFilters(products, specs, value) {
   if (!specs || specs.length === 0) return products;
   return products.filter((p) => {
@@ -88,7 +65,6 @@ function applyFilters(products, specs, value) {
   });
 }
 
-// 정렬 적용
 function applySort(products, sortKey) {
   const arr = [...products];
   switch (sortKey) {
@@ -105,74 +81,127 @@ function applySort(products, sortKey) {
   }
 }
 
-// =========================================================== 페이지 컴포넌트
+function ListSkeleton() {
+  return (
+    <div className="m-list-cards">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="m-list-skeleton-card">
+          <Skeleton width={88} height={88} radius={4} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Skeleton width="30%" height={11} />
+            <Skeleton width="80%" height={14} />
+            <Skeleton width="60%" height={11} />
+            <Skeleton width="100%" height={6} radius={3} />
+            <div style={{ display: 'flex', gap: 4 }}>
+              <Skeleton width={48} height={18} radius={10} />
+              <Skeleton width={40} height={18} radius={10} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ListPageMobile() {
-  const { purpose, purposeId, setPurpose } = usePurpose();
   const { count: compareCount, toggle: toggleCompare } = useCompare();
   const { products: PRODUCTS, loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const q = searchParams.get('q') ?? '';
+  const tabParam = searchParams.get('tab') ?? '';
+  const subParam = searchParams.get('sub') ?? '';
 
-  // 페이지 로컬 상태
-  const [subCategory, setSubCategory] = useState('all');
+  const initTab = useMemo(() => {
+    if (!tabParam) return 0;
+    const idx = CATEGORY_TABS.findIndex((t) => t.id === tabParam);
+    return idx >= 0 ? idx : 0;
+  }, [tabParam]);
+
+  const initSub = useMemo(() => {
+    if (!subParam) return 'all';
+    return subParam;
+  }, [subParam]);
+
+  const [activeTab, setActiveTab] = useState(initTab);
+  const [activeSub, setActiveSub] = useState(initSub);
   const [filterState, setFilterState] = useState({});
   const [sortKey, setSortKey] = useState('ranking');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  // 시트 open 상태
   const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
-  // 활성 필터/조건 여부 (빈 상태 복구 액션용)
-  const filterActiveCount = countActiveFilters(purpose.filters, filterState);
-  const hasActiveCondition = filterActiveCount > 0 || subCategory !== 'all';
+  const tab = CATEGORY_TABS[activeTab];
+  const tabCategories = useMemo(() => getTabCategories(tab.id), [tab.id]);
+  const subLabels = tab.subs.map((s) => s.label);
 
-  // 탭 전환 → purpose 변경 + 세부카테고리/필터 리셋
-  // (다른 목적의 필터 스펙이라 의미 없는 잔여 상태가 남지 않도록)
-  const handleTabSelect = (i) => {
-    const nextId = indexToPurposeId(i);
-    setPurpose(nextId);
-    setSubCategory('all');
+  // activeSub이 라벨이면 해당 DB 카테고리 찾기
+  const activeCategory = useMemo(() => {
+    if (activeSub === 'all') return null;
+    const found = tab.subs.find((s) => s.label === activeSub);
+    return found?.category ?? null;
+  }, [activeSub, tab]);
+
+  const filterActiveCount = useMemo(() => {
+    let n = 0;
+    for (const [, v] of Object.entries(filterState)) {
+      if (v === undefined || v === null) continue;
+      if (typeof v === 'boolean') { if (v) n += 1; }
+      else if (typeof v === 'object') {
+        if (Object.keys(v).filter((k) => v[k] !== undefined && v[k] !== null && v[k] !== '').length > 0) n += 1;
+      }
+    }
+    return n;
+  }, [filterState]);
+  const hasActiveCondition = filterActiveCount > 0 || activeSub !== 'all';
+
+  const handleTabSelect = useCallback((i) => {
+    setActiveTab(i);
+    setActiveSub('all');
     setFilterState({});
-  };
+    setVisibleCount(PAGE_SIZE);
+  }, []);
 
-  // 검색 시트에서 제출된 query 처리
+  const handleSubSelect = useCallback((label) => {
+    setActiveSub(label === 'all' ? 'all' : label);
+    setVisibleCount(PAGE_SIZE);
+  }, []);
+
   const handleSearchSubmit = (next) => {
     const trimmed = (next ?? '').trim();
-    if (trimmed) {
-      setSearchParams({ q: trimmed });
-    } else {
-      // 빈 검색 → 쿼리 제거
-      setSearchParams({});
-    }
+    setSearchParams(trimmed ? { q: trimmed } : {});
+    setVisibleCount(PAGE_SIZE);
   };
 
-  // 검색어 지우기
-  const clearSearch = () => setSearchParams({});
+  const clearSearch = () => { setSearchParams({}); setVisibleCount(PAGE_SIZE); };
 
-  // 필터/카테고리 모두 리셋
   const resetFilters = () => {
     setFilterState({});
-    setSubCategory('all');
+    setActiveSub('all');
+    setVisibleCount(PAGE_SIZE);
   };
 
-  // 비교함 진입
   const goCompare = () => navigate('/compare');
 
-  // 결과 계산 — 검색 → 목적 적합도 → 세부 카테고리 → 필터 → 정렬
   const products = useMemo(() => {
     let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
-    if (purposeId !== 'all') {
-      result = result.filter((p) => p.purposesFit?.includes(purposeId));
+    if (activeCategory) {
+      result = result.filter((p) => p.category === activeCategory);
+    } else {
+      result = result.filter((p) => tabCategories.includes(p.category));
     }
-    if (subCategory !== 'all') {
-      result = result.filter((p) => p.category === subCategory);
-    }
-    result = applyFilters(result, purpose.filters, filterState);
+    result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, purposeId, purpose.filters, subCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, tabCategories, activeCategory, filterState, sortKey]);
+
+  const visibleProducts = useMemo(
+    () => products.slice(0, visibleCount),
+    [products, visibleCount],
+  );
+  const hasMore = visibleCount < products.length;
 
   return (
     <div className="m-list-root">
@@ -181,28 +210,32 @@ export default function ListPageMobile() {
         onCompare={goCompare}
         compareCount={compareCount}
       />
-      <TopTabs
-        tabs={TAB_LABELS}
-        active={purposeIdToIndex(purposeId)}
-        onSelect={handleTabSelect}
-      />
-      <SubCategoryChips
-        categories={FOOD_CATEGORIES}
-        value={subCategory}
-        onChange={setSubCategory}
-      />
-      <ActionBar
-        count={products.length}
-        query={q}
-        onClearQuery={clearSearch}
-        sortLabel={getSortShortLabel(sortKey)}
-        onOpenSort={() => setSortOpen(true)}
-        filterActiveCount={filterActiveCount}
-        onOpenFilter={() => setFilterOpen(true)}
-      />
 
-      {/* 결과 영역 — 카드 또는 빈 상태 */}
-      {products.length === 0 ? (
+      <div className="m-list-sticky-header">
+        <TopTabs
+          tabs={TAB_LABELS}
+          active={activeTab}
+          onSelect={handleTabSelect}
+        />
+        <SubCategoryChips
+          categories={subLabels}
+          value={activeSub}
+          onChange={handleSubSelect}
+        />
+        <ActionBar
+          count={products.length}
+          query={q}
+          onClearQuery={clearSearch}
+          sortLabel={getSortShortLabel(sortKey)}
+          onOpenSort={() => setSortOpen(true)}
+          filterActiveCount={filterActiveCount}
+          onOpenFilter={() => setFilterOpen(true)}
+        />
+      </div>
+
+      {loading ? (
+        <ListSkeleton />
+      ) : products.length === 0 ? (
         <div className="m-list-empty-wrap">
           <EmptyState
             query={q}
@@ -213,19 +246,29 @@ export default function ListPageMobile() {
         </div>
       ) : (
         <div className="m-list-cards">
-          {products.map((p) => (
+          {visibleProducts.map((p) => (
             <FoodCard
               key={p.id}
               food={getAdapted(p)}
               layout="list"
+              tabId={tab.id}
+              subLabel={activeSub !== 'all' ? activeSub : undefined}
               onClick={() => navigate(`/product/${p.id}`)}
               onCompare={(food) => toggleCompare(food.id)}
             />
           ))}
+          {hasMore && (
+            <button
+              type="button"
+              className="m-list-load-more"
+              onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+            >
+              더 보기 ({products.length - visibleCount}개 남음)
+            </button>
+          )}
         </div>
       )}
 
-      {/* 모달 시트들 */}
       <SearchSheet
         open={searchOpen}
         initialQuery={q}
@@ -240,7 +283,7 @@ export default function ListPageMobile() {
       />
       <FilterSheet
         open={filterOpen}
-        specs={purpose.filters}
+        specs={ALL_FILTERS}
         value={filterState}
         onApply={setFilterState}
         onClose={() => setFilterOpen(false)}

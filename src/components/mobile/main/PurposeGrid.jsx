@@ -1,28 +1,34 @@
-// 모바일 메인 — 목적별 둘러보기 2x2 그리드
-// - PURPOSES 메타에서 id/label/Icon(Lucide)을 가져와 4개 타일 렌더
-// - 카드 클릭 시 PurposeContext에 목적 set + 부모에서 /list 이동
 import { PURPOSES } from '../../../data/purposes.jsx';
+import { ChevronRight } from 'lucide-react';
 
-// 단일 타일 — 아이콘 + 라벨
+const PURPOSE_DESC = {
+  low_sugar: '당류·감미료 중심 분석',
+  protein: '단백질 함량·원료 비교',
+  weight_loss: '칼로리·포만감 분석',
+  meal_replacement: '한 끼 영양 균형 체크',
+};
+
 function PurposeTile({ p, onClick }) {
   const Icon = p.Icon;
   return (
     <button
       type="button"
-      className="m-home-purpose-tile"
+      className={`m-home-purpose-tile m-home-purpose-tile--${p.id}`}
       onClick={() => onClick && onClick(p.id)}
       aria-label={`${p.label} 목적으로 둘러보기`}
     >
       <span className="m-home-purpose-icon" aria-hidden="true">
-        <Icon size={26} strokeWidth={1.75} />
+        <Icon size={22} strokeWidth={1.8} />
       </span>
       <span className="m-home-purpose-label">{p.label}</span>
+      <span className="m-home-purpose-desc">{PURPOSE_DESC[p.id]}</span>
+      <span className="m-home-purpose-arrow" aria-hidden="true">
+        <ChevronRight size={16} strokeWidth={2} />
+      </span>
     </button>
   );
 }
 
-// 2x2 그리드 본체
-// - onSelect(purposeId)
 export function PurposeGrid({ onSelect }) {
   return (
     <div className="m-home-purpose-grid">

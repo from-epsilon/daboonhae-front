@@ -48,6 +48,32 @@
   height: 2px; background: var(--gray-900); border-radius: 2px;
 }
 
+/* ---------- 서브카테고리 칩 ---------- */
+.d-list-sub-chips {
+  display: flex;
+  gap: 6px;
+  padding: var(--space-3) 0;
+  margin-bottom: var(--space-2);
+}
+.d-list-sub-chip {
+  padding: 7px 16px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.d-list-sub-chip:hover { border-color: var(--gray-500); color: var(--text-primary); }
+.d-list-sub-chip.is-active {
+  background: var(--gray-900);
+  border-color: var(--gray-900);
+  color: var(--white);
+  font-weight: 700;
+}
+
 /* ---------- 2단 본문 ---------- */
 .d-list-body {
   display: grid;
@@ -681,6 +707,28 @@
 .d-list-empty-btn-primary:hover {
   background: var(--gray-800);
   border-color: var(--gray-800);
+}
+
+/* ---------- 더 보기 버튼 ---------- */
+.d-list-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px;
+  margin-top: var(--space-4);
+  background: var(--gray-100);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.d-list-load-more:hover {
+  background: var(--gray-200);
 }
 
 /* ===========================================================================

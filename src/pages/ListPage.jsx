@@ -3,7 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCompare } from '../store/CompareContext.jsx';
 import { useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
-import { FOOD_CATEGORIES, ALL_FILTERS } from '../data/purposes.jsx';
+import { ALL_FILTERS } from '../data/purposes.jsx';
+import { CATEGORY_TABS, getTabCategories } from '../data/categoryTabs.js';
+import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
 import ResultHeader from '../components/desktop/list/ResultHeader.jsx';
 import ResultGrid from '../components/desktop/list/ResultGrid.jsx';
@@ -11,64 +13,126 @@ import EmptyResult from '../components/desktop/list/EmptyResult.jsx';
 import ActiveFilterChips from '../components/desktop/list/ActiveFilterChips.jsx';
 import './ListPage.css';
 
+const PAGE_SIZE = 20;
+
 export default function ListPage() {
   const compare = useCompare();
   const { products: PRODUCTS, loading } = useProducts();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const q = searchParams.get('q') ?? '';
-  const categoryParam = searchParams.get('category') ?? '';
+  const tabParam = searchParams.get('tab') ?? '';
+  const subParam = searchParams.get('sub') ?? '';
 
-  const [subCategory, setSubCategory] = useState(categoryParam || 'all');
+  const initTab = useMemo(() => {
+    if (!tabParam) return 0;
+    const idx = CATEGORY_TABS.findIndex((t) => t.id === tabParam);
+    return idx >= 0 ? idx : 0;
+  }, [tabParam]);
+
+  const [activeTab, setActiveTab] = useState(initTab);
+  const [activeSub, setActiveSub] = useState(subParam || 'all');
   const [filterState, setFilterState] = useState({});
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  useEffect(() => {
-    if (categoryParam) setSubCategory(categoryParam);
-  }, [categoryParam]);
   const [sortKey, setSortKey] = useState('default');
 
+  const tab = CATEGORY_TABS[activeTab];
+  const tabCategories = useMemo(() => getTabCategories(tab.id), [tab.id]);
+
+  const activeCategory = useMemo(() => {
+    if (activeSub === 'all') return null;
+    const found = tab.subs.find((s) => s.label === activeSub);
+    return found?.category ?? null;
+  }, [activeSub, tab]);
+
   const activeFilterCount = countActiveFilters(filterState);
-  const hasActiveSubCategory = subCategory !== 'all';
-  const canResetSomething = activeFilterCount > 0 || hasActiveSubCategory;
+  const canResetSomething = activeFilterCount > 0 || activeSub !== 'all';
 
   const resetFilters = () => {
     setFilterState({});
-    setSubCategory('all');
+    setActiveSub('all');
+    setVisibleCount(PAGE_SIZE);
   };
 
   const clearSearch = () => navigate('/list');
 
   const products = useMemo(() => {
     let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
-    if (subCategory !== 'all') {
-      result = result.filter((p) => p.category === subCategory);
+    if (activeCategory) {
+      result = result.filter((p) => p.category === activeCategory);
+    } else {
+      result = result.filter((p) => tabCategories.includes(p.category));
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, subCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, tabCategories, activeCategory, filterState, sortKey]);
 
-  if (loading) return <div className="d-list-page" style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
+  const visibleProducts = useMemo(
+    () => products.slice(0, visibleCount),
+    [products, visibleCount],
+  );
+  const hasMore = visibleCount < products.length;
+
+  if (loading) {
+    return (
+      <div className="d-list-page">
+        <div className="d-list-page-inner">
+          <div className="d-list-category-chips">
+            {CATEGORY_TABS.map((t, i) => (
+              <button key={t.id} type="button" className={`d-list-category-chip${i === 0 ? ' is-active' : ''}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="d-list-body">
+            <div />
+            <section className="d-list-main">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <FoodCardWideSkeleton key={i} />
+              ))}
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-list-page">
       <div className="d-list-page-inner">
+        {/* 상위 3탭 */}
         <div className="d-list-category-chips">
+          {CATEGORY_TABS.map((t, i) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`d-list-category-chip${i === activeTab ? ' is-active' : ''}`}
+              onClick={() => { setActiveTab(i); setActiveSub('all'); setVisibleCount(PAGE_SIZE); }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 하위 서브카테고리 칩 */}
+        <div className="d-list-sub-chips">
           <button
             type="button"
-            className={`d-list-category-chip${subCategory === 'all' ? ' is-active' : ''}`}
-            onClick={() => setSubCategory('all')}
+            className={`d-list-sub-chip${activeSub === 'all' ? ' is-active' : ''}`}
+            onClick={() => { setActiveSub('all'); setVisibleCount(PAGE_SIZE); }}
           >
             전체
           </button>
-          {FOOD_CATEGORIES.map((cat) => (
+          {tab.subs.map((s) => (
             <button
-              key={cat}
+              key={s.label}
               type="button"
-              className={`d-list-category-chip${subCategory === cat ? ' is-active' : ''}`}
-              onClick={() => setSubCategory(cat)}
+              className={`d-list-sub-chip${activeSub === s.label ? ' is-active' : ''}`}
+              onClick={() => { setActiveSub(s.label); setVisibleCount(PAGE_SIZE); }}
             >
-              {cat}
+              {s.label}
             </button>
           ))}
         </div>
@@ -89,7 +153,7 @@ export default function ListPage() {
               sortKey={sortKey}
               onSortChange={setSortKey}
               onClearQuery={clearSearch}
-              category={subCategory}
+              category={activeSub !== 'all' ? activeSub : tab.label}
             />
 
             <ActiveFilterChips
@@ -106,12 +170,23 @@ export default function ListPage() {
                 onClearQuery={clearSearch}
               />
             ) : (
-              <ResultGrid
-                products={products}
-                onCardClick={(id) => navigate(`/product/${id}`)}
-                onCompare={(id) => compare.toggle(id)}
-                sortKey={sortKey}
-              />
+              <>
+                <ResultGrid
+                  products={visibleProducts}
+                  onCardClick={(id) => navigate(`/product/${id}`)}
+                  onCompare={(id) => compare.toggle(id)}
+                  sortKey={sortKey}
+                />
+                {hasMore && (
+                  <button
+                    type="button"
+                    className="d-list-load-more"
+                    onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  >
+                    더 보기 ({products.length - visibleCount}개 남음)
+                  </button>
+                )}
+              </>
             )}
           </section>
         </div>

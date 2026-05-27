@@ -2,6 +2,21 @@
 
 .d-detail { display: flex; flex-direction: column; gap: 20px; }
 
+/* 스켈레톤 로딩 */
+.d-detail-skeleton-wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 40px;
+}
+.d-detail-skeleton-breadcrumb {
+  margin-bottom: 24px;
+}
+.d-detail-skeleton-body {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
 /* ───────── 정보 툴팁 (? 아이콘 hover) ───────── */
 .d-detail-tooltip-wrap {
   position: relative; display: inline-flex; align-items: center; gap: 4px; cursor: help;

@@ -1,7 +1,8 @@
-/* 모바일 리스트 페이지 — 셸 컨테이너 + 카드 리스트 영역
-   prefix: .m-list-* (다른 페이지 컴포넌트와 충돌 방지) */
+/* ===========================================================================
+   모바일 리스트 페이지
+   prefix: .m-list-*
+   =========================================================================== */
 
-/* 최상위: 셸이 BottomNav 자리를 비워두므로 페이지는 단순 세로 스크롤 컨테이너 */
 .m-list-root {
   display: flex;
   flex-direction: column;
@@ -10,25 +11,61 @@
   background: var(--bg-white);
 }
 
-/* 카드 리스트 영역
-   - 좌우 16px 패딩 (DS 카드의 1px 디바이더가 그대로 보임)
-   - FoodCard list 레이아웃은 자체적으로 padding 14px 0 + border-bottom 처리 */
+/* 스티키 헤더: TopTabs + SubCategory + ActionBar 고정 */
+.m-list-sticky-header {
+  position: sticky;
+  top: 52px; /* AppBar 높이 */
+  z-index: var(--z-sticky, 10);
+  background: var(--bg-white);
+  box-shadow: 0 1px 0 var(--border-tertiary);
+}
+
+/* 카드 리스트 영역 */
 .m-list-cards {
   padding: 0 16px 24px;
   background: white;
 }
 
-/* 카드 리스트 첫 카드 상단 약간의 공기 */
 .m-list-cards > :first-child {
   padding-top: 8px;
 }
 
-/* 결과 영역(빈 상태) 컨테이너: 카드와 동일 좌우 패딩 */
+/* 빈 상태 */
 .m-list-empty-wrap {
   padding: 0 16px;
 }
 
-/* number input 의 spinner 제거 (모바일 단순화) — FilterRange 의 input 대상 */
+/* 더 보기 버튼 */
+.m-list-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  background: var(--gray-100);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.m-list-load-more:active {
+  background: var(--gray-200);
+}
+
+/* 스켈레톤 카드 */
+.m-list-skeleton-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+
+/* number input spinner 제거 */
 .m-list-root input[type='number']::-webkit-outer-spin-button,
 .m-list-root input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;

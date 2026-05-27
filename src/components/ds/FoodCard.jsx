@@ -9,6 +9,7 @@ import { Badge } from './Badge.jsx';
 import { MacroRow } from './MacroRow.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
+import { getCategoryCardConfig, computeMetricValues } from '../../data/categoryCardMetrics.js';
 
 // 썸네일 이미지 (URL → img, 빈값 → 회색 placeholder)
 // - 원본 DS는 thumb 가 CSS gradient 문자열이라 background 로 적용했지만
@@ -84,7 +85,7 @@ function TrustBadgeRow({ trustBadges }) {
 }
 
 // list 레이아웃: 가로 88x88 썸네일 + 텍스트 영역
-function FoodCardList({ food, onClick, onCompare, inCompare }) {
+function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) {
   return (
     <div
       onClick={onClick}
@@ -98,17 +99,53 @@ function FoodCardList({ food, onClick, onCompare, inCompare }) {
     >
       <div
         style={{
-          width: 88,
-          height: 88,
-          borderRadius: 'var(--radius-sm)',
           flexShrink: 0,
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'var(--gray-100)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
         }}
       >
-        <ThumbImage src={food.thumb} alt={food.name} />
-        <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+        <div
+          style={{
+            width: 88,
+            height: 88,
+            borderRadius: 'var(--radius-sm)',
+            overflow: 'hidden',
+            background: 'var(--gray-100)',
+          }}
+        >
+          <ThumbImage src={food.thumb} alt={food.name} />
+        </div>
+        {onCompare && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCompare(food);
+            }}
+            aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 10px',
+              border: inCompare ? '1px solid var(--green-500)' : '1px solid var(--border-tertiary)',
+              borderRadius: 'var(--radius-pill)',
+              background: inCompare ? 'var(--green-50)' : 'var(--bg-white)',
+              color: inCompare ? 'var(--green-700)' : 'var(--text-secondary)',
+              fontSize: 11,
+              fontFamily: 'var(--font-body)',
+              fontWeight: inCompare ? 700 : 500,
+              cursor: 'pointer',
+              transition: 'all 150ms ease',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {inCompare ? <IconCheck size={11} stroke={2} /> : <IconPlus size={11} stroke={2} />}
+            {inCompare ? '담김' : '비교'}
+          </button>
+        )}
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
@@ -129,18 +166,55 @@ function FoodCardList({ food, onClick, onCompare, inCompare }) {
         {food.serving && (
           <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
         )}
-        <MacroRow {...food.macros} compact />
-        {/* list 레이아웃: tags 전부 + trust 1개 */}
-        <div
-          style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}
-        >
-          {food.tags && food.tags.map((t, i) => (
-            <Badge key={i} variant={t.v}>
-              {t.label}
-            </Badge>
-          ))}
-          <TrustBadgeRow trustBadges={food.trustBadges} />
+        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} />
+      </div>
+    </div>
+  );
+}
+
+function CategoryMetricsBlock({ food, tabId, subLabel }) {
+  const config = getCategoryCardConfig(tabId, subLabel);
+  const { metrics, showSweeteners } = config;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4 }}>
+      {metrics.map((m) => {
+        const result = computeMetricValues(food, m);
+        if (!result) return null;
+        return (
+          <div key={m.key} className="fc-metric-row">
+            <span className="fc-metric-label">{m.label}</span>
+            <span className="fc-metric-total">
+              {result.total}<span className="fc-metric-unit">{result.unit}</span>
+            </span>
+            {result.ratios.map((r, i) => (
+              <span key={i} className="fc-metric-ratio">
+                {r.value}<span className="fc-metric-ratio-label">{r.label}</span>
+              </span>
+            ))}
+          </div>
+        );
+      })}
+      {showSweeteners && food.sweeteners && food.sweeteners.length > 0 && (
+        <div className="fc-metric-row">
+          <span className="fc-metric-label">대체당</span>
+          <span style={{ fontSize: 11, color: 'var(--text-primary)', fontWeight: 500 }}>
+            {food.sweeteners.join(' · ')}
+          </span>
         </div>
+      )}
+      {showSweeteners && (!food.sweeteners || food.sweeteners.length === 0) && (
+        <div className="fc-metric-row">
+          <span className="fc-metric-label">대체당</span>
+          <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>없음</span>
+        </div>
+      )}
+      <div
+        style={{ display: 'flex', gap: 4, marginTop: 2, flexWrap: 'wrap', alignItems: 'center' }}
+      >
+        {food.tags && food.tags.map((t, i) => (
+          <Badge key={i} variant={t.v}>{t.label}</Badge>
+        ))}
       </div>
     </div>
   );
@@ -495,10 +569,10 @@ function ReviewMeta({ reviewCount }) {
   );
 }
 
-export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, sortKey }) {
+export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, sortKey, tabId, subLabel }) {
   if (!food) return null;
   if (layout === 'list') {
-    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
+    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} />;
   }
   if (layout === 'wide') {
     return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;

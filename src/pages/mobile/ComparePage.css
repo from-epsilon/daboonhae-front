@@ -15,7 +15,7 @@
   --row-cell-h: 52px;     /* 영양소 셀 */
   --row-tags-h: 120px;    /* 자동 태그 스택 */
   --label-col-w: 104px;
-  --data-col-w: 150px;
+  --data-col-w: 170px;
 
   background: var(--bg-white);
   min-height: 100%;
@@ -121,6 +121,19 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
+  position: relative;
+}
+/* 스크롤 힌트: 우측 페이드 그라데이션 */
+.m-compare-grid::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8));
+  pointer-events: none;
+  z-index: 3;
 }
 .m-compare-data-scroll::-webkit-scrollbar {
   height: 0;
@@ -251,6 +264,14 @@
   color: var(--text-secondary);
   font-weight: 500;
   margin-left: 1px;
+}
+
+/* 홀짝 줄무늬 — 라벨 + 데이터 셀 동시 적용 */
+.m-compare-label-cell:nth-child(even) {
+  background: var(--gray-50);
+}
+.m-compare-cell:nth-child(even) {
+  background: var(--gray-50);
 }
 
 /* 우수값 강조 — soft-green pill + 그린 텍스트 + 체크 아이콘 */

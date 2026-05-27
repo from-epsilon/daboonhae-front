@@ -404,6 +404,44 @@ select:focus-visible {
   .d-skeleton { animation: none; background: var(--gray-200); }
 }
 
+/* ───────── DS FoodCard: 카테고리 메트릭 행 */
+.fc-metric-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-numeric);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.fc-metric-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 42px;
+  flex-shrink: 0;
+}
+.fc-metric-total {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.fc-metric-unit {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-left: 1px;
+}
+.fc-metric-ratio {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.fc-metric-ratio-label {
+  font-size: 9px;
+  color: var(--text-tertiary);
+  margin-left: 1px;
+}
+
 /* ───────── DS FoodCard: 비교함 + 버튼
    - 시각 크기 26x26 유지, 의사요소(::before)로 hit-area 44x44 확장
    - 작은 비주얼 위에 큰 터치 타깃 확보 (모바일/터치 환경 안전) */
@@ -715,4 +753,45 @@ img.product-thumb { object-fit: cover; }
     scroll-behavior: auto !important;
   }
   .purpose-tile:hover { transform: none; box-shadow: var(--shadow-sm); }
+}
+
+/* ───────── DS TopTabs ───────── */
+.ds-top-tabs {
+  background: white;
+  display: flex;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border-tertiary);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.ds-top-tabs::-webkit-scrollbar { display: none; }
+.ds-top-tab {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 12px;
+  color: var(--text-tertiary);
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  transition: color 0.15s;
+}
+.ds-top-tab:hover {
+  color: var(--text-secondary);
+}
+.ds-top-tab.is-active {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.ds-top-tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: var(--gray-900);
+  border-radius: 2px;
 }

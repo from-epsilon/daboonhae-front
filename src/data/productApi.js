@@ -17,12 +17,24 @@ const NUTRIENT_KEY = {
   saturated_fat_g: 'saturatedFat',
   cholesterol_mg: 'cholesterol',
   src_알룰로오스_g: 'allulose',
+  src_bcaa_mg: 'bcaa',
+  leucine: 'leucine',
+  isoleucine: 'isoleucine',
+  valine: 'valine',
+  lysine: 'lysine',
+  methionine: 'methionine',
+  phenylalanine: 'phenylalanine',
+  threonine: 'threonine',
+  tryptophan: 'tryptophan',
+  histidine: 'histidine',
 };
 
 function parseNutrition(foodNutrients) {
   const n = {
-    calories: 0, protein: 0, carbs: 0, sugar: 0, fat: 0, fiber: 0, bcaa: 0,
+    calories: 0, protein: 0, carbs: 0, sugar: 0, fat: 0, fiber: 0,
     sodium: 0, transFat: 0, saturatedFat: 0, cholesterol: 0, allulose: undefined,
+    bcaa: 0, leucine: 0, isoleucine: 0, valine: 0,
+    lysine: 0, methionine: 0, phenylalanine: 0, threonine: 0, tryptophan: 0, histidine: 0,
   };
   for (const fn of foodNutrients ?? []) {
     const key = NUTRIENT_KEY[fn.nutrient_code];

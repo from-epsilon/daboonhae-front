@@ -1,47 +1,71 @@
-// 모바일 메인 페이지 (Round 3)
-// 구조: AppBar(상단 52px) → 추천 슬라이더 → 목적별 그리드 → 최근 추가 리스트
-// - 모바일 셸(.mobile-shell-main) 안에서 렌더 — 하단 56px BottomNav 공간은 셸이 padding-bottom으로 처리
-// - 페이지 자체는 AppBar + 본문만 책임
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
-import { usePurpose } from '../../store/PurposeContext.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { RecommendSlider } from '../../components/mobile/main/RecommendSlider.jsx';
-import { PurposeGrid } from '../../components/mobile/main/PurposeGrid.jsx';
+import { CategoryTabs } from '../../components/mobile/main/CategoryTabs.jsx';
 import { RecentList } from '../../components/mobile/main/RecentList.jsx';
+import { Skeleton } from '../../components/ds/Skeleton.jsx';
+import { ArrowRight, ChevronRight } from 'lucide-react';
 import './MainPage.css';
 
-// 섹션 헤더 (제목 + 부제) — 작은 SRP 컴포넌트로 분리
-function SectionHeader({ title, subtitle }) {
+function SectionHeader({ title, subtitle, moreLabel, onMore }) {
   return (
     <header className="m-home-section-head">
-      <h2 className="m-home-section-title">{title}</h2>
-      {subtitle && <p className="m-home-section-sub">{subtitle}</p>}
+      <div>
+        <h2 className="m-home-section-title">{title}</h2>
+        {subtitle && <p className="m-home-section-sub">{subtitle}</p>}
+      </div>
+      {onMore && (
+        <button type="button" className="m-home-section-more" onClick={onMore}>
+          <span>{moreLabel ?? '더보기'}</span>
+          <ChevronRight size={14} strokeWidth={2.2} />
+        </button>
+      )}
     </header>
   );
 }
 
-// 추천 식품 목록 도출 — 점수 내림차순 상위 8개
 function useRecommended(adapted) {
   return useMemo(() => {
     return [...adapted].sort((a, b) => b.score - a.score).slice(0, 8);
   }, [adapted]);
 }
 
-// 최근 추가 식품 목록 도출 — id 내림차순 5개 (id가 'p###' 패턴이라 문자열 비교로 충분)
 function useRecent(adapted) {
   return useMemo(() => {
     return [...adapted].sort((a, b) => (a.id < b.id ? 1 : -1)).slice(0, 5);
   }, [adapted]);
 }
 
+function HomeSkeleton() {
+  return (
+    <div className="m-home">
+      <div className="m-home-hero-skeleton">
+        <Skeleton width="50%" height={14} radius={4} />
+        <Skeleton width="80%" height={22} radius={4} />
+        <Skeleton width="60%" height={14} radius={4} />
+      </div>
+      <div style={{ padding: '20px 0' }}>
+        <Skeleton width="30%" height={18} radius={4} style={{ marginBottom: 12 }} />
+        <div style={{ display: 'flex', gap: 12, overflow: 'hidden' }}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{ flex: '0 0 160px' }}>
+              <Skeleton height={160} radius={12} />
+              <Skeleton width="40%" height={10} radius={3} style={{ marginTop: 8 }} />
+              <Skeleton width="80%" height={13} radius={3} style={{ marginTop: 4 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MainPageMobile() {
   const navigate = useNavigate();
-  // 컨텍스트 expose 키는 setPurpose (id를 받음). 프롬프트의 setPurposeId와 동일 의도.
-  const { setPurpose } = usePurpose();
   const { toggle, count } = useCompare();
   const { products: PRODUCTS, loading } = useProducts();
 
@@ -49,22 +73,17 @@ export default function MainPageMobile() {
   const recommended = useRecommended(adapted);
   const recent = useRecent(adapted);
 
-  // ───────── 핸들러 (각 함수는 단일 책임)
-  // 검색바 클릭 → 리스트로 (검색 필드는 리스트 페이지에서 활성)
   const handleSearch = () => navigate('/list?q=');
-  // 비교함 아이콘 클릭 → 비교 페이지로
   const handleCompare = () => navigate('/compare');
-  // FoodCard / 추천 카드 클릭 → 디테일
   const handleFoodClick = (food) => navigate(`/product/${food.id}`);
-  // 목적 타일 클릭 → 컨텍스트에 목적 set + 리스트로
-  const handlePurposePick = (purposeId) => {
-    setPurpose(purposeId);
-    navigate('/list');
-  };
-  // FoodCard 의 + 버튼 → 비교함 토글
   const handleToggleCompare = (food) => toggle(food.id);
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
+  if (loading) return (
+    <>
+      <AppBar onSearch={handleSearch} onCompare={handleCompare} compareCount={count} />
+      <HomeSkeleton />
+    </>
+  );
 
   return (
     <>
@@ -75,24 +94,37 @@ export default function MainPageMobile() {
       />
 
       <div className="m-home">
-        {/* 1. 추천 식품 — 가로 슬라이더 (점수 상위 8개) */}
-        <section className="m-home-section m-home-section--rec">
-          <SectionHeader
-            title="추천 식품"
-            subtitle="다분해 점수가 높은 식품을 모았어요"
-          />
-          <RecommendSlider items={recommended} onItemClick={handleFoodClick} />
+        {/* 히어로 배너 */}
+        <section className="m-home-hero" onClick={() => navigate('/list')}>
+          <div className="m-home-hero-glow" aria-hidden="true" />
+          <p className="m-home-hero-eyebrow">성분 비교 플랫폼</p>
+          <h1 className="m-home-hero-title">
+            성분표 뒤집지 말고,<br />
+            <span className="m-home-hero-accent">한눈에 비교</span>하세요
+          </h1>
+          <p className="m-home-hero-sub">
+            {adapted.length}개 제품의 영양 성분을 분석했어요
+          </p>
+          <span className="m-home-hero-cta">
+            둘러보기 <ArrowRight size={14} strokeWidth={2.5} />
+          </span>
+        </section>
+
+        {/* 1. 카테고리 탭 — 히어로와 딱 붙임 */}
+        <section className="m-home-section m-home-section--cattabs">
+          <CategoryTabs />
         </section>
 
         <div className="m-home-divider" aria-hidden="true" />
 
-        {/* 2. 탐색 성격별로 둘러보기 — 2x2 그리드 */}
-        <section className="m-home-section">
+        {/* 2. 추천 식품 — 가로 슬라이더 */}
+        <section className="m-home-section m-home-section--rec">
           <SectionHeader
-            title="탐색 성격별 둘러보기"
-            subtitle="내 관심사에 맞는 식품을 빠르게 찾아보세요"
+            title="추천 식품"
+            subtitle="다분해 점수가 높은 식품이에요"
+            onMore={() => navigate('/list')}
           />
-          <PurposeGrid onSelect={handlePurposePick} />
+          <RecommendSlider items={recommended} onItemClick={handleFoodClick} />
         </section>
 
         <div className="m-home-divider" aria-hidden="true" />
@@ -101,7 +133,8 @@ export default function MainPageMobile() {
         <section className="m-home-section">
           <SectionHeader
             title="최근 추가된 식품"
-            subtitle="새로 분해한 영양 정보를 확인하세요"
+            subtitle="새로 분석된 영양 정보예요"
+            onMore={() => navigate('/list')}
           />
           <RecentList
             items={recent}

@@ -197,7 +197,27 @@ export default function DetailPage() {
   const raw = useProductById(id);
   const product = raw ? getAdapted(raw) : null;
 
-  if (loading) return <div className="page" style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
+  if (loading) return (
+    <div className="page d-detail-skeleton-wrap">
+      <div className="d-detail-skeleton-breadcrumb">
+        <span className="d-skeleton" style={{ width: '30%', height: 12, borderRadius: 4, display: 'inline-block' }} />
+      </div>
+      <div className="d-detail-skeleton-body">
+        <div className="d-skeleton" style={{ width: 320, height: 320, borderRadius: 12, flexShrink: 0 }} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <span className="d-skeleton" style={{ width: '25%', height: 12, borderRadius: 4, display: 'inline-block' }} />
+          <span className="d-skeleton" style={{ width: '60%', height: 28, borderRadius: 4, display: 'inline-block' }} />
+          <span className="d-skeleton" style={{ width: '20%', height: 12, borderRadius: 4, display: 'inline-block' }} />
+          <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+            <span className="d-skeleton" style={{ width: 100, height: 60, borderRadius: 8, display: 'inline-block' }} />
+            <span className="d-skeleton" style={{ width: 100, height: 60, borderRadius: 8, display: 'inline-block' }} />
+            <span className="d-skeleton" style={{ width: 100, height: 60, borderRadius: 8, display: 'inline-block' }} />
+          </div>
+          <span className="d-skeleton" style={{ width: '100%', height: 12, borderRadius: 6, display: 'inline-block', marginTop: 8 }} />
+        </div>
+      </div>
+    </div>
+  );
   if (!product) return <EmptyState />;
 
   const inCart = has(product.id);

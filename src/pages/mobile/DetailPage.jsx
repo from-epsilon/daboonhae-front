@@ -72,7 +72,21 @@ export default function DetailPageMobile() {
   const raw = useProductById(id);
   const product = raw ? getAdapted(raw) : null;
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}>불러오는 중...</div>;
+  if (loading) return (
+    <>
+      <AppBar onBack={() => navigate(-1)} title="불러오는 중..." />
+      <div className="m-detail" style={{ gap: 16, padding: '16px 16px 92px' }}>
+        <div style={{ width: '100%', aspectRatio: '4/3', background: 'var(--gray-100)', borderRadius: 12 }} className="d-skeleton" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span className="d-skeleton" style={{ width: '30%', height: 12, borderRadius: 4, display: 'inline-block' }} />
+          <span className="d-skeleton" style={{ width: '80%', height: 22, borderRadius: 4, display: 'inline-block' }} />
+          <span className="d-skeleton" style={{ width: '50%', height: 12, borderRadius: 4, display: 'inline-block' }} />
+        </div>
+        <span className="d-skeleton" style={{ width: '100%', height: 80, borderRadius: 12, display: 'inline-block' }} />
+        <span className="d-skeleton" style={{ width: '100%', height: 200, borderRadius: 12, display: 'inline-block' }} />
+      </div>
+    </>
+  );
   if (!product) {
     return (
       <>

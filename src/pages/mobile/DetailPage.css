@@ -7,20 +7,19 @@
 
 /* ---------- 공통 컨테이너 ---------- */
 .m-detail {
-  background: var(--bg-white);
-  padding-bottom: 92px;        /* 하단 sticky CTA(70) + 여유(22) */
+  background: var(--gray-100);
+  padding-bottom: 92px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
-/* 카드 archetype — Comparison card 톤 */
+/* 카드 archetype */
 .m-detail-card {
-  background: var(--bg-card-ui);
-  border: 1px solid var(--border-tertiary);
+  background: var(--bg-white);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  margin: 0 16px;
+  padding: 20px 16px;
+  margin: 0;
 }
 
 .m-detail-card-head {
@@ -53,8 +52,9 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 0 16px;
-  margin: 12px 0 8px;
+  padding: 20px 16px 8px;
+  margin: 0;
+  background: var(--bg-white);
 }
 .m-detail-section-title {
   margin: 0;
@@ -74,7 +74,7 @@
    ============================================================ */
 .m-detail-hero {
   background: var(--bg-white);
-  padding: 16px 16px 8px;
+  padding: 16px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -185,9 +185,11 @@
 .m-detail-tags {
   display: flex;
   gap: 6px;
-  padding: 0 16px;
+  padding: 8px 16px 16px;
   overflow-x: auto;
   scrollbar-width: none;
+  background: var(--bg-white);
+  margin-top: -8px;
 }
 .m-detail-tags::-webkit-scrollbar { display: none; }
 
@@ -203,8 +205,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 11px 0;
+  padding: 11px 12px;
   border-bottom: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-sm);
+}
+.m-detail-nutri-row:nth-child(even) {
+  background: var(--gray-50);
 }
 .m-detail-nutri-row:last-child { border-bottom: none; }
 
@@ -237,10 +243,12 @@
 .m-detail-report {
   display: flex;
   flex-direction: column;
+  background: var(--bg-white);
+  padding-bottom: 16px;
 }
 
 .m-detail-report-hint {
-  margin: 0 16px 8px;
+  margin: 0 16px 12px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -258,8 +266,9 @@
 }
 
 .m-detail-report-card {
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0 16px 0;
+  background: var(--bg-card-ui);
+  border: 1px solid var(--border-tertiary);
 }
 .m-detail-report-head {
   display: flex;
@@ -317,6 +326,7 @@
 .m-detail-ingr-list {
   display: flex;
   flex-direction: column;
+  padding: 0 4px;
 }
 .m-detail-ingr-row {
   display: grid;
@@ -360,6 +370,8 @@
 .m-detail-review {
   display: flex;
   flex-direction: column;
+  background: var(--bg-white);
+  padding-bottom: 16px;
 }
 
 .m-detail-review-form {
