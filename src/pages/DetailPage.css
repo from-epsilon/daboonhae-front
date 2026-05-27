@@ -4,7 +4,7 @@
 
 /* ───────── 정보 툴팁 (? 아이콘 hover) ───────── */
 .d-detail-tooltip-wrap {
-  position: relative; display: inline-flex; align-items: center; cursor: help;
+  position: relative; display: inline-flex; align-items: center; gap: 4px; cursor: help;
 }
 .d-detail-tooltip-icon {
   color: var(--text-tertiary); transition: color 0.15s;

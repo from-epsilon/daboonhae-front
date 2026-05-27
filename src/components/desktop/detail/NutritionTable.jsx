@@ -141,8 +141,11 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
     <section className="d-detail-card d-detail-nutri">
       <header className="d-detail-card-head">
         <h2 className="d-detail-card-title">영양성분</h2>
-        {servingSize > 0 && (
+        {servingSize > 0 && servingSize !== 100 && (
           <BasisToggle basis={basis} onChangeBasis={setBasis} servingSize={servingSize} servingUnit={servingUnit} />
+        )}
+        {servingSize === 100 && (
+          <span className="d-detail-card-sub">100{unit} 기준</span>
         )}
       </header>
       <ul className="d-detail-nutri-list">
