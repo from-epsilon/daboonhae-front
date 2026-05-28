@@ -4,7 +4,7 @@ import { useCompare } from '../store/CompareContext.jsx';
 import { useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
 import { ALL_FILTERS } from '../data/purposes.jsx';
-import { CATEGORY_TABS, getTabCategories } from '../data/categoryTabs.js';
+import { CATEGORY_TABS, productMatchesTab } from '../data/categoryTabs.js';
 import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
 import ResultHeader from '../components/desktop/list/ResultHeader.jsx';
@@ -38,7 +38,6 @@ export default function ListPage() {
   const [sortKey, setSortKey] = useState('default');
 
   const tab = CATEGORY_TABS[activeTab];
-  const tabCategories = useMemo(() => getTabCategories(tab.id), [tab.id]);
 
   const activeCategory = useMemo(() => {
     if (activeSub === 'all') return null;
@@ -62,12 +61,12 @@ export default function ListPage() {
     if (activeCategory) {
       result = result.filter((p) => p.category === activeCategory);
     } else {
-      result = result.filter((p) => tabCategories.includes(p.category));
+      result = result.filter((p) => productMatchesTab(p, tab.id));
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, tabCategories, activeCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, tab.id, activeCategory, filterState, sortKey]);
 
   const visibleProducts = useMemo(
     () => products.slice(0, visibleCount),

@@ -169,6 +169,7 @@ export function getAdapted(product) {
     reviewCount: getMockReviewCount(product),
     tags: getAutoTags(product),
     trustBadges: getTrustBadges(product),
+    purposeCategories: product.purposeCategories ?? [],
     purposesFit: product.purposesFit,
     ingredients: product.ingredients,
     nutrition: { ...n, eaa, bcaa: n.bcaa || 0 },

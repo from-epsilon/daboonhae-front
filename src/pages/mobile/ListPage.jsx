@@ -14,7 +14,7 @@ import { useProducts } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
 import { ALL_FILTERS } from '../../data/purposes.jsx';
-import { CATEGORY_TABS, getTabCategories } from '../../data/categoryTabs.js';
+import { CATEGORY_TABS, productMatchesTab } from '../../data/categoryTabs.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import './ListPage.css';
 
@@ -134,7 +134,6 @@ export default function ListPageMobile() {
   const [sortOpen, setSortOpen] = useState(false);
 
   const tab = CATEGORY_TABS[activeTab];
-  const tabCategories = useMemo(() => getTabCategories(tab.id), [tab.id]);
   const subLabels = tab.subs.map((s) => s.label);
 
   // activeSub이 라벨이면 해당 DB 카테고리 찾기
@@ -188,14 +187,16 @@ export default function ListPageMobile() {
   const products = useMemo(() => {
     let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
     if (activeCategory) {
+      // 서브 칩 선택 시: 식품유형 정확 매칭
       result = result.filter((p) => p.category === activeCategory);
     } else {
-      result = result.filter((p) => tabCategories.includes(p.category));
+      // 탭 전체 시: 목적 카테고리(다대다 링크) 기반 매칭
+      result = result.filter((p) => productMatchesTab(p, tab.id));
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, tabCategories, activeCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, tab.id, activeCategory, filterState, sortKey]);
 
   const visibleProducts = useMemo(
     () => products.slice(0, visibleCount),
