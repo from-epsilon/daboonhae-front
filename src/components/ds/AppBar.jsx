@@ -61,6 +61,9 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, title, onBack })
   return (
     <div
       style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 30,
         height: 52,
         background: 'white',
         display: 'flex',
@@ -146,6 +149,7 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, title, onBack })
             onClick={() => typeof onSearch === 'function' && onSearch()}
             style={{
               flex: 1,
+              minWidth: 0,
               background: 'var(--gray-100)',
               borderRadius: 999,
               padding: '8px 14px',
@@ -157,8 +161,16 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, title, onBack })
               cursor: 'pointer',
             }}
           >
-            <IconSearch size={16} />
-            성분, 브랜드, 영양소로 검색
+            <IconSearch size={16} style={{ flexShrink: 0 }} />
+            <span
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              성분·브랜드·영양소 검색
+            </span>
           </div>
           <button
             type="button"

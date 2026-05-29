@@ -12,7 +12,7 @@ export function SubCategoryChips({ categories = [], value, onChange }) {
       style={{
         display: 'flex',
         gap: 6,
-        padding: '10px 16px',
+        padding: '8px 16px',
         background: 'white',
         overflowX: 'auto',
         borderBottom: '1px solid var(--border-tertiary)',

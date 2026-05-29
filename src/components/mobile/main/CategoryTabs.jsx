@@ -80,7 +80,7 @@ export function CategoryTabs() {
                 className="m-cat-icon"
                 style={{ background: item.bg, color: item.color }}
               >
-                <Icon size={36} strokeWidth={1.5} />
+                <Icon size={28} strokeWidth={1.5} />
               </span>
               <span className="m-cat-label">{item.label}</span>
             </button>

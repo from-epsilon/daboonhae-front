@@ -18,12 +18,12 @@ export function Chip({ active = false, variant = 'default', children, onClick })
     whiteSpace: 'nowrap',
   };
 
-  // active 우선, brand 보조 — DS 원본 순서 유지
+  // active 우선, brand 보조 — 선택 상태는 brand green으로 통일
   if (active) {
     Object.assign(styles, {
-      background: 'var(--gray-900)',
+      background: 'var(--green-600)',
       color: 'white',
-      borderColor: 'var(--gray-900)',
+      borderColor: 'var(--green-600)',
     });
   }
   if (variant === 'brand') {

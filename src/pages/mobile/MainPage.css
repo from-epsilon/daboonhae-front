@@ -100,11 +100,11 @@
   padding-top: var(--space-5);
   padding-bottom: var(--space-5);
 }
-/* 히어로 → 카테고리 탭 간격 제거 */
+/* 히어로 → 카테고리 탭: 음수 마진 제거 → 겹침 방지 + 명확한 분리 간격 */
 .m-home-section--cattabs {
   padding-top: 0;
   padding-bottom: 0;
-  margin-top: -20px;
+  margin-top: var(--space-4);
 }
 .m-home-section--rec {
   padding-right: 0;
@@ -220,20 +220,6 @@
   height: 100%;
   background: var(--gray-100);
 }
-.m-home-rec-score {
-  position: absolute;
-  left: 8px;
-  top: 8px;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(4px);
-  border-radius: var(--radius-pill);
-  padding: 3px 8px;
-  font-family: var(--font-numeric);
-  font-weight: var(--fw-bold);
-  font-size: var(--font-size-xxs);
-  line-height: 1;
-  border: 1px solid rgba(0,0,0,0.06);
-}
 
 .m-home-rec-meta {
   display: flex;
@@ -304,34 +290,34 @@
   border-bottom-color: var(--green-600);
 }
 
-/* 아이콘 그리드 — 아이템 수에 따라 유동적 중앙 배치 */
+/* 아이콘 그리드 — 고정폭 아이템 + 가운데 정렬 (간격은 항상 일정, 한 줄 약 4개) */
 .m-cat-grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 4px;
-  padding: 16px 12px;
+  gap: 14px 10px;
+  padding: 16px;
 }
 .m-cat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px 4px;
+  gap: 6px;
+  padding: 4px 2px;
+  width: 72px;
+  box-sizing: border-box;
   background: none;
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: background-color 0.15s;
-  width: calc(25% - 3px); /* 4열 기준 */
-  box-sizing: border-box;
 }
 .m-cat-item:active {
   background: var(--gray-100);
 }
 .m-cat-icon {
-  width: 72px;
-  height: 72px;
+  width: 54px;
+  height: 54px;
   border-radius: var(--radius-lg);
   display: inline-flex;
   align-items: center;

@@ -85,6 +85,7 @@ function TrustBadgeRow({ trustBadges }) {
 }
 
 // list 레이아웃: 가로 88x88 썸네일 + 텍스트 영역
+// - 비교 버튼은 웹(grid 카드)과 동일하게 썸네일 우하단 아이콘(CompareButton)으로 표현
 function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) {
   return (
     <div
@@ -99,53 +100,17 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
     >
       <div
         style={{
+          position: 'relative',
           flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 6,
+          width: 88,
+          height: 88,
+          borderRadius: 'var(--radius-sm)',
+          overflow: 'hidden',
+          background: 'var(--gray-100)',
         }}
       >
-        <div
-          style={{
-            width: 88,
-            height: 88,
-            borderRadius: 'var(--radius-sm)',
-            overflow: 'hidden',
-            background: 'var(--gray-100)',
-          }}
-        >
-          <ThumbImage src={food.thumb} alt={food.name} />
-        </div>
-        {onCompare && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCompare(food);
-            }}
-            aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '4px 10px',
-              border: inCompare ? '1px solid var(--green-500)' : '1px solid var(--border-tertiary)',
-              borderRadius: 'var(--radius-pill)',
-              background: inCompare ? 'var(--green-50)' : 'var(--bg-white)',
-              color: inCompare ? 'var(--green-700)' : 'var(--text-secondary)',
-              fontSize: 11,
-              fontFamily: 'var(--font-body)',
-              fontWeight: inCompare ? 700 : 500,
-              cursor: 'pointer',
-              transition: 'all 150ms ease',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {inCompare ? <IconCheck size={11} stroke={2} /> : <IconPlus size={11} stroke={2} />}
-            {inCompare ? '담김' : '비교'}
-          </button>
-        )}
+        <ThumbImage src={food.thumb} alt={food.name} />
+        <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>

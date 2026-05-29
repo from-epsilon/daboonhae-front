@@ -72,7 +72,7 @@ select:focus-visible {
   display: flex; flex-direction: column;
   position: relative;
 }
-.mobile-shell-main { flex: 1; padding-bottom: 56px; /* BottomNav 높이 */ }
+.mobile-shell-main { flex: 1; /* BottomNav 제거됨 — 하단 여백은 각 페이지가 자체 관리 */ }
 .mobile-page { padding: 16px; }
 
 /* ───────── Header ───────── */
@@ -461,6 +461,7 @@ select:focus-visible {
   color: var(--text-primary);
   z-index: 1;
   padding: 0;
+  box-shadow: var(--shadow-sm);
   transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease;
 }
 .d-foodcard-compare::before {
@@ -784,7 +785,7 @@ img.product-thumb { object-fit: cover; }
 }
 .ds-top-tab.is-active {
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--green-700);
 }
 .ds-top-tab-indicator {
   position: absolute;
@@ -792,6 +793,6 @@ img.product-thumb { object-fit: cover; }
   left: 8px;
   right: 8px;
   height: 2px;
-  background: var(--gray-900);
+  background: var(--green-600);
   border-radius: 2px;
 }
