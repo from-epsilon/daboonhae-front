@@ -155,7 +155,7 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
           <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
         )}
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} />
-        <PurchaseOffers offers={food.purchaseLinks} compact maxItems={2} />
+        <PurchaseOffers offers={food.purchaseLinks} compact />
       </div>
     </div>
   );
@@ -417,7 +417,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare }) {
 
         {/* 원재료·성분 상세 */}
         <IngredientDetails ingredients={food.ingredients} />
-        <PurchaseOffers offers={food.purchaseLinks} compact maxItems={3} />
+        <PurchaseOffers offers={food.purchaseLinks} compact />
       </div>
     </div>
   );
