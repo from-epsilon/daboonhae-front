@@ -1,8 +1,7 @@
-// 모바일 디테일 페이지 (Round 3)
+﻿// 모바일 디테일 페이지 (Round 3)
 // 구조: AppBar(서브) → Hero → MacroRow → 자동 태그 → 영양표 → 분석 리포트 → 원료 → 후기 → sticky CTA bar
 // - 모바일 셸은 디테일에서 BottomNav 숨김 (App.jsx 처리). 본문 하단은 sticky CTA용 padding 확보
 // - AppBar/CTA는 페이지가 직접 렌더
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
@@ -19,7 +18,7 @@ import { ReviewSection } from '../../components/mobile/detail/ReviewSection.jsx'
 import { CategoryGuideCard } from '../../components/mobile/detail/CategoryGuideCard.jsx';
 import { RelatedProducts } from '../../components/mobile/detail/RelatedProducts.jsx';
 import { StickyCTA } from '../../components/mobile/detail/StickyCTA.jsx';
-import { PurchaseSheet } from '../../components/mobile/detail/PurchaseSheet.jsx';
+import PurchaseOffers from '../../components/global/PurchaseOffers.jsx';
 import './DetailPage.css';
 
 // 매크로 분포 카드 — 풀 MacroRow + kcal 별도 노출
@@ -57,7 +56,6 @@ export default function DetailPageMobile() {
   const navigate = useNavigate();
   const { has, toggle, isFull, max, count } = useCompare();
   const { purpose, purposeId } = usePurpose();
-  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   // raw 제품 → DS 형식 변환 (adapter는 raw도 들고 있어 분석에 그대로 활용 가능)
   const { loading, products: allProducts } = useProducts();
@@ -111,6 +109,7 @@ export default function DetailPageMobile() {
       <div className="m-detail">
         {/* 1. 히어로: 이미지 + 브랜드/이름 + 태그 + 신뢰 배지 */}
         <HeroSection product={product} />
+        <PurchaseOffers offers={product.purchaseLinks} className="m-detail-purchase-offers" />
 
         {/* 2. 매크로 분포 */}
         <MacroSection macros={product.macros} />
@@ -138,17 +137,8 @@ export default function DetailPageMobile() {
       <StickyCTA
         inCart={inCart}
         onToggleCompare={handleToggleCompare}
-        purchaseUrl={raw?.purchaseUrl}
-        purchaseLinks={product.purchaseLinks}
-        onOpenPurchase={() => setPurchaseOpen(true)}
-      />
-
-      {/* 구매처 선택 시트 (오퍼 2곳 이상일 때) */}
-      <PurchaseSheet
-        open={purchaseOpen}
-        offers={product.purchaseLinks}
-        onClose={() => setPurchaseOpen(false)}
       />
     </>
   );
 }
+

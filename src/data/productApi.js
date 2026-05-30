@@ -216,7 +216,7 @@ const LIST_SELECT_BASE = (optional) => `
   food_type_categories ( code, name_ko ),
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
-  ${optional ? PURCHASE_JOIN : ''}
+  ${PURCHASE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
     nutrients ( code, name_ko, default_unit, display_order )
@@ -235,7 +235,7 @@ const DETAIL_SELECT_BASE = (optional) => `
   food_type_categories ( code, name_ko ),
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
-  ${optional ? PURCHASE_JOIN : ''}
+  ${PURCHASE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
     nutrients ( code, name_ko, name_en, default_unit, group_name, display_order )
@@ -255,7 +255,6 @@ function isOptionalJoinError(error) {
     msg.includes('food_purpose_category') ||
     msg.includes('food_families') ||
     msg.includes('food_aliases') ||
-    msg.includes('food_purchase_links') ||
     msg.includes('permission denied')
   );
 }
