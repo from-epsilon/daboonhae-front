@@ -37,26 +37,25 @@ const SHAKE_METRICS = [
 ];
 
 // tabId:subLabel → { metrics, showSweeteners }
+// subLabel은 categoryTabs.js의 tab.subs[].label과 일치해야 함 (DB name_ko 변경 반영)
 const CONFIG = {
   // 단백질 보충
   'protein:닭가슴살':    { metrics: PROTEIN_COMMON, showSweeteners: false },
   'protein:단백질 음료': { metrics: PROTEIN_COMMON, showSweeteners: false },
-  'protein:단백질바':    { metrics: PROTEIN_COMMON, showSweeteners: false },
-  'protein:과자':        { metrics: PROTEIN_COMMON, showSweeteners: false },
+  'protein:에너지바':    { metrics: PROTEIN_COMMON, showSweeteners: false },
+  'protein:기타 가공육':  { metrics: PROTEIN_COMMON, showSweeteners: false },
 
   // 저당 간식
-  'low_sugar:아이스크림': { metrics: LOW_SUGAR_COMMON, showSweeteners: true },
-  'low_sugar:과자':       { metrics: LOW_SUGAR_COMMON, showSweeteners: true },
-  'low_sugar:젤리':       { metrics: LOW_SUGAR_COMMON, showSweeteners: true },
-  'low_sugar:제로 음료':  { metrics: [], showSweeteners: true },
+  'low_sugar:아이스크림':     { metrics: LOW_SUGAR_COMMON, showSweeteners: true },
+  'low_sugar:과자/초콜릿/젤리': { metrics: LOW_SUGAR_COMMON, showSweeteners: true },
+  'low_sugar:제로 음료':      { metrics: [], showSweeteners: true },
 
   // 식사대용
-  'meal:밥':        { metrics: MEAL_COMMON, showSweeteners: false },
-  'meal:면':        { metrics: MEAL_COMMON, showSweeteners: false },
-  'meal:시리얼':    { metrics: CEREAL_METRICS, showSweeteners: false },
-  'meal:그래놀라':  { metrics: CEREAL_METRICS, showSweeteners: false },
-  'meal:쉐이크':    { metrics: SHAKE_METRICS, showSweeteners: true },
-  'meal:단백질바':  { metrics: MEAL_COMMON, showSweeteners: false },
+  'meal:밥':              { metrics: MEAL_COMMON, showSweeteners: false },
+  'meal:면':              { metrics: MEAL_COMMON, showSweeteners: false },
+  'meal:시리얼/그래놀라/오트밀': { metrics: CEREAL_METRICS, showSweeteners: false },
+  'meal:셰이크':           { metrics: SHAKE_METRICS, showSweeteners: true },
+  'meal:에너지바':          { metrics: MEAL_COMMON, showSweeteners: false },
 };
 
 // tabId 기반 기본 폴백

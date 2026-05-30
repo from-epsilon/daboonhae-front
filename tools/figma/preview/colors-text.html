@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Text colors</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 20px; background: var(--bg-white); }
+  .row { display: grid; grid-template-columns: 120px 1fr 110px; gap: 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-tertiary); }
+  .row:last-child { border-bottom: none; }
+  .specimen { font-family: var(--font-body); font-size: 16px; font-weight: 500; }
+  .name { font-size: 12px; font-weight: 700; }
+  .token { font-size: 10px; color: var(--text-tertiary); font-family: var(--font-numeric); }
+  .meta { font-size: 11px; color: var(--text-secondary); font-family: var(--font-numeric); text-align: right; }
+</style>
+</head><body>
+  <div class="row">
+    <div><div class="name">text-cto</div><div class="token">점수·핵심 수치</div></div>
+    <div class="specimen" style="color:#000; font-family: var(--font-numeric);">9.1<span style="font-size:13px;color:#616161;font-weight:500;">점</span></div>
+    <div class="meta">#000000</div>
+  </div>
+  <div class="row">
+    <div><div class="name">text-primary</div><div class="token">제목·본문</div></div>
+    <div class="specimen" style="color:#222">고단백·저당 그릭요거트</div>
+    <div class="meta">#222222 · Gray-900</div>
+  </div>
+  <div class="row">
+    <div><div class="name">text-secondary</div><div class="token">서브 본문</div></div>
+    <div class="specimen" style="color:#616161; font-size:14px;">한 끼 단백질 충전에 적합해요</div>
+    <div class="meta">#616161 · Gray-700</div>
+  </div>
+  <div class="row">
+    <div><div class="name">text-tertiary</div><div class="token">보조 텍스트 · 비활성</div></div>
+    <div class="specimen" style="color:#9E9E9E; font-size:14px;">유사 상품 4종 비교 가능</div>
+    <div class="meta">#9E9E9E · Gray-500</div>
+  </div>
+  <div class="row">
+    <div><div class="name">text-caption</div><div class="token">약관·푸터·저작권</div></div>
+    <div class="specimen" style="color:#BDBDBD; font-size:11px;">© Daboonhae Inc. 영양 정보는 제조사 표기 기반</div>
+    <div class="meta">#BDBDBD · Gray-400</div>
+  </div>
+</body></html>

@@ -104,7 +104,7 @@ function ListSkeleton() {
 }
 
 export default function ListPageMobile() {
-  const { count: compareCount, toggle: toggleCompare } = useCompare();
+  const { count: compareCount, toggle: toggleCompare, has: hasCompare } = useCompare();
   const { products: PRODUCTS, loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -136,11 +136,11 @@ export default function ListPageMobile() {
   const tab = CATEGORY_TABS[activeTab];
   const subLabels = tab.subs.map((s) => s.label);
 
-  // activeSub이 라벨이면 해당 DB 카테고리 찾기
-  const activeCategory = useMemo(() => {
+  // activeSub이 라벨이면 해당 식품유형 코드(food_type_category_code) 찾기
+  const activeCode = useMemo(() => {
     if (activeSub === 'all') return null;
     const found = tab.subs.find((s) => s.label === activeSub);
-    return found?.category ?? null;
+    return found?.code ?? null;
   }, [activeSub, tab]);
 
   const filterActiveCount = useMemo(() => {
@@ -186,17 +186,17 @@ export default function ListPageMobile() {
 
   const products = useMemo(() => {
     let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
-    if (activeCategory) {
-      // 서브 칩 선택 시: 식품유형 정확 매칭
-      result = result.filter((p) => p.category === activeCategory);
+    if (activeCode) {
+      // 서브 칩 선택 시: 식품유형 코드 정확 매칭
+      result = result.filter((p) => p.categoryCode === activeCode);
     } else {
-      // 탭 전체 시: 목적 카테고리(다대다 링크) 기반 매칭
+      // 탭 전체 시: 목적 카테고리(다대다 링크) 기반 매칭, 폴백은 식품유형 코드
       result = result.filter((p) => productMatchesTab(p, tab.id));
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, tab.id, activeCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, tab.id, activeCode, filterState, sortKey]);
 
   const visibleProducts = useMemo(
     () => products.slice(0, visibleCount),
@@ -210,6 +210,7 @@ export default function ListPageMobile() {
         onSearch={() => setSearchOpen(true)}
         onCompare={goCompare}
         compareCount={compareCount}
+        onLogo={() => navigate('/')}
       />
 
       <div className="m-list-sticky-header">
@@ -254,6 +255,7 @@ export default function ListPageMobile() {
               layout="list"
               tabId={tab.id}
               subLabel={activeSub !== 'all' ? activeSub : undefined}
+              inCompare={hasCompare(p.id)}
               onClick={() => navigate(`/product/${p.id}`)}
               onCompare={(food) => toggleCompare(food.id)}
             />

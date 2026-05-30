@@ -39,10 +39,11 @@ export default function ListPage() {
 
   const tab = CATEGORY_TABS[activeTab];
 
-  const activeCategory = useMemo(() => {
+  // 서브칩 라벨 → 식품유형 코드(food_type_category_code)
+  const activeCode = useMemo(() => {
     if (activeSub === 'all') return null;
     const found = tab.subs.find((s) => s.label === activeSub);
-    return found?.category ?? null;
+    return found?.code ?? null;
   }, [activeSub, tab]);
 
   const activeFilterCount = countActiveFilters(filterState);
@@ -58,15 +59,15 @@ export default function ListPage() {
 
   const products = useMemo(() => {
     let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
-    if (activeCategory) {
-      result = result.filter((p) => p.category === activeCategory);
+    if (activeCode) {
+      result = result.filter((p) => p.categoryCode === activeCode);
     } else {
       result = result.filter((p) => productMatchesTab(p, tab.id));
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, tab.id, activeCategory, filterState, sortKey]);
+  }, [q, PRODUCTS, tab.id, activeCode, filterState, sortKey]);
 
   const visibleProducts = useMemo(
     () => products.slice(0, visibleCount),

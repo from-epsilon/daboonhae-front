@@ -11,7 +11,6 @@
    ──────────────────────────────────────────────────────────────────────── */
 .m-compare {
   --row-header-h: 168px;  /* 썸네일+브랜드+이름 헤더 */
-  --row-score-h: 92px;    /* ScoreGauge 56 + padding */
   --row-cell-h: 52px;     /* 영양소 셀 */
   --row-tags-h: 120px;    /* 자동 태그 스택 */
   --label-col-w: 104px;
@@ -100,12 +99,9 @@
   height: var(--row-cell-h);
   background: var(--bg-white);
 }
-/* 헤더/점수/태그처럼 큰 행은 별도 높이 */
+/* 헤더/태그처럼 큰 행은 별도 높이 (점수 행 제거됨 — 영양소 행은 모두 기본 높이) */
 .m-compare-label-col .m-compare-label-cell:nth-child(1) {
   height: var(--row-header-h);
-}
-.m-compare-label-col .m-compare-label-cell:nth-child(2) {
-  height: var(--row-score-h);
 }
 .m-compare-label-col .m-compare-label-cell:last-child {
   height: var(--row-tags-h);
@@ -242,17 +238,31 @@
 /* ─────────────────────────────────────────────────────────────────────────
    데이터 셀 (영양소 1개)
    ──────────────────────────────────────────────────────────────────────── */
+/* 데이터 셀 (지표 라벨 + 값) — 좌측 라벨 컬럼 제거로 각 셀이 자체 라벨 표기 */
 .m-compare-cell {
   position: relative;
-  height: var(--row-cell-h);
-  padding: 0 var(--space-3);
+  min-height: 58px;
+  padding: 8px var(--space-3);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   border-bottom: 1px solid var(--bg-divider);
-  font-family: var(--font-numeric);
   color: var(--text-primary);
+}
+.m-compare-cell-label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.m-compare-cell-valrow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: var(--font-numeric);
 }
 .m-compare-cell-num {
   font-size: var(--font-size-m);
@@ -266,15 +276,7 @@
   margin-left: 1px;
 }
 
-/* 홀짝 줄무늬 — 라벨 + 데이터 셀 동시 적용 */
-.m-compare-label-cell:nth-child(even) {
-  background: var(--gray-50);
-}
-.m-compare-cell:nth-child(even) {
-  background: var(--gray-50);
-}
-
-/* 우수값 강조 — soft-green pill + 그린 텍스트 + 체크 아이콘 */
+/* 우수값 강조 — soft-green 배경 + 그린 텍스트 + 체크 아이콘 */
 .m-compare-cell--best {
   background: var(--green-50);
 }
@@ -284,40 +286,33 @@
 .m-compare-cell--best .m-compare-cell-unit {
   color: var(--green-600);
 }
+.m-compare-cell--best .m-compare-cell-label {
+  color: var(--green-700);
+}
 .m-compare-cell-check {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   border-radius: 999px;
   background: var(--green-500);
   color: white;
   flex-shrink: 0;
-}
-
-/* 점수 셀 */
-.m-compare-cell--score {
-  height: var(--row-score-h);
-  gap: 4px;
-}
-.m-compare-cell--score.m-compare-cell--best {
-  /* 점수는 게이지가 이미 색이 있으니 배경만 매우 옅게 */
-  background: var(--green-50);
+  align-self: center;
 }
 
 /* 태그 셀 */
 .m-compare-cell--tags {
-  height: var(--row-tags-h);
-  align-items: flex-start;
+  min-height: var(--row-tags-h);
+  justify-content: flex-start;
   padding: var(--space-3);
   border-bottom: none;
 }
-.m-compare-cell--empty {
+.m-compare-empty-dash {
   color: var(--text-tertiary);
-  font-family: var(--font-body);
+  font-family: var(--font-numeric);
   font-size: var(--font-size-xs);
-  justify-content: center;
 }
 .m-compare-tags-stack {
   display: flex;

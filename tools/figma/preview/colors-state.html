@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>State colors</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .state-row { display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 10px; background: var(--bg-card-ui); }
+  .dot { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; }
+  .label { display: flex; flex-direction: column; gap: 2px; }
+  .label .role { font-size: 13px; font-weight: 700; color: var(--text-primary); font-family: var(--font-display); }
+  .label .hex { font-size: 11px; color: var(--text-secondary); font-family: var(--font-numeric); }
+  .label .use { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+  .ramp { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin-top: 4px; }
+  .ramp .step { aspect-ratio: 1/1; border-radius: 4px; }
+</style>
+</head><body>
+  <div class="grid">
+    <div class="state-row"><div class="dot" style="background:var(--green-500)">✓</div>
+      <div class="label"><div class="role">Positive</div><div class="hex">#00C600 · Green-500</div><div class="use">점수 ≥ 7.0 · 안전 성분</div></div></div>
+    <div class="state-row"><div class="dot" style="background:var(--blue-500)">i</div>
+      <div class="label"><div class="role">Informative</div><div class="hex">#067DFD · Blue-500</div><div class="use">공식 영양정보 · 별점</div></div></div>
+    <div class="state-row"><div class="dot" style="background:var(--red-500)">!</div>
+      <div class="label"><div class="role">Warning</div><div class="hex">#EF2B2A · Red-500</div><div class="use">주의 성분 · 고당류 · 고나트륨</div></div></div>
+    <div class="state-row"><div class="dot" style="background:var(--orange-500)">⏱</div>
+      <div class="label"><div class="role">Delay</div><div class="hex">#F9560E · Orange-500</div><div class="use">관찰 성분 · 4 ≤ 점수 < 7</div></div></div>
+  </div>
+</body></html>

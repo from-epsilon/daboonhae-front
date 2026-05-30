@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Score gauge</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 24px; }
+  .row { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .gauge { position: relative; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge .center { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: 1; }
+  .gauge .num { font-family: var(--font-numeric); font-weight: 700; font-size: 30px; color: var(--text-primary); }
+  .gauge .label { font-size: 10px; color: var(--text-secondary); margin-top: 4px; }
+  .info { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-body); font-size: 12px; color: var(--text-secondary); }
+  .info b { color: var(--text-primary); font-size: 13px; font-weight: 700; font-family: var(--font-display); }
+
+  /* sizes demo */
+  .sizes { display: flex; align-items: baseline; gap: 16px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border-tertiary); }
+  .sizes .specimen { display: inline-flex; align-items: baseline; gap: 2px; font-family: var(--font-numeric); font-weight: 700; }
+  .sizes .specimen .suf { font-size: 50%; color: var(--text-secondary); font-weight: 500; }
+  .sizes .desc { font-size: 10px; color: var(--text-tertiary); }
+</style>
+</head><body>
+  <div class="row">
+    <div class="gauge">
+      <svg width="96" height="96">
+        <circle cx="48" cy="48" r="40" fill="none" stroke="#EEE" stroke-width="6"/>
+        <circle cx="48" cy="48" r="40" fill="none" stroke="#00C600" stroke-width="6" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="55.3"/>
+      </svg>
+      <div class="center"><div class="num">7.8</div><div class="label">다분해 점수</div></div>
+    </div>
+    <div class="gauge">
+      <svg width="96" height="96">
+        <circle cx="48" cy="48" r="40" fill="none" stroke="#EEE" stroke-width="6"/>
+        <circle cx="48" cy="48" r="40" fill="none" stroke="#F9560E" stroke-width="6" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="125.7"/>
+      </svg>
+      <div class="center"><div class="num">5.0</div><div class="label">다분해 점수</div></div>
+    </div>
+    <div class="gauge">
+      <svg width="96" height="96">
+        <circle cx="48" cy="48" r="40" fill="none" stroke="#EEE" stroke-width="6"/>
+        <circle cx="48" cy="48" r="40" fill="none" stroke="#EF2B2A" stroke-width="6" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="201"/>
+      </svg>
+      <div class="center"><div class="num">2.0</div><div class="label">다분해 점수</div></div>
+    </div>
+    <div class="info">
+      <div><b style="color: var(--green-500);">7.0 이상</b> · 안전·균형 우수</div>
+      <div><b style="color: var(--orange-500);">4.0 – 6.9</b> · 일부 영양소 관찰</div>
+      <div><b style="color: var(--red-500);">4.0 미만</b> · 비교 후 선택 권장</div>
+    </div>
+  </div>
+
+  <div class="sizes">
+    <div style="display: flex; flex-direction: column; gap: 4px;"><div class="specimen" style="font-size: 14px; color: var(--green-500);">8.5<span class="suf">점</span></div><div class="desc">chip / small</div></div>
+    <div style="display: flex; flex-direction: column; gap: 4px;"><div class="specimen" style="font-size: 22px; color: var(--green-500);">8.5<span class="suf">점</span></div><div class="desc">card / md</div></div>
+    <div style="display: flex; flex-direction: column; gap: 4px;"><div class="specimen" style="font-size: 36px; color: var(--green-500);">8.5<span class="suf">점</span></div><div class="desc">detail / lg</div></div>
+  </div>
+</body></html>

@@ -20,6 +20,18 @@ function HeroImage({ src, alt }) {
   );
 }
 
+// 자동 태그 가로 스크롤 행 — 제품 정체성(고단백/저당 등). 없으면 미노출
+function TagsRow({ tags }) {
+  if (!tags || tags.length === 0) return null;
+  return (
+    <div className="m-detail-hero-tags" aria-label="제품 태그">
+      {tags.map((t, i) => (
+        <Badge key={i} variant={t.v}>{t.label}</Badge>
+      ))}
+    </div>
+  );
+}
+
 // 신뢰 배지 행 — IconCheck + 라벨 (작게)
 function TrustRow({ trustBadges }) {
   if (!trustBadges || trustBadges.length === 0) return null;
@@ -50,6 +62,7 @@ export function HeroSection({ product }) {
           <h1 className="m-detail-hero-name">{name}</h1>
           {serving && <div className="m-detail-hero-serving">{serving} 기준</div>}
         </div>
+        <TagsRow tags={product?.tags} />
         <TrustRow trustBadges={product?.trustBadges} />
       </div>
     </section>

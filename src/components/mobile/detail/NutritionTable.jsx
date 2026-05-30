@@ -1,5 +1,25 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Badge } from '../../ds/Badge.jsx';
+
+// 더보기/접기 caret — 펼침 상태면 180도 회전 (외부 아이콘 의존 제거)
+function Caret({ open }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 150ms ease' }}
+      aria-hidden="true"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
 
 const REQUIRED_ORDER = [
   { code: 'energy_kcal',     indent: false },
@@ -45,20 +65,23 @@ function NutritionRow({ label, display, emphasis }) {
 }
 
 export function NutritionTable({ nutrition, serving, foodNutrients }) {
-  const rows = useMemo(() => {
-    if (!foodNutrients || foodNutrients.length === 0) return [];
+  // 필수 영양소(탄단지당나트륨 등)와 그 외 미량성분(아미노산 등)을 분리
+  // - 미량성분은 기본 접힘 → 핵심 지표가 묻히지 않도록
+  const { mainRows, extraRows } = useMemo(() => {
+    if (!foodNutrients || foodNutrients.length === 0) {
+      return { mainRows: [], extraRows: [] };
+    }
 
     const byCode = {};
     for (const fn of foodNutrients) {
       byCode[fn.nutrient_code] = fn;
     }
 
-    const result = [];
-
+    const mainRows = [];
     for (const spec of REQUIRED_ORDER) {
       const fn = byCode[spec.code];
       if (!fn) continue;
-      result.push({
+      mainRows.push({
         key: spec.code,
         label: fn.nutrients?.name_ko || spec.code,
         display: formatValue(fn),
@@ -66,21 +89,21 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
       });
     }
 
-    const extras = foodNutrients
+    const extraRows = foodNutrients
       .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code))
-      .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999));
-
-    for (const fn of extras) {
-      result.push({
+      .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999))
+      .map(fn => ({
         key: fn.nutrient_code,
         label: fn.nutrients?.name_ko || fn.nutrient_code,
         display: formatValue(fn),
         emphasis: null,
-      });
-    }
+      }));
 
-    return result;
+    return { mainRows, extraRows };
   }, [foodNutrients]);
+
+  const [showExtras, setShowExtras] = useState(false);
+  const hasExtras = extraRows.length > 0;
 
   return (
     <section className="m-detail-card m-detail-nutri">
@@ -89,7 +112,15 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
         {serving && <span className="m-detail-card-sub">{serving} 기준</span>}
       </header>
       <ul className="m-detail-nutri-list">
-        {rows.map((r) => (
+        {mainRows.map((r) => (
+          <NutritionRow
+            key={r.key}
+            label={r.label}
+            display={r.display}
+            emphasis={r.emphasis}
+          />
+        ))}
+        {showExtras && extraRows.map((r) => (
           <NutritionRow
             key={r.key}
             label={r.label}
@@ -98,6 +129,19 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
           />
         ))}
       </ul>
+      {hasExtras && (
+        <button
+          type="button"
+          className="m-detail-nutri-more"
+          onClick={() => setShowExtras((v) => !v)}
+          aria-expanded={showExtras}
+        >
+          {showExtras
+            ? '접기'
+            : `아미노산 등 ${extraRows.length}개 더보기`}
+          <Caret open={showExtras} />
+        </button>
+      )}
     </section>
   );
 }

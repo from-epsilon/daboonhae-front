@@ -4,18 +4,19 @@
 import { Badge } from '../../ds/Badge.jsx';
 
 export function CompareTagsCell({ tags = [] }) {
-  if (!tags || tags.length === 0) {
-    return (
-      <div className="m-compare-cell m-compare-cell--tags m-compare-cell--empty">-</div>
-    );
-  }
+  const hasTags = tags && tags.length > 0;
   return (
     <div className="m-compare-cell m-compare-cell--tags">
-      <div className="m-compare-tags-stack">
-        {tags.map((t, i) => (
-          <Badge key={`${t.label}-${i}`} variant={t.v}>{t.label}</Badge>
-        ))}
-      </div>
+      <span className="m-compare-cell-label">자동 태그</span>
+      {hasTags ? (
+        <div className="m-compare-tags-stack">
+          {tags.map((t, i) => (
+            <Badge key={`${t.label}-${i}`} variant={t.v}>{t.label}</Badge>
+          ))}
+        </div>
+      ) : (
+        <span className="m-compare-empty-dash">-</span>
+      )}
     </div>
   );
 }

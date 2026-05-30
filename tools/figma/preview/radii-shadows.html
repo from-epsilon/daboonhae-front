@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Radii & shadows</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 24px; background: var(--bg-off-white); }
+  .group-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); letter-spacing: .05em; text-transform: uppercase; margin: 0 0 12px; }
+  .row { display: flex; gap: 14px; margin-bottom: 24px; }
+  .row:last-child { margin-bottom: 0; }
+  .chip { background: white; border: 1px solid var(--border-tertiary); padding: 18px; flex: 1; text-align: center; font-size: 11px; color: var(--text-secondary); font-family: var(--font-numeric); }
+  .shadow-chip { background: white; padding: 22px; flex: 1; text-align: center; font-size: 11px; color: var(--text-secondary); font-family: var(--font-numeric); border-radius: 8px; }
+  .chip b { display: block; color: var(--text-primary); font-size: 12px; margin-bottom: 4px; font-family: var(--font-body); }
+  .shadow-chip b { display: block; color: var(--text-primary); font-size: 12px; margin-bottom: 4px; font-family: var(--font-body); }
+</style>
+</head><body>
+  <div class="group-label">Corner radii</div>
+  <div class="row">
+    <div class="chip" style="border-radius: 2px"><b>xs</b>2 px</div>
+    <div class="chip" style="border-radius: 4px"><b>sm</b>4 px</div>
+    <div class="chip" style="border-radius: 8px"><b>md</b>8 px</div>
+    <div class="chip" style="border-radius: 12px"><b>lg</b>12 px</div>
+    <div class="chip" style="border-radius: 16px"><b>xl</b>16 px</div>
+    <div class="chip" style="border-radius: 999px"><b>pill</b>full</div>
+  </div>
+  <div class="group-label">Elevation</div>
+  <div class="row">
+    <div class="shadow-chip" style="box-shadow: 0 1px 2px rgba(0,0,0,.06)"><b>shadow-sm</b>cards, list rows</div>
+    <div class="shadow-chip" style="box-shadow: 0 2px 8px rgba(0,0,0,.08)"><b>shadow-md</b>popovers, toast</div>
+    <div class="shadow-chip" style="box-shadow: 0 8px 24px rgba(0,0,0,.12)"><b>shadow-lg</b>sheets, drawers</div>
+    <div class="shadow-chip" style="box-shadow: 0 12px 32px rgba(0,0,0,.16)"><b>shadow-key</b>dialogs</div>
+  </div>
+</body></html>

@@ -1,0 +1,50 @@
+/* Shared base for design-system preview cards.
+   Each card is 700px wide, height varies. Render content with no titles/framing. */
+@import url('../colors_and_type.css');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #fff; }
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  padding: 24px;
+  min-height: 100vh;
+}
+.row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; gap: 16px; }
+.swatch {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-end;
+  padding: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--white);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.swatch.--ink { color: var(--gray-900); }
+.swatch.--outlined { border: 1px solid var(--border-tertiary); }
+.label-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-body);
+}
+.label-stack .name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.label-stack .hex {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-feature-settings: 'tnum' 1;
+  font-family: var(--font-numeric);
+}
+.label-stack .usage {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}

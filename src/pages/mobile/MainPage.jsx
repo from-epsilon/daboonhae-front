@@ -78,9 +78,11 @@ export default function MainPageMobile() {
   const handleFoodClick = (food) => navigate(`/product/${food.id}`);
   const handleToggleCompare = (food) => toggle(food.id);
 
+  const handleLogo = () => navigate('/');
+
   if (loading) return (
     <>
-      <AppBar onSearch={handleSearch} onCompare={handleCompare} compareCount={count} />
+      <AppBar onSearch={handleSearch} onCompare={handleCompare} compareCount={count} onLogo={handleLogo} />
       <HomeSkeleton />
     </>
   );
@@ -91,6 +93,7 @@ export default function MainPageMobile() {
         onSearch={handleSearch}
         onCompare={handleCompare}
         compareCount={count}
+        onLogo={handleLogo}
       />
 
       <div className="m-home">

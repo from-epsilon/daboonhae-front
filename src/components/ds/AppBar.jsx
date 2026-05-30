@@ -3,12 +3,14 @@
 //   - onSearch: 검색 박스 클릭 핸들러
 //   - onCompare: 비교함 아이콘 클릭 핸들러
 //   - compareCount: 비교함 담긴 개수 (배지 표시용)
+//   - onLogo?: 로고(브랜드) 클릭 핸들러 (홈 이동용)
 //   - title?: 표시할 페이지 제목 (전달 시 로고+검색박스 자리에 텍스트만 표시)
 //   - onBack?: 좌측 IconBack 클릭 핸들러 (디테일 페이지용)
 // 원본 DS 변경점:
 //   - IconBell 제거 (알림 기능 없음)
 //   - 우측 IconCompare + 카운트 배지로 교체
 //   - onBack/title 모드 추가 (디테일/서브 페이지 대응)
+import { useNavigate } from 'react-router-dom';
 import { IconSearch, IconCompare, IconBack } from './Icons.jsx';
 
 // 비교함 카운트 배지 (compareCount > 0 일 때만)
@@ -55,8 +57,11 @@ function BrandLogo() {
   );
 }
 
-export function AppBar({ onSearch, onCompare, compareCount = 0, title, onBack }) {
+export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, onBack }) {
   const isSubPage = typeof onBack === 'function' || !!title;
+  const navigate = useNavigate();
+  // 로고 클릭 → onLogo 우선, 없으면 기본적으로 홈 이동 (데스크톱 포함 전역 동작)
+  const handleLogo = () => (typeof onLogo === 'function' ? onLogo() : navigate('/'));
 
   return (
     <div
@@ -131,7 +136,21 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, title, onBack })
       ) : (
         // 메인 모드: 로고 + 검색박스 + 비교함
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* 로고 클릭 시 홈 이동 */}
+          <button
+            type="button"
+            onClick={handleLogo}
+            aria-label="홈으로 이동"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+            }}
+          >
             <BrandLogo />
             <div
               style={{
@@ -144,7 +163,7 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, title, onBack })
             >
               다분해
             </div>
-          </div>
+          </button>
           <div
             onClick={() => typeof onSearch === 'function' && onSearch()}
             style={{

@@ -27,28 +27,11 @@ import {
 } from '../../components/mobile/compare/compareUtils.js';
 import './ComparePage.css';
 
-// 좌측 sticky 라벨 셀 (행 제목)
-function LabelCell({ label, size = 'md' }) {
-  const cls = size === 'lg'
-    ? 'm-compare-label-cell m-compare-label-cell--lg'
-    : 'm-compare-label-cell';
-  return <div className={cls}>{label}</div>;
-}
-
-// 비교 그리드 본문 (SRP로 분리 — 라벨 컬럼 + 데이터 컬럼들 + AddSlot)
+// 비교 그리드 본문 — 좌측 라벨 컬럼 없이, 각 셀이 자체 라벨을 표기
+// (가로 스크롤 데이터 컬럼들 + AddSlot)
 function CompareGrid({ products, bestByKey, onRemove, onOpen, onAdd, canAdd, remaining }) {
   return (
     <div className="m-compare-grid">
-      {/* 좌측 sticky 라벨 컬럼 */}
-      <div className="m-compare-label-col">
-        <LabelCell label="" size="lg" />
-        {COMPARE_METRICS.map((m) => (
-          <LabelCell key={m.key} label={m.label} />
-        ))}
-        <LabelCell label="자동 태그" size="lg" />
-      </div>
-
-      {/* 우측 가로 스크롤 데이터 컬럼 영역 */}
       <div className="m-compare-data-scroll">
         <div className="m-compare-data-track">
           {products.map((p, idx) => (
@@ -56,13 +39,14 @@ function CompareGrid({ products, bestByKey, onRemove, onOpen, onAdd, canAdd, rem
               {/* 헤더 셀 (썸네일/브랜드/이름/X) */}
               <CompareColumnHeader product={p} onRemove={onRemove} onOpen={onOpen} />
 
-              {/* 영양소 셀들 */}
+              {/* 영양소 셀들 — 라벨 + 값 */}
               {COMPARE_METRICS.map((m) => {
                 const value = p?.nutrition?.[m.key];
                 const isBest = bestByKey[m.key]?.has(idx) ?? false;
                 return (
                   <CompareCell
                     key={m.key}
+                    label={m.label}
                     value={value}
                     unit={m.unit}
                     isBest={isBest}

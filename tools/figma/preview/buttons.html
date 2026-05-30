@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Buttons</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 24px; }
+  .group { margin-bottom: 18px; }
+  .group:last-child { margin-bottom: 0; }
+  .group-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 10px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .btn { font-family: var(--font-display); font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; line-height: 1; }
+  .btn--cta { background: var(--brand-cta); color: white; }
+  .btn--cta-press { background: #001f87; color: white; }
+  .btn--brand { background: var(--green-500); color: white; }
+  .btn--secondary { background: white; color: var(--text-primary); border-color: var(--border-secondary); }
+  .btn--ghost { background: var(--gray-100); color: var(--text-primary); }
+  .btn--disabled { background: var(--gray-200); color: var(--text-tertiary); cursor: not-allowed; }
+  .btn--sm { font-size: 13px; padding: 8px 14px; }
+</style>
+</head><body>
+  <div class="group">
+    <div class="group-label">Primary CTA · 구매·외부 이동</div>
+    <div class="row">
+      <button class="btn btn--cta">구매처 보기</button>
+      <button class="btn btn--cta-press">구매처 보기</button>
+      <button class="btn btn--disabled">구매처 보기</button>
+    </div>
+  </div>
+  <div class="group">
+    <div class="group-label">Brand · 분석·비교 액션</div>
+    <div class="row">
+      <button class="btn btn--brand">비교함 담기</button>
+      <button class="btn btn--secondary">찜하기</button>
+      <button class="btn btn--ghost">공유하기</button>
+    </div>
+  </div>
+  <div class="group">
+    <div class="group-label">Sizes</div>
+    <div class="row">
+      <button class="btn btn--cta btn--sm">작게</button>
+      <button class="btn btn--cta">기본</button>
+    </div>
+  </div>
+</body></html>

@@ -1,4 +1,5 @@
-// 비교 데이터 셀 (영양소 1개 값 표시 + 우수값 강조)
+// 비교 데이터 셀 (지표 라벨 + 값 + 우수값 강조)
+// - 각 셀이 자체 라벨을 위에 표기 (좌측 라벨 컬럼 제거 대응)
 // - isBest=true 일 때 그린 텍스트 + 체크 아이콘 + soft-green pill 배경
 // - direction=null 이면 강조 없음 (중립 지표)
 import { IconCheck } from '../../ds/Icons.jsx';
@@ -9,18 +10,21 @@ function fmt(v) {
   return Number.isInteger(v) ? `${v}` : `${Math.round(v * 10) / 10}`;
 }
 
-export function CompareCell({ value, unit, isBest }) {
+export function CompareCell({ label, value, unit, isBest }) {
   // best 여부에 따라 클래스 분기 (CSS 토큰만 사용)
   const cls = isBest ? 'm-compare-cell m-compare-cell--best' : 'm-compare-cell';
   return (
     <div className={cls}>
-      {isBest && (
-        <span className="m-compare-cell-check" aria-label="이 지표에서 우수">
-          <IconCheck size={11} stroke={2.5} />
-        </span>
-      )}
-      <span className="m-compare-cell-num">{fmt(value)}</span>
-      {unit && <span className="m-compare-cell-unit">{unit}</span>}
+      <span className="m-compare-cell-label">{label}</span>
+      <span className="m-compare-cell-valrow">
+        {isBest && (
+          <span className="m-compare-cell-check" aria-label="이 지표에서 우수">
+            <IconCheck size={10} stroke={2.5} />
+          </span>
+        )}
+        <span className="m-compare-cell-num">{fmt(value)}</span>
+        {unit && <span className="m-compare-cell-unit">{unit}</span>}
+      </span>
     </div>
   );
 }

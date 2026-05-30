@@ -94,7 +94,7 @@ export const CATEGORY_GUIDES = {
     summary: '제로 음료는 칼로리가 거의 없는 것이 핵심이지만, 감미료 종류와 실제 영양 표시를 함께 확인하는 것이 좋습니다.',
   },
 
-  '과자': {
+  '과자/초콜릿/젤리': {
     count: 4,
     intro: '저당·건강 간식류를 고를 때는 당류, 칼로리, 지방 구성, 그리고 1회 섭취량을 확인하는 것이 좋습니다.',
     considerations: [
@@ -118,7 +118,7 @@ export const CATEGORY_GUIDES = {
     summary: '건강한 간식은 당류와 칼로리가 낮고, 포화지방이 적으며, 1회 섭취량이 명확한 제품입니다. 영양 표시의 기준 단위를 반드시 확인하세요.',
   },
 
-  '시리얼/그래놀라': {
+  '시리얼/그래놀라/오트밀': {
     count: 4,
     intro: '시리얼·그래놀라를 고를 때는 당류, 식이섬유, 통곡물 함량, 그리고 1회 섭취량 기준 칼로리를 확인하는 것이 좋습니다.',
     considerations: [
@@ -142,7 +142,7 @@ export const CATEGORY_GUIDES = {
     summary: '좋은 시리얼·그래놀라는 당류가 낮고 식이섬유가 풍부하며, 통곡물 함량이 높은 제품입니다. 소량으로도 칼로리가 높으니 1회 섭취량을 지키는 것이 중요합니다.',
   },
 
-  '밥/면류': {
+  '밥': {
     count: 4,
     intro: '저당·저칼로리 밥·면류를 고를 때는 칼로리, 탄수화물 구성, 나트륨, 그리고 곤약·식이섬유 함량을 확인하는 것이 좋습니다.',
     considerations: [
@@ -166,7 +166,7 @@ export const CATEGORY_GUIDES = {
     summary: '저칼로리 밥·면류는 칼로리가 낮으면서도 포만감을 주는 것이 핵심입니다. 나트륨과 소스 칼로리를 함께 확인하세요.',
   },
 
-  '소시지/햄': {
+  '기타 가공육': {
     count: 4,
     intro: '저당·고단백 소시지·햄을 고를 때는 단백질 함량, 나트륨, 지방, 그리고 첨가물을 확인하는 것이 좋습니다.',
     considerations: [
@@ -239,6 +239,12 @@ export const CATEGORY_GUIDES = {
   },
 };
 
+// name_ko 별칭 — 같은 가이드를 공유하는 식품유형 (밥·면 분리 대응)
+const GUIDE_ALIAS = {
+  '면': '밥',
+};
+
 export function getCategoryGuide(category) {
-  return CATEGORY_GUIDES[category] ?? null;
+  const key = GUIDE_ALIAS[category] ?? category;
+  return CATEGORY_GUIDES[key] ?? null;
 }

@@ -683,7 +683,8 @@ img.product-thumb { object-fit: cover; }
 .compare-tray-cta:hover { background: #2563eb; gap: 10px; }
 
 /* ───────── Global: Site Feedback ───────── */
-.site-feedback { position: fixed; right: 16px; bottom: 16px; z-index: var(--z-overlay); }
+/* 피드백 FAB: 정렬/필터 바텀시트(z-index 50)보다 낮게 둬서 시트를 가리지 않게 함 */
+.site-feedback { position: fixed; right: 16px; bottom: 16px; z-index: 40; }
 .site-feedback-fab {
   background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-pill);
   padding: 12px 18px; min-height: 44px; box-shadow: var(--shadow-md); font-size: 13px; font-weight: 600;
@@ -757,16 +758,14 @@ img.product-thumb { object-fit: cover; }
 }
 
 /* ───────── DS TopTabs ───────── */
+/* 목적 탭은 개수가 적어(3개) 가로 스크롤 없이 화면 폭을 균등 분할 */
 .ds-top-tabs {
   background: white;
   display: flex;
   padding: 0 8px;
   border-bottom: 1px solid var(--border-tertiary);
-  overflow-x: auto;
-  scrollbar-width: none;
   flex-shrink: 0;
 }
-.ds-top-tabs::-webkit-scrollbar { display: none; }
 .ds-top-tab {
   font-family: var(--font-display);
   font-size: 15px;
@@ -776,6 +775,8 @@ img.product-thumb { object-fit: cover; }
   position: relative;
   cursor: pointer;
   white-space: nowrap;
+  text-align: center;
+  flex: 1 1 0;
   background: none;
   border: none;
   transition: color 0.15s;

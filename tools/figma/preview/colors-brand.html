@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Brand colors</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  .ramp { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; width: 100%; }
+  .step { aspect-ratio: 1/1; border-radius: 6px; display: flex; align-items: flex-end; padding: 6px; font-size: 10px; font-weight: 600; font-family: var(--font-numeric); }
+  .step.--ink { color: var(--gray-900); }
+  .step.--white { color: var(--white); }
+  .core { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .core-tile { padding: 16px; border-radius: 10px; color: white; min-height: 96px; display: flex; flex-direction: column; justify-content: space-between; }
+  .core-tile .name { font-size: 14px; font-weight: 700; font-family: var(--font-display); }
+  .core-tile .hex { font-size: 13px; font-family: var(--font-numeric); opacity: .9; }
+  .core-tile .usage { font-size: 11px; opacity: .85; line-height: 1.4; }
+  .ramp-label { font-size: 11px; color: var(--text-secondary); margin: 14px 0 6px; font-weight: 600; }
+</style>
+</head><body>
+  <div class="core">
+    <div class="core-tile" style="background: var(--green-500);">
+      <div><div class="name">Main Green</div><div class="hex">#00C600</div></div>
+      <div class="usage">브랜드 · 점수 ≥ 7.0 · 안전성</div>
+    </div>
+    <div class="core-tile" style="background: var(--brand-cta);">
+      <div><div class="name">CTA</div><div class="hex">#0028AC</div></div>
+      <div class="usage">비교함 담기 · 구매처 보기</div>
+    </div>
+    <div class="core-tile" style="background: var(--brand-cta);">
+      <div><div class="name">CTA Blue</div><div class="hex">#0028AC</div></div>
+      <div class="usage">비교함 · 구매처 보기</div>
+    </div>
+  </div>
+
+  <div class="ramp-label">Green ramp (50 → 900)</div>
+  <div class="ramp">
+    <div class="step --ink" style="background:#E5FCE3">50</div>
+    <div class="step --ink" style="background:#A5F4A0">100</div>
+    <div class="step --ink" style="background:#6CEF64">200</div>
+    <div class="step --ink" style="background:#39E532">300</div>
+    <div class="step --ink" style="background:#11D70D">400</div>
+    <div class="step --white" style="background:#00C600">500</div>
+    <div class="step --white" style="background:#01A900">600</div>
+    <div class="step --white" style="background:#018600">700</div>
+    <div class="step --white" style="background:#015F00">800</div>
+    <div class="step --white" style="background:#013600">900</div>
+  </div>
+</body></html>

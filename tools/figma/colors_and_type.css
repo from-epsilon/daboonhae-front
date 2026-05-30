@@ -1,0 +1,300 @@
+/* ===========================================================================
+   Gmarket Design System — Colors & Type
+   Source: https://gds.gmarket.co.kr/  (v1.0.0, last updated 2021-08-26)
+
+   Notes:
+   - Gmarket Sans is G마켓's official webfont, used for prices, percentages,
+     headings, buttons. Available via the Gmarket Brand download zip
+     (https://gds.gmarket.co.kr/file/GmarketSans.zip).
+     Could not download programmatically in this environment — we load
+     a Korean-display fallback that has similar geometric character via
+     Google Fonts ("Black Han Sans"/"Jua" do NOT match perfectly).
+     For now we map --font-display to a stack with the local family first.
+   - Noto Sans KR is the canonical body font for Korean text (both web and
+     Android). System fonts are used inside native iOS/Android shells.
+   =========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap');
+
+/* Gmarket Sans — load from local fonts/ if user adds it, else fall back. */
+@font-face {
+  font-family: 'Gmarket Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: local('GmarketSansLight'), local('Gmarket Sans Light'),
+       url('fonts/GmarketSansTTFLight.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Gmarket Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local('GmarketSansMedium'), local('Gmarket Sans Medium'),
+       url('fonts/GmarketSansTTFMedium.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Gmarket Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('GmarketSansBold'), local('Gmarket Sans Bold'),
+       url('fonts/GmarketSansTTFBold.ttf') format('truetype');
+}
+
+:root {
+  /* ---------- BRAND ---------- */
+  --brand-green:        #00C600; /* Main Green-500 — primary 다분해 brand */
+  --brand-cta:          #0028AC; /* CTA — purchase action color */
+  --brand-smile:        #282864; /* Smile series (스마일배송/페이/카드) */
+
+  /* ---------- MAIN GREEN ramp (Positive) ---------- */
+  --green-900: #013600;
+  --green-800: #015F00;
+  --green-700: #018600;
+  --green-600: #01A900;
+  --green-500: #00C600;
+  --green-400: #11D70D;
+  --green-300: #39E532;
+  --green-200: #6CEF64;
+  --green-100: #A5F4A0;
+  --green-50:  #E5FCE3;
+
+  /* ---------- BLUE ramp (Informative) ---------- */
+  --blue-900: #072182;
+  --blue-800: #0231A6;
+  --blue-700: #0048C8;
+  --blue-600: #0062E5;
+  --blue-500: #067DFD;
+  --blue-400: #329CFF;
+  --blue-300: #68BBFF;
+  --blue-200: #A7D9FF;
+  --blue-100: #CBE8FF;
+  --blue-50:  #EEF7FF;
+
+  /* ---------- RED ramp (Warning) ---------- */
+  --red-900: #7D0800;
+  --red-800: #9F0A01;
+  --red-700: #BF0A03;
+  --red-600: #DA120D;
+  --red-500: #EF2B2A;
+  --red-400: #FF5454;
+  --red-300: #FF8585;
+  --red-200: #FFBFBF;
+  --red-100: #FFDADB;
+  --red-50:  #FFF5F5;
+
+  /* ---------- ORANGE ramp (Delay) ---------- */
+  --orange-900: #5E2700;
+  --orange-800: #882400;
+  --orange-700: #B43200;
+  --orange-600: #DA4000;
+  --orange-500: #F9560E;
+  --orange-400: #FF7638;
+  --orange-300: #FF9E70;
+  --orange-200: #FFCCB2;
+  --orange-100: #FFE1D3;
+  --orange-50:  #FFF6F2;
+
+  /* ---------- GRAY ramp ---------- */
+  --gray-900: #222222;
+  --gray-800: #424242;
+  --gray-700: #616161;
+  --gray-600: #757575;
+  --gray-500: #9E9E9E;
+  --gray-400: #BDBDBD;
+  --gray-300: #E0E0E0;
+  --gray-200: #EEEEEE;
+  --gray-100: #F5F5F5;
+  --gray-50:  #FAFAFA;
+  --black:    #000000;
+  --white:    #FFFFFF;
+
+  /* ---------- SEMANTIC: TEXT ---------- */
+  --text-cto:       var(--black);    /* 상품명·가격 숫자 */
+  --text-primary:   var(--gray-900); /* 제목 / 본문 */
+  --text-secondary: var(--gray-700); /* 서브 본문 */
+  --text-tertiary:  var(--gray-500); /* 비활성 / 할인 전 가격 / 품절 */
+  --text-caption:   var(--gray-400); /* 약관 / 푸터 저작권 */
+  --text-on-brand:  var(--white);
+  --text-link:      var(--blue-700);
+
+  /* ---------- SEMANTIC: BACKGROUND ---------- */
+  --bg-white:    var(--white);   /* 기본 배경 */
+  --bg-off-white:var(--gray-100);/* 두번째 기본 배경 */
+  --bg-divider:  var(--gray-200);/* 디바이더 라인 */
+  --bg-card-ui:  var(--gray-50); /* 카드 UI 배경 */
+
+  /* ---------- SEMANTIC: BORDER ---------- */
+  --border-active:    var(--gray-900); /* 활성 폼 필드 */
+  --border-secondary: var(--gray-400); /* secondary 버튼 */
+  --border-tertiary:  var(--gray-300); /* 콘텐츠 배경 */
+  --border-white:     var(--white);
+
+  /* ---------- SEMANTIC: STATE ---------- */
+  --state-positive:    var(--green-500); /* 쿠폰/혜택 */
+  --state-informative: var(--blue-500);  /* 별점/공식태그 */
+  --state-warning:     var(--red-500);   /* 취소/탈퇴 */
+  --state-delay:       var(--orange-500);/* 배송지연 */
+
+  /* ===========================================================================
+     TYPOGRAPHY
+     =========================================================================== */
+  --font-display: 'Gmarket Sans', 'Noto Sans KR', system-ui, sans-serif;
+  --font-body:    'Noto Sans KR', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --font-latin:   'Roboto', system-ui, -apple-system, sans-serif;
+  --font-numeric: 'Gmarket Sans', 'Roboto', system-ui, sans-serif;
+
+  /* Font sizes — design tokens */
+  --font-size-xxxl: 24px;
+  --font-size-xxl:  22px;
+  --font-size-xl:   20px;
+  --font-size-l:    18px;
+  --font-size-m:    16px;
+  --font-size-s:    14px;
+  --font-size-xs:   12px;
+  --font-size-xxs:  11px;
+
+  /* Line heights — empirically derived from screenshots; G마켓 default ~1.5 body, ~1.3 display */
+  --lh-tight: 1.3;
+  --lh-base:  1.5;
+  --lh-loose: 1.7;
+
+  /* Weights */
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-bold:    700;
+
+  /* ===========================================================================
+     SPACING — Gmarket uses a 4/8-based grid. Tokens below approximate the
+     "Spacing" foundation page (multi-step scale tied to component padding).
+     =========================================================================== */
+  --space-0:  0px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ===========================================================================
+     RADII — Gmarket uses very gentle rounding. Components mostly use 4–8px;
+     dialogs/sheets use larger radii. Pure circles for chips/badge.
+     =========================================================================== */
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-pill: 999px;
+
+  /* ===========================================================================
+     ELEVATION — Gmarket is mostly flat. Cards rely on dividers + bg-card-ui.
+     Lifted elements (sheets, popovers, toast) use soft drops.
+     =========================================================================== */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:  0 2px 8px rgba(0,0,0,.08);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.12);
+  --shadow-key: 0 12px 32px rgba(0,0,0,.16);
+}
+
+/* ===========================================================================
+   SEMANTIC TYPE STYLES — apply to elements directly when not using utilities.
+   Numbering follows Gmarket's "Heading 1–4 / Body 1–2 / Detail" hierarchy.
+   =========================================================================== */
+.h1, .heading-1 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xxxl); /* 24 */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.h2, .heading-2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xxl);  /* 22 */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  color: var(--text-primary);
+}
+.h3, .heading-3 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);   /* 20 */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  color: var(--text-primary);
+}
+.h4, .heading-4 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-l);    /* 18 */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  color: var(--text-primary);
+}
+
+.body-1-bold {
+  font-family: var(--font-body);
+  font-size: var(--font-size-m);    /* 16 / bold */
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-base);
+  color: var(--text-primary);
+}
+.body-1 {
+  font-family: var(--font-body);
+  font-size: var(--font-size-m);    /* 16 / regular */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-base);
+  color: var(--text-primary);
+}
+.body-2-bold {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);    /* 14 / bold */
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-base);
+  color: var(--text-primary);
+}
+.body-2 {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);    /* 14 / regular */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-base);
+  color: var(--text-primary);
+}
+.detail-bold {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);   /* 12 / bold */
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-base);
+  color: var(--text-primary);
+}
+.detail {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);   /* 12 / regular */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-base);
+  color: var(--text-secondary);
+}
+.caption {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);  /* 11 — exception, legal/footer only */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-base);
+  color: var(--text-caption);
+}
+
+/* Numeric/price utility — always Gmarket Sans, never Noto Sans KR */
+.price-num {
+  font-family: var(--font-numeric);
+  font-weight: var(--fw-bold);
+  color: var(--text-cto); /* black */
+  font-feature-settings: 'tnum' 1;
+}
+.price-num--strike {
+  font-family: var(--font-numeric);
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}

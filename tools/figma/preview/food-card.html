@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Food card</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 20px; background: var(--bg-off-white); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .card { background: white; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+  .thumb { aspect-ratio: 1/1; position: relative; border-radius: 8px; }
+  .thumb-1 { background: linear-gradient(135deg,#6b3a1a,#3d1f0a); }
+  .thumb-2 { background: linear-gradient(135deg,#f7d9b3,#dcae6f); }
+  .thumb-3 { background: linear-gradient(135deg,#fafaf2,#e8e5cc); }
+  .score-pill {
+    position: absolute; left: 8px; top: 8px; background: white;
+    border-radius: 999px; padding: 3px 9px;
+    font-family: var(--font-numeric); font-weight: 700; font-size: 13px;
+    border-width: 1.5px; border-style: solid;
+  }
+  .score-pill.--high { color: var(--green-500); border-color: var(--green-500); }
+  .score-pill.--mid { color: var(--orange-500); border-color: var(--orange-500); }
+  .score-pill.--low { color: var(--red-500); border-color: var(--red-500); }
+  .compare-btn {
+    position: absolute; right: 6px; bottom: 6px;
+    width: 26px; height: 26px; border-radius: 999px;
+    background: white; border: 1px solid var(--border-tertiary);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary);
+  }
+  .body { padding: 10px 4px; display: flex; flex-direction: column; gap: 4px; }
+  .brand { font-family: var(--font-body); font-size: 11px; color: var(--text-secondary); }
+  .name { font-family: var(--font-body); font-size: 13px; color: var(--text-primary); font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px; }
+  .meta { font-size: 11px; color: var(--text-secondary); font-family: var(--font-numeric); }
+  .meta b { color: var(--text-primary); }
+  .tags { display: flex; gap: 4px; margin-top: 2px; flex-wrap: wrap; }
+  .tag { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; font-family: var(--font-body); }
+  .tag.--soft-green { background: var(--green-50); color: var(--green-700); }
+  .tag.--info { background: var(--blue-50); color: var(--blue-700); }
+  .tag.--soft-orange { background: var(--orange-50); color: var(--orange-700); }
+</style>
+</head><body>
+  <div class="grid">
+    <div class="card">
+      <div class="thumb thumb-1">
+        <span class="score-pill --high">8.7</span>
+        <button class="compare-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="body">
+        <div class="brand">MyProtein</div>
+        <div class="name">임팩트 웨이 프로틴 초콜릿 1kg</div>
+        <div class="meta"><b>103</b>kcal · 단백질 <b>21g</b></div>
+        <div class="tags"><span class="tag --soft-green">고단백 9.2</span><span class="tag --info">공식 영양정보</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb thumb-2">
+        <span class="score-pill --high">9.1</span>
+        <button class="compare-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="body">
+        <div class="brand">닭신</div>
+        <div class="name">스팀 닭가슴살 오리지널 100g × 10팩</div>
+        <div class="meta"><b>105</b>kcal · 단백질 <b>24g</b></div>
+        <div class="tags"><span class="tag --soft-green">고단백 9.5</span><span class="tag --soft-green">저당</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="thumb thumb-3">
+        <span class="score-pill --mid">6.4</span>
+        <button class="compare-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="body">
+        <div class="brand">마이밀</div>
+        <div class="name">마이바디 단백질 셰이크 초코맛 12개입</div>
+        <div class="meta"><b>220</b>kcal · 단백질 <b>18g</b></div>
+        <div class="tags"><span class="tag --soft-orange">당류 12g</span><span class="tag --soft-green">고단백</span></div>
+      </div>
+    </div>
+  </div>
+</body></html>

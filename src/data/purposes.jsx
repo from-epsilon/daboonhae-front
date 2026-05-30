@@ -4,17 +4,19 @@ import { CandyOff, Dumbbell, TrendingDown, UtensilsCrossed, Search } from 'lucid
 // - 식품유형 카테고리는 성격과 무관하게 고정 (FOOD_CATEGORIES)
 // - 각 성격은 필터 스펙/강조 수치/리포트 섹션만 다르게 적용
 
+// DB food_type_categories.name_ko 와 일치 (2026-05 기준 11종)
 export const FOOD_CATEGORIES = [
-  '시리얼/그래놀라',
   '닭가슴살',
-  '에너지바',
-  '아이스크림',
-  '밥/면류',
   '단백질 음료',
-  '소시지/햄',
-  '셰이크',
-  '과자',
+  '에너지바',
+  '기타 가공육',
+  '아이스크림',
+  '과자/초콜릿/젤리',
   '제로 음료',
+  '밥',
+  '면',
+  '시리얼/그래놀라/오트밀',
+  '셰이크',
 ];
 
 export const PURPOSES = [
@@ -156,33 +158,39 @@ export const CATEGORY_KEY_METRICS = {
     { key: 'sugar', label: '당류', unit: 'g' },
     { key: 'carbs', label: '탄수화물', unit: 'g' },
   ],
+  '기타 가공육': [
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'sodium', label: '나트륨', unit: 'mg' },
+    { key: 'fat', label: '지방', unit: 'g' },
+  ],
   '제로 음료': [
     { key: 'calories', label: '칼로리', unit: 'kcal' },
     { key: 'sugar', label: '당류', unit: 'g' },
   ],
-  '과자': [
+  '과자/초콜릿/젤리': [
     { key: 'calories', label: '칼로리', unit: 'kcal' },
     { key: 'sugar', label: '당류', unit: 'g' },
     { key: 'fat', label: '지방', unit: 'g' },
     { key: 'carbs', label: '탄수화물', unit: 'g' },
   ],
-  '시리얼/그래놀라': [
+  '시리얼/그래놀라/오트밀': [
     { key: 'fiber', label: '식이섬유', unit: 'g' },
     { key: 'sugar', label: '당류', unit: 'g' },
     { key: 'calories', label: '칼로리', unit: 'kcal' },
     { key: 'carbs', label: '탄수화물', unit: 'g' },
   ],
-  '밥/면류': [
+  '밥': [
     { key: 'calories', label: '칼로리', unit: 'kcal' },
     { key: 'carbs', label: '탄수화물', unit: 'g' },
     { key: 'protein', label: '단백질', unit: 'g' },
     { key: 'sodium', label: '나트륨', unit: 'mg' },
   ],
-  '소시지/햄': [
-    { key: 'protein', label: '단백질', unit: 'g' },
+  '면': [
     { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+    { key: 'protein', label: '단백질', unit: 'g' },
     { key: 'sodium', label: '나트륨', unit: 'mg' },
-    { key: 'fat', label: '지방', unit: 'g' },
   ],
   '셰이크': [
     { key: 'protein', label: '단백질', unit: 'g' },

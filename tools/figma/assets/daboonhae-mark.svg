@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" aria-label="다분해">
+  <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="#00C600" stroke-width="7.5" stroke-linecap="round"></path>
+  <circle cx="49.5" cy="14.5" r="3.6" fill="#00C600"></circle>
+  <circle cx="41" cy="6.5" r="2.4" fill="#00C600" opacity="0.75"></circle>
+  <circle cx="57" cy="22" r="2" fill="#00C600" opacity="0.5"></circle>
+</svg>

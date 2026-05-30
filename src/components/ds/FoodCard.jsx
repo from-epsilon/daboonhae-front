@@ -84,33 +84,55 @@ function TrustBadgeRow({ trustBadges }) {
   );
 }
 
-// list 레이아웃: 가로 88x88 썸네일 + 텍스트 영역
-// - 비교 버튼은 웹(grid 카드)과 동일하게 썸네일 우하단 아이콘(CompareButton)으로 표현
+// 리스트 카드 보관함(비교함) 담기 버튼 — 썸네일 아래 라벨 버튼
+// - 담기 전: 외곽선 + '보관함', 담은 후: 초록 채움 + '담김'
+function ListStoreButton({ food, onCompare, inCompare }) {
+  if (!onCompare) return null;
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onCompare(food);
+      }}
+      aria-pressed={inCompare}
+      aria-label={inCompare ? `${food.name} 보관함에서 빼기` : `${food.name} 보관함에 담기`}
+      className={`m-foodcard-store${inCompare ? ' is-in' : ''}`}
+    >
+      {inCompare ? <IconCheck size={13} stroke={2.2} /> : <IconPlus size={13} stroke={2.2} />}
+      <span>{inCompare ? '담김' : '보관함'}</span>
+    </button>
+  );
+}
+
+// list 레이아웃: 좌측 88px 컬럼(썸네일 + 담기 버튼) + 텍스트 영역
+// - 담긴 제품은 카드 좌측에 그린 강조선 + 버튼 '담김' 상태로 표시
 function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) {
   return (
     <div
       onClick={onClick}
+      className={`m-foodcard-list${inCompare ? ' is-in-store' : ''}`}
       style={{
         display: 'flex',
         gap: 12,
-        padding: '14px 0',
+        padding: '14px 12px 14px 0',
         borderBottom: '1px solid var(--border-tertiary)',
         cursor: 'pointer',
       }}
     >
-      <div
-        style={{
-          position: 'relative',
-          flexShrink: 0,
-          width: 88,
-          height: 88,
-          borderRadius: 'var(--radius-sm)',
-          overflow: 'hidden',
-          background: 'var(--gray-100)',
-        }}
-      >
-        <ThumbImage src={food.thumb} alt={food.name} />
-        <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+      <div style={{ flexShrink: 0, width: 88, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div
+          style={{
+            width: 88,
+            height: 88,
+            borderRadius: 'var(--radius-sm)',
+            overflow: 'hidden',
+            background: 'var(--gray-100)',
+          }}
+        >
+          <ThumbImage src={food.thumb} alt={food.name} />
+        </div>
+        <ListStoreButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>

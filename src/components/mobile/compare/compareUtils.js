@@ -38,20 +38,6 @@ export function getBestIndices(products, key, direction = 'max') {
     .filter((i) => i !== -1);
 }
 
-// 점수 기준 우수값: '높을수록 좋음' 고정
-export function getBestScoreIndices(products) {
-  if (!Array.isArray(products) || products.length < 2) return [];
-  const scores = products.map((p) => (typeof p?.score === 'number' ? p.score : null));
-  if (allSame(scores)) return [];
-
-  const best = scores.reduce(
-    (acc, v) => (v !== null && (acc === null || v > acc) ? v : acc),
-    null,
-  );
-  if (best === null) return [];
-  return scores.map((v, i) => (v === best ? i : -1)).filter((i) => i !== -1);
-}
-
 // 자동 비교 한 줄 문장 생성 (1~3 문장)
 // - "Compare, don't rank" 톤: A는 X가 많고, B는 Y가 적어요
 // - 1위/2위 단어는 절대 쓰지 않음

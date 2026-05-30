@@ -1,13 +1,19 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
 
 // 우하단 의견을 주세요 버튼 (제품 후기와는 별개)
 // - 버튼 클릭 시 텍스트 입력 패널 토글
 // - 제출 동작은 추후 백엔드 연동 (현재는 콘솔 로깅으로 자리만 잡아둠)
+// - 상세(/product/*)·비교(/compare)는 하단 CTA/표와 겹쳐 콘텐츠를 가리므로 미노출
 export default function SiteFeedbackButton() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const { pathname } = useLocation();
+
+  // 상세·비교 페이지에서는 숨김 (플로팅 버튼이 표/CTA를 가림)
+  if (pathname.startsWith('/product/') || pathname === '/compare') return null;
 
   const submit = () => {
     const trimmed = text.trim();

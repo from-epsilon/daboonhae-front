@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Chips & badges</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 22px; }
+  .group { margin-bottom: 18px; }
+  .group:last-child { margin-bottom: 0; }
+  .group-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 10px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .chip { font-family: var(--font-body); font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 999px; background: white; border: 1px solid var(--border-tertiary); color: var(--text-primary); }
+  .chip.--active { background: var(--gray-900); color: white; border-color: var(--gray-900); }
+  .chip.--brand { background: var(--green-50); color: var(--green-700); border-color: var(--green-200); }
+  .badge { font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 4px; line-height: 1.2; display: inline-flex; align-items: center; }
+  .badge.--brand { background: var(--green-500); color: white; }
+  .badge.--soft-green { background: var(--green-50); color: var(--green-700); }
+  .badge.--red { background: var(--red-500); color: white; }
+  .badge.--soft-red { background: var(--red-50); color: var(--red-700); }
+  .badge.--orange { background: var(--orange-500); color: white; }
+  .badge.--soft-orange { background: var(--orange-50); color: var(--orange-700); }
+  .badge.--info { background: var(--blue-50); color: var(--blue-700); }
+  .badge.--cta { background: var(--brand-cta); color: white; }
+  .badge.--outline { background: white; color: var(--text-primary); border: 1px solid var(--gray-900); }
+</style>
+</head><body>
+  <div class="group">
+    <div class="group-label">Chips · 다이어트 목표 필터</div>
+    <div class="row">
+      <span class="chip --active">전체</span>
+      <span class="chip">고단백</span>
+      <span class="chip">저칼로리</span>
+      <span class="chip">저당</span>
+      <span class="chip">비건</span>
+      <span class="chip --brand">글루텐프리</span>
+    </div>
+  </div>
+  <div class="group">
+    <div class="group-label">Score & info badges</div>
+    <div class="row">
+      <span class="badge --brand">고단백 9.2</span>
+      <span class="badge --soft-green">저당 8.5</span>
+      <span class="badge --soft-orange">관찰 6.4</span>
+      <span class="badge --soft-red">주의 3.2</span>
+      <span class="badge --info">공식 영양정보</span>
+      <span class="badge --outline">신상품</span>
+    </div>
+  </div>
+  <div class="group">
+    <div class="group-label">Ingredient flags · 성분 안전성</div>
+    <div class="row">
+      <span class="badge --soft-green">안전 성분</span>
+      <span class="badge --soft-orange">관찰 성분 2</span>
+      <span class="badge --soft-red">주의 성분 1</span>
+    </div>
+  </div>
+</body></html>

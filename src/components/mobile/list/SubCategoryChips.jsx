@@ -1,6 +1,6 @@
-// 모바일 세부 카테고리 가로 스크롤 칩
+// 모바일 세부 카테고리 칩 (줄바꿈 wrap — 가로 스크롤 X)
 // - 첫 칩은 항상 '전체' (값 'all')
-// - active 시 검은 배경 (DS Chip atom 활용)
+// - 칩이 많아지면 다음 줄로 넘어감
 import { Chip } from '../../ds/Chip.jsx';
 
 export function SubCategoryChips({ categories = [], value, onChange }) {
@@ -11,12 +11,11 @@ export function SubCategoryChips({ categories = [], value, onChange }) {
     <div
       style={{
         display: 'flex',
+        flexWrap: 'wrap',
         gap: 6,
         padding: '8px 16px',
         background: 'white',
-        overflowX: 'auto',
         borderBottom: '1px solid var(--border-tertiary)',
-        WebkitOverflowScrolling: 'touch',
         flexShrink: 0,
       }}
     >

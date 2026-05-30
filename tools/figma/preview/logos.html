@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>다분해 Logos</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 0; background: white; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .tile {
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    border: 1px solid var(--border-tertiary);
+    min-height: 170px;
+  }
+  .tile .label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-family: var(--font-numeric);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .tile.--dark { background: var(--gray-900); color: white; }
+  .tile.--brand { background: var(--green-500); color: white; }
+  .tile.--off { background: var(--bg-off-white); }
+  .tile.--dark .label,
+  .tile.--brand .label { color: rgba(255,255,255,.7); }
+
+  /* Wordmark — html text using display font, tracked tight */
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: -.04em;
+    line-height: 1;
+    color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .wordmark .accent { color: var(--green-500); }
+  .tile.--dark .wordmark { color: white; }
+  .tile.--brand .wordmark { color: white; }
+  .tile.--brand .wordmark .accent { color: white; }
+
+  /* Lockup combines mark + wordmark inline */
+  .lockup { display: flex; align-items: center; gap: 10px; }
+  .lockup .wordmark { font-size: 26px; }
+
+  .tagline {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: .04em;
+    margin-top: -6px;
+  }
+  .tile.--dark .tagline { color: rgba(255,255,255,.6); }
+  .tile.--brand .tagline { color: rgba(255,255,255,.85); }
+</style>
+</head><body>
+  <div class="grid">
+
+    <!-- 1. Symbol mark on white -->
+    <div class="tile">
+      <svg viewBox="0 0 64 64" width="60" height="60" aria-label="다분해 mark">
+        <!-- 3/4 broken circle (decomposing) -->
+        <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="#00C600" stroke-width="7.5" stroke-linecap="round"/>
+        <!-- Dispersing particles top-right -->
+        <circle cx="49.5" cy="14.5" r="3.6" fill="#00C600"/>
+        <circle cx="41" cy="6.5" r="2.4" fill="#00C600" opacity=".75"/>
+        <circle cx="57" cy="22" r="2" fill="#00C600" opacity=".5"/>
+      </svg>
+      <div class="label">Symbol · Primary</div>
+    </div>
+
+    <!-- 2. Symbol on brand green (inverted fill) -->
+    <div class="tile --brand">
+      <svg viewBox="0 0 64 64" width="60" height="60" aria-label="다분해 mark inverted">
+        <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="#ffffff" stroke-width="7.5" stroke-linecap="round"/>
+        <circle cx="49.5" cy="14.5" r="3.6" fill="#ffffff"/>
+        <circle cx="41" cy="6.5" r="2.4" fill="#ffffff" opacity=".75"/>
+        <circle cx="57" cy="22" r="2" fill="#ffffff" opacity=".5"/>
+      </svg>
+      <div class="label">Symbol · on Brand</div>
+    </div>
+
+    <!-- 3. Symbol on dark -->
+    <div class="tile --dark">
+      <svg viewBox="0 0 64 64" width="60" height="60" aria-label="다분해 mark on dark">
+        <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="#00C600" stroke-width="7.5" stroke-linecap="round"/>
+        <circle cx="49.5" cy="14.5" r="3.6" fill="#00C600"/>
+        <circle cx="41" cy="6.5" r="2.4" fill="#00C600" opacity=".75"/>
+        <circle cx="57" cy="22" r="2" fill="#00C600" opacity=".5"/>
+      </svg>
+      <div class="label">Symbol · on Dark</div>
+    </div>
+
+    <!-- 4. Wordmark on white -->
+    <div class="tile --off">
+      <div class="wordmark">다<span class="accent">분</span>해</div>
+      <div class="label">Wordmark · Primary</div>
+    </div>
+
+    <!-- 5. Horizontal lockup -->
+    <div class="tile">
+      <div class="lockup">
+        <svg viewBox="0 0 64 64" width="44" height="44">
+          <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="#00C600" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="49.5" cy="14.5" r="4" fill="#00C600"/>
+          <circle cx="41" cy="6.5" r="2.6" fill="#00C600" opacity=".75"/>
+          <circle cx="57" cy="22" r="2.2" fill="#00C600" opacity=".5"/>
+        </svg>
+        <div class="wordmark">다분해</div>
+      </div>
+      <div class="label">Horizontal Lockup</div>
+    </div>
+
+    <!-- 6. Brand block — full bleed brand statement -->
+    <div class="tile --dark" style="gap: 8px;">
+      <div class="wordmark" style="font-size: 30px;">다<span class="accent" style="color: var(--green-500);">분</span>해</div>
+      <div class="tagline">다 분해해 드립니다.</div>
+      <div class="label">Brand Block</div>
+    </div>
+
+  </div>
+</body></html>

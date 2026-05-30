@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Numerics</title>
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 24px; background: var(--bg-white); }
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .block { padding: 20px; background: var(--bg-card-ui); border-radius: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .label { font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+  .row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .num { font-family: var(--font-numeric); font-weight: 700; font-feature-settings: 'tnum' 1; }
+  .num small { font-weight: 500; }
+  .note { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+</style>
+</head><body>
+  <div class="layout">
+    <div class="block">
+      <div class="label">Score · 다분해 점수</div>
+      <div class="row">
+        <span class="num" style="font-size: 28px; color: var(--green-500);">8.5<small style="font-size:14px;color:var(--text-secondary);">점</small></span>
+      </div>
+      <div class="row">
+        <span class="num" style="font-size: 14px; color: var(--text-primary);">단백질</span>
+        <span class="num" style="font-size: 18px; color: var(--text-primary);">22g</span>
+        <span class="num" style="font-size: 14px; color: var(--text-secondary);">(1일권장 36%)</span>
+      </div>
+      <div class="note">numerics: Gmarket Sans · tabular · 700</div>
+    </div>
+    <div class="block">
+      <div class="label">Macros · 한 끼 영양</div>
+      <div class="row">
+        <span class="num" style="font-size: 20px;">105<small style="font-size:11px;">kcal</small></span>
+      </div>
+      <div class="row" style="gap: 12px;">
+        <span style="font-size: 11px; color: var(--text-secondary);">P <b class="num" style="color:var(--text-primary);">24g</b></span>
+        <span style="font-size: 11px; color: var(--text-secondary);">C <b class="num" style="color:var(--text-primary);">0.8g</b></span>
+        <span style="font-size: 11px; color: var(--text-secondary);">F <b class="num" style="color:var(--text-primary);">0.9g</b></span>
+      </div>
+      <div class="row">
+        <span class="num" style="font-size: 14px; color: var(--blue-500);">★ 4.9</span>
+        <span style="font-family:var(--font-numeric); color: var(--text-secondary); font-size:13px;">리뷰 12,847</span>
+      </div>
+      <div class="note">수치 = Gmarket Sans · 단위 = Noto Sans KR</div>
+    </div>
+  </div>
+</body></html>

@@ -2,6 +2,7 @@
 // 구조: AppBar(서브) → Hero → MacroRow → 자동 태그 → 영양표 → 분석 리포트 → 원료 → 후기 → sticky CTA bar
 // - 모바일 셸은 디테일에서 BottomNav 숨김 (App.jsx 처리). 본문 하단은 sticky CTA용 padding 확보
 // - AppBar/CTA는 페이지가 직접 렌더
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
@@ -9,27 +10,17 @@ import { useCompare } from '../../store/CompareContext.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { Button } from '../../components/ds/Button.jsx';
-import { Badge } from '../../components/ds/Badge.jsx';
 import { MacroRow } from '../../components/ds/MacroRow.jsx';
 import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
 import { NutritionTable } from '../../components/mobile/detail/NutritionTable.jsx';
 import { AnalysisCard } from '../../components/mobile/detail/AnalysisCard.jsx';
 import { IngredientList } from '../../components/mobile/detail/IngredientList.jsx';
 import { ReviewSection } from '../../components/mobile/detail/ReviewSection.jsx';
+import { CategoryGuideCard } from '../../components/mobile/detail/CategoryGuideCard.jsx';
+import { RelatedProducts } from '../../components/mobile/detail/RelatedProducts.jsx';
 import { StickyCTA } from '../../components/mobile/detail/StickyCTA.jsx';
+import { PurchaseSheet } from '../../components/mobile/detail/PurchaseSheet.jsx';
 import './DetailPage.css';
-
-// 자동 태그 가로 스크롤 라인 — 없으면 노출 안 함
-function TagsRow({ tags }) {
-  if (!tags || tags.length === 0) return null;
-  return (
-    <div className="m-detail-tags" aria-label="제품 태그">
-      {tags.map((t, i) => (
-        <Badge key={i} variant={t.v}>{t.label}</Badge>
-      ))}
-    </div>
-  );
-}
 
 // 매크로 분포 카드 — 풀 MacroRow + kcal 별도 노출
 function MacroSection({ macros }) {
@@ -64,11 +55,12 @@ function EmptyState({ onHome }) {
 export default function DetailPageMobile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { has, toggle, isFull, max } = useCompare();
+  const { has, toggle, isFull, max, count } = useCompare();
   const { purpose, purposeId } = usePurpose();
+  const [purchaseOpen, setPurchaseOpen] = useState(false);
 
   // raw 제품 → DS 형식 변환 (adapter는 raw도 들고 있어 분석에 그대로 활용 가능)
-  const { loading } = useProducts();
+  const { loading, products: allProducts } = useProducts();
   const raw = useProductById(id);
   const product = raw ? getAdapted(raw) : null;
 
@@ -107,47 +99,55 @@ export default function DetailPageMobile() {
     toggle(product.id);
   };
 
-  // 공유 — 실제 공유 API 없이 콘솔만 (요구사항대로)
-  const handleShare = () => {
-    console.log('[share]', product.id, product.name);
-  };
-
   return (
     <>
       <AppBar
         onBack={() => navigate(-1)}
         title={product.name}
-        onCompare={handleShare}
+        onCompare={() => navigate('/compare')}
+        compareCount={count}
       />
 
       <div className="m-detail">
-        {/* 1. 히어로: 이미지 + 점수 게이지 (시그니처) */}
+        {/* 1. 히어로: 이미지 + 브랜드/이름 + 태그 + 신뢰 배지 */}
         <HeroSection product={product} />
 
         {/* 2. 매크로 분포 */}
         <MacroSection macros={product.macros} />
 
-        {/* 3. 자동 태그 (가로 스크롤) */}
-        <TagsRow tags={product.tags} />
+        {/* 3. 선택 가이드 (데스크톱과 동일하게 본문 최상단 섹션) */}
+        <CategoryGuideCard category={raw?.category} />
 
         {/* 4. 영양성분표 */}
         <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />
 
-        {/* 5. 분석 리포트 (목적별 룰 기반) */}
-        <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} />
-
-        {/* 6. 원료 · 성분 */}
+        {/* 5. 원료 · 성분 */}
         <IngredientList ingredients={product.ingredients} />
+
+        {/* 6. 분석 리포트 (목적별 룰 기반) */}
+        <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} />
 
         {/* 7. 후기 */}
         <ReviewSection productId={product.id} />
+
+        {/* 8. 같은 카테고리 다른 제품 (가장 아래) */}
+        <RelatedProducts currentRaw={raw} allProducts={allProducts} />
       </div>
 
-      {/* 8. 하단 sticky CTA */}
+      {/* 7. 하단 sticky CTA */}
       <StickyCTA
         inCart={inCart}
         onToggleCompare={handleToggleCompare}
         purchaseUrl={raw?.purchaseUrl}
+        purchaseLinks={product.purchaseLinks}
+        onOpenPurchase={() => setPurchaseOpen(true)}
+      />
+
+      {/* 구매처 선택 시트 (오퍼 2곳 이상일 때) */}
+      <PurchaseSheet
+        open={purchaseOpen}
+        offers={product.purchaseLinks}
+        onClose={() => setPurchaseOpen(false)}
       />
     </>
   );
