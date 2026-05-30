@@ -84,8 +84,8 @@ function TrustBadgeRow({ trustBadges }) {
   );
 }
 
-// 리스트 카드 보관함(비교함) 담기 버튼 — 썸네일 아래 라벨 버튼
-// - 담기 전: 외곽선 + '보관함', 담은 후: 초록 채움 + '담김'
+// 리스트 카드 비교함 버튼 — 썸네일 아래 라벨 버튼
+// - 담김 여부는 아이콘과 컬러로 표시하고, 텍스트는 비교함으로 고정
 function ListStoreButton({ food, onCompare, inCompare }) {
   if (!onCompare) return null;
   return (
@@ -96,11 +96,11 @@ function ListStoreButton({ food, onCompare, inCompare }) {
         onCompare(food);
       }}
       aria-pressed={inCompare}
-      aria-label={inCompare ? `${food.name} 보관함에서 빼기` : `${food.name} 보관함에 담기`}
+      aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
       className={`m-foodcard-store${inCompare ? ' is-in' : ''}`}
     >
       {inCompare ? <IconCheck size={13} stroke={2.2} /> : <IconPlus size={13} stroke={2.2} />}
-      <span>{inCompare ? '담김' : '보관함'}</span>
+      <span>비교함</span>
     </button>
   );
 }
@@ -359,25 +359,12 @@ function FoodCardWide({ food, onClick, onCompare, inCompare }) {
                 e.stopPropagation();
                 onCompare(food);
               }}
+              aria-pressed={inCompare}
               aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                padding: '4px 10px',
-                border: inCompare ? '1px solid var(--green-500)' : '1px solid var(--border-tertiary)',
-                borderRadius: 'var(--radius-sm)',
-                background: inCompare ? 'var(--green-50)' : 'var(--bg-white)',
-                color: inCompare ? 'var(--green-700)' : 'var(--text-secondary)',
-                fontSize: 11,
-                fontFamily: 'var(--font-body)',
-                cursor: 'pointer',
-                transition: 'all 150ms ease',
-                whiteSpace: 'nowrap',
-              }}
+              className={`d-foodcard-wide-compare${inCompare ? ' is-in' : ''}`}
             >
               {inCompare ? <IconCheck size={12} stroke={2} /> : <IconPlus size={12} stroke={2} />}
-              {inCompare ? '담김' : '비교'}
+              <span>비교함</span>
             </button>
           )}
         </div>

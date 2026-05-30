@@ -8,6 +8,7 @@ import { RecommendSlider } from '../../components/mobile/main/RecommendSlider.js
 import { CategoryTabs } from '../../components/mobile/main/CategoryTabs.jsx';
 import { RecentList } from '../../components/mobile/main/RecentList.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
+import Footer from '../../components/desktop/home/Footer.jsx';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import './MainPage.css';
 
@@ -145,6 +146,8 @@ export default function MainPageMobile() {
             onCompare={handleToggleCompare}
           />
         </section>
+
+        <Footer />
       </div>
     </>
   );

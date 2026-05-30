@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProductById, useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
+import { CATEGORY_TABS } from '../data/categoryTabs.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { Button } from '../components/ds/Button.jsx';
 import { IconBack } from '../components/ds/Icons.jsx';
@@ -26,7 +27,16 @@ function EmptyState() {
 }
 
 // #9 풀 breadcrumb
-function Breadcrumb({ category, productName, onBack }) {
+function getCategoryListHref(categoryCode, category) {
+  const tab = CATEGORY_TABS.find((t) => t.subs.some((s) => s.code === categoryCode));
+  const sub = tab?.subs.find((s) => s.code === categoryCode);
+  if (tab && sub) return `/list?tab=${tab.id}&sub=${encodeURIComponent(sub.label)}`;
+  return category ? `/list?q=${encodeURIComponent(category)}` : '/list';
+}
+
+function Breadcrumb({ category, categoryCode, productName, onBack }) {
+  const categoryHref = getCategoryListHref(categoryCode, category);
+
   return (
     <nav className="d-detail-breadcrumb" aria-label="경로">
       <Link to="/" className="d-detail-breadcrumb-link">홈</Link>
@@ -35,7 +45,7 @@ function Breadcrumb({ category, productName, onBack }) {
       {category && (
         <>
           <span className="d-detail-breadcrumb-sep">/</span>
-          <Link to={`/list?category=${encodeURIComponent(category)}`} className="d-detail-breadcrumb-link">{category}</Link>
+          <Link to={categoryHref} className="d-detail-breadcrumb-link">{category}</Link>
         </>
       )}
       <span className="d-detail-breadcrumb-sep">/</span>
@@ -186,6 +196,81 @@ function CompareButton({ inCart, onClick }) {
   );
 }
 
+function formatPurchasePrice(price) {
+  if (typeof price !== 'number') return '가격 문의';
+  return `${price.toLocaleString()}원`;
+}
+
+function PurchaseButton({ purchaseUrl, purchaseLinks = [] }) {
+  const [open, setOpen] = useState(false);
+  const offers = purchaseLinks
+    .filter((link) => link && link.url && link.is_active !== false)
+    .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+  const hasSourceUrl = !!purchaseUrl && purchaseUrl !== '#';
+  const canBuy = offers.length > 0 || hasSourceUrl;
+  const cheapestPrice = offers.find((offer) => typeof offer.price === 'number')?.price;
+
+  const openUrl = (url) => {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setOpen(false);
+  };
+
+  const handleClick = () => {
+    if (!canBuy) return;
+    if (offers.length > 1) {
+      setOpen((v) => !v);
+      return;
+    }
+    if (offers.length === 1) {
+      openUrl(offers[0].url);
+      return;
+    }
+    openUrl(purchaseUrl);
+  };
+
+  return (
+    <div className="d-detail-purchase">
+      <button
+        type="button"
+        className={`d-detail-header-buy${!canBuy ? ' is-disabled' : ''}${open ? ' is-open' : ''}`}
+        onClick={handleClick}
+        disabled={!canBuy}
+        aria-haspopup={offers.length > 1 ? 'menu' : undefined}
+        aria-expanded={offers.length > 1 ? open : undefined}
+      >
+        {offers.length > 1 ? `구매처 ${offers.length}곳 비교` : canBuy ? '구매하러 가기' : '구매 링크 준비중'}
+      </button>
+
+      {open && offers.length > 1 && (
+        <div className="d-detail-purchase-menu" role="menu">
+          {offers.map((offer, i) => {
+            const isCheapest = typeof offer.price === 'number' && offer.price === cheapestPrice;
+            return (
+              <button
+                key={`${offer.vendorName}-${i}`}
+                type="button"
+                className="d-detail-purchase-option"
+                onClick={() => openUrl(offer.url)}
+                role="menuitem"
+              >
+                <span className="d-detail-purchase-main">
+                  <span className="d-detail-purchase-vendor">
+                    {offer.vendorName || '판매처'}
+                    {isCheapest && <span className="d-detail-purchase-best">최저가</span>}
+                  </span>
+                  <span className="d-detail-purchase-qty">x {offer.quantity ?? 1}</span>
+                </span>
+                <span className="d-detail-purchase-price">{formatPurchasePrice(offer.price)}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -233,7 +318,7 @@ export default function DetailPage() {
 
   return (
     <div className="page d-detail">
-      <Breadcrumb category={raw?.category} productName={product.name} />
+      <Breadcrumb category={raw?.category} categoryCode={raw?.categoryCode} productName={product.name} />
 
       {/* 제품 헤더 — 컴팩트 한 줄 + Quick Glance */}
       <div className="d-detail-header">
@@ -249,7 +334,10 @@ export default function DetailPage() {
           <QuickGlance nutrition={n} />
           <div className="d-detail-header-actions">
             <CompareButton inCart={inCart} onClick={handleToggleCompare} />
-            <span className="d-detail-header-buy is-disabled">구매하러 가기 (준비 중)</span>
+            <PurchaseButton
+              purchaseUrl={raw?.purchaseUrl}
+              purchaseLinks={product.purchaseLinks}
+            />
           </div>
         </div>
       </div>

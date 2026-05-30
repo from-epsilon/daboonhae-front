@@ -2,8 +2,11 @@
 // - FoodCard layout="list"를 그대로 사용 (썸네일+이름+macros+tags+trust)
 // - 부모에서 정렬/슬라이스된 items를 받는다
 import { FoodCard } from '../../ds/FoodCard.jsx';
+import { useCompare } from '../../../store/CompareContext.jsx';
 
 export function RecentList({ items, onItemClick, onCompare }) {
+  const { has } = useCompare();
+
   if (!items || items.length === 0) {
     return <div className="m-home-empty">최근 추가된 식품이 없습니다.</div>;
   }
@@ -16,6 +19,7 @@ export function RecentList({ items, onItemClick, onCompare }) {
             layout="list"
             onClick={() => onItemClick && onItemClick(food)}
             onCompare={onCompare ? () => onCompare(food) : undefined}
+            inCompare={has(food.id)}
           />
         </li>
       ))}
