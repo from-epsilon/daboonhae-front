@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
@@ -7,6 +7,7 @@ import { AppBar } from '../../components/ds/AppBar.jsx';
 import { RecommendSlider } from '../../components/mobile/main/RecommendSlider.jsx';
 import { CategoryTabs } from '../../components/mobile/main/CategoryTabs.jsx';
 import { RecentList } from '../../components/mobile/main/RecentList.jsx';
+import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import Footer from '../../components/desktop/home/Footer.jsx';
 import { ArrowRight, ChevronRight } from 'lucide-react';
@@ -69,12 +70,17 @@ export default function MainPageMobile() {
   const navigate = useNavigate();
   const { toggle, count } = useCompare();
   const { products: PRODUCTS, loading } = useProducts();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
   const recommended = useRecommended(adapted);
   const recent = useRecent(adapted);
 
-  const handleSearch = () => navigate('/list?q=');
+  const handleSearch = () => setSearchOpen(true);
+  const handleSearchSubmit = (next) => {
+    const q = (next ?? '').trim();
+    navigate(q ? `/list?q=${encodeURIComponent(q)}` : '/list');
+  };
   const handleCompare = () => navigate('/compare');
   const handleFoodClick = (food) => navigate(`/product/${food.id}`);
   const handleToggleCompare = (food) => toggle(food.id);
@@ -85,6 +91,11 @@ export default function MainPageMobile() {
     <>
       <AppBar onSearch={handleSearch} onCompare={handleCompare} compareCount={count} onLogo={handleLogo} />
       <HomeSkeleton />
+      <SearchSheet
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onSubmit={handleSearchSubmit}
+      />
     </>
   );
 
@@ -149,6 +160,12 @@ export default function MainPageMobile() {
 
         <Footer />
       </div>
+
+      <SearchSheet
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onSubmit={handleSearchSubmit}
+      />
     </>
   );
 }
