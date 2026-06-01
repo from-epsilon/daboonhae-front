@@ -18,6 +18,7 @@ import ComparePage from './pages/ComparePage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import FaqPage from './pages/FaqPage.jsx';
 import ContactPage from './pages/ContactPage.jsx';
+import RedirectPage from './pages/RedirectPage.jsx';
 // 모바일 페이지 (Round 3에서 생성됨)
 import MainPageMobile from './pages/mobile/MainPage.jsx';
 import ListPageMobile from './pages/mobile/ListPage.jsx';
@@ -29,21 +30,31 @@ function DesktopShell() {
   return (
     <div className="app">
       <ScrollToTop />
-      <Header />
-      <main className="app-main">
-        <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/list" element={<ListPage />} />
-          <Route path="/product/:id" element={<DetailPage />} />
-          <Route path="/compare" element={<ComparePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/faq" element={<FaqPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-      <CompareTrayBar />
-      <SiteFeedbackButton />
+      <Routes>
+        <Route path="/redirect" element={<RedirectPage />} />
+        <Route
+          path="*"
+          element={
+            <>
+              <Header />
+              <main className="app-main">
+                <Routes>
+                  <Route path="/" element={<MainPage />} />
+                  <Route path="/list" element={<ListPage />} />
+                  <Route path="/product/:id" element={<DetailPage />} />
+                  <Route path="/compare" element={<ComparePage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/faq" element={<FaqPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
+              <CompareTrayBar />
+              <SiteFeedbackButton />
+            </>
+          }
+        />
+      </Routes>
     </div>
   );
 }
@@ -54,16 +65,26 @@ function MobileShell() {
   return (
     <div className="mobile-shell">
       <ScrollToTop />
-      <main className="mobile-shell-main">
-        <Routes>
-          <Route path="/" element={<MainPageMobile />} />
-          <Route path="/list" element={<ListPageMobile />} />
-          <Route path="/product/:id" element={<DetailPageMobile />} />
-          <Route path="/compare" element={<ComparePageMobile />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-      <SiteFeedbackButton />
+      <Routes>
+        <Route path="/redirect" element={<RedirectPage />} />
+        <Route
+          path="*"
+          element={
+            <>
+              <main className="mobile-shell-main">
+                <Routes>
+                  <Route path="/" element={<MainPageMobile />} />
+                  <Route path="/list" element={<ListPageMobile />} />
+                  <Route path="/product/:id" element={<DetailPageMobile />} />
+                  <Route path="/compare" element={<ComparePageMobile />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
+              <SiteFeedbackButton />
+            </>
+          }
+        />
+      </Routes>
     </div>
   );
 }

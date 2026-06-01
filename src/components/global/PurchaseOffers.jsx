@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 function formatPurchasePrice(price) {
   if (typeof price !== 'number') return '가격 문의';
   return `${price.toLocaleString()}원`;
@@ -16,6 +18,15 @@ function unitPriceOf(offer) {
   return offer.price / quantity;
 }
 
+function getRedirectUrl(offer, delaySeconds = 3) {
+  const params = new URLSearchParams({
+    url: offer.url,
+    vendor: offer.vendorName || '판매처',
+    delay: delaySeconds,
+  });
+  return `/redirect?${params.toString()}`;
+}
+
 export default function PurchaseOffers({
   offers,
   title = '가격 비교',
@@ -23,7 +34,9 @@ export default function PurchaseOffers({
   maxItems,
   emptyLabel = '가격 정보 준비중',
   className = '',
+  redirectDelay = 3,
 }) {
+  const navigate = useNavigate();
   const sorted = normalizeOffers(offers);
   const visible = typeof maxItems === 'number' ? sorted.slice(0, maxItems) : sorted;
   const unitPrices = sorted.map(unitPriceOf).filter((price) => typeof price === 'number');
@@ -33,6 +46,12 @@ export default function PurchaseOffers({
     compact ? 'purchase-offers--compact' : '',
     className,
   ].filter(Boolean).join(' ');
+
+  const handlePurchaseClick = (e, offer) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(getRedirectUrl(offer, redirectDelay));
+  };
 
   if (sorted.length === 0) {
     return (
@@ -58,10 +77,8 @@ export default function PurchaseOffers({
             <a
               key={`${offer.vendorName}-${offer.url}-${i}`}
               className={`purchase-offer${isBest ? ' is-best' : ''}`}
-              href={offer.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
+              href="#"
+              onClick={(e) => handlePurchaseClick(e, offer)}
             >
               <span className="purchase-offer-main">
                 <span className="purchase-offer-vendor">
@@ -81,6 +98,9 @@ export default function PurchaseOffers({
           );
         })}
       </div>
+      <p className="purchase-offers-affiliate">
+        ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
+      </p>
     </section>
   );
 }

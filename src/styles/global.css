@@ -999,6 +999,13 @@ img.product-thumb { object-fit: cover; }
   color: var(--text-tertiary);
 }
 
+.purchase-offers-affiliate {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
 .purchase-offers--compact {
   gap: 5px;
   padding: 0;
@@ -1040,6 +1047,11 @@ img.product-thumb { object-fit: cover; }
 
 .purchase-offers--compact .purchase-offer-unit {
   font-size: 12px;
+}
+
+.purchase-offers--compact .purchase-offers-affiliate {
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 .purchase-offers--compact.purchase-offers--empty {

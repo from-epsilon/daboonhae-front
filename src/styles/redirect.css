@@ -1,0 +1,230 @@
+/* 리다이렉트 페이지 스타일 — 흰 배경 + 신뢰감 있는 카드 */
+
+.redirect-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--c-bg); /* 차분한 오프화이트 배경 */
+}
+
+/* 콘텐츠 카드 — 흰 배경, 부드러운 그림자로 신뢰감 */
+.redirect-card {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  padding: 48px 40px;
+  background: var(--white);
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+/* 다분해 로고 */
+.redirect-logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--c-primary); /* '분' = 브랜드 그린 */
+  letter-spacing: -0.02em;
+  margin-bottom: 28px;
+}
+.redirect-logo-black { color: var(--c-text); }
+.redirect-logo-dot { color: var(--c-text); }
+
+/* 로딩 스피너 — 브랜드 그린 회전 링 */
+.redirect-spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 24px;
+  border: 3px solid var(--c-primary-soft);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: redirect-spin 0.8s linear infinite;
+}
+
+@keyframes redirect-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 정지 상태 — 회전 멈추고 회색 처리 */
+.redirect-spinner.is-stopped {
+  animation: none;
+  border-color: var(--c-border);
+}
+
+/* 에러 아이콘 */
+.redirect-error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+/* 제목 */
+.redirect-title {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--c-text);
+  line-height: 1.4;
+}
+
+/* 메시지 */
+.redirect-message {
+  margin: 0 0 28px 0;
+  font-size: 14px;
+  color: var(--c-text-sub);
+  line-height: 1.5;
+}
+
+/* 진행률 바 컨테이너 */
+.redirect-progress-container {
+  width: 100%;
+  height: 6px;
+  background: var(--c-border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.redirect-progress-bar {
+  height: 100%;
+  background: var(--c-primary); /* 브랜드 그린 */
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+/* 타이머 */
+.redirect-timer {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--c-primary);
+  margin: 0 0 28px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 액션 버튼 영역 */
+.redirect-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.redirect-btn {
+  flex: 1;
+  max-width: 160px;
+  padding: 13px 20px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+/* 바로 가기 — 브랜드 그린 채움 버튼 */
+.redirect-btn--primary {
+  background: var(--c-primary);
+  color: var(--white);
+  border: 1px solid var(--c-primary);
+}
+
+.redirect-btn--primary:hover {
+  background: var(--green-600, #00A800);
+  border-color: var(--green-600, #00A800);
+}
+
+/* 이전 페이지 — 외곽선 보조 버튼 */
+.redirect-btn--ghost {
+  background: var(--white);
+  color: var(--c-text-sub);
+  border: 1px solid var(--c-border);
+}
+
+.redirect-btn--ghost:hover {
+  border-color: var(--c-text-sub);
+  color: var(--c-text);
+}
+
+/* 정지 후 비활성 상태 */
+.redirect-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.redirect-btn--ghost:disabled:hover {
+  border-color: var(--c-border);
+  color: var(--c-text-sub);
+}
+
+/* 신뢰 안내 문구 */
+.redirect-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-sub);
+  line-height: 1.6;
+}
+
+/* 제휴 수익 및 구매 유의 안내 박스 */
+.redirect-notice {
+  margin-top: 24px;
+  padding: 16px;
+  text-align: left;
+  background: var(--c-bg);
+  border-radius: var(--radius-md);
+}
+
+.redirect-notice-title {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.redirect-notice-lead {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: var(--c-text-sub);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.redirect-notice-list {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.redirect-notice-list li {
+  font-size: 11px;
+  color: var(--c-text-sub);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .redirect-card {
+    padding: 36px 24px;
+  }
+
+  .redirect-logo {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+
+  .redirect-title {
+    font-size: 19px;
+  }
+
+  .redirect-timer {
+    font-size: 36px;
+  }
+
+  .redirect-btn {
+    max-width: none;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
