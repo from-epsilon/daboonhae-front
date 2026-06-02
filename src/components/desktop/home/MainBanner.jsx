@@ -14,11 +14,11 @@ import "./MainBanner.css";
  */
 export default function MainBanner({
   headlineLines = [
-    "성분표 뒤집어 볼 필요 없이,",
-    { before: "", em: "한눈에 비교", after: "하세요" },
+    "다이어트 식품, 고르기 어렵죠?",
+    { before: "성분표 없이도 ", em: "한눈에 비교", after: "하세요" },
   ],
-  subline = "단백질·당류·칼로리부터 전성분까지, 한 번에 정리해서 보여드려요.",
-  ctaLabel = "제품 둘러보기",
+  subline = "저당·고단백·식사대용 식품의 당류·단백질·칼로리부터 전성분까지, 다분해가 정리해 비교해 드려요.",
+  ctaLabel = "다이어트 식품 둘러보기",
   ctaHref = "#",
   onCtaClick,
   products = DEFAULT_PRODUCTS,
@@ -31,11 +31,6 @@ export default function MainBanner({
     <section className="mb" aria-label="다분해 메인 배너">
       {/* ============== LEFT ============== */}
       <div className="mb__left">
-        <span className="mb__brand" aria-label="다분해">
-          <BrandMark />
-          <span>다분해.</span>
-        </span>
-
         <h1 className="mb__headline">
           {headlineLines.map((line, i) =>
             typeof line === "string" ? (
@@ -142,17 +137,6 @@ function Cell({ value, state }) {
       {num}
       {unit && <small>{unit}</small>}
     </div>
-  );
-}
-
-function BrandMark() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="currentColor" strokeWidth="7.5" strokeLinecap="round" />
-      <circle cx="49.5" cy="14.5" r="3.6" fill="currentColor" />
-      <circle cx="41" cy="6.5" r="2.4" fill="currentColor" opacity="0.75" />
-      <circle cx="57" cy="22" r="2" fill="currentColor" opacity="0.5" />
-    </svg>
   );
 }
 

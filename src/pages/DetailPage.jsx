@@ -245,67 +245,77 @@ export default function DetailPage() {
     <div className="page d-detail">
       <Breadcrumb category={raw?.category} categoryCode={raw?.categoryCode} productName={product.name} />
 
-      {/* 제품 헤더 — 컴팩트 한 줄 + Quick Glance */}
-      <div className="d-detail-header">
-        <div className="d-detail-header-top">
-          <div className="d-detail-header-thumb">
-            <ProductThumb product={product} size="compact" />
+      {/* 2단 레이아웃 — 좌: 본문 / 우: 가격 비교 sticky 패널 */}
+      <div className="d-detail-layout">
+        <div className="d-detail-main">
+          {/* 제품 헤더 — 컴팩트 한 줄 + Quick Glance */}
+          <div className="d-detail-header">
+            <div className="d-detail-header-top">
+              <div className="d-detail-header-thumb">
+                <ProductThumb product={product} size="compact" />
+              </div>
+              <div className="d-detail-header-info">
+                <span className="d-detail-header-brand">{product.brand}</span>
+                <h1 className="d-detail-header-name">{product.name}</h1>
+                <span className="d-detail-header-serving">{product.serving}</span>
+              </div>
+              <QuickGlance nutrition={n} />
+              <div className="d-detail-header-actions">
+                <CompareButton inCart={inCart} onClick={handleToggleCompare} />
+              </div>
+            </div>
           </div>
-          <div className="d-detail-header-info">
-            <span className="d-detail-header-brand">{product.brand}</span>
-            <h1 className="d-detail-header-name">{product.name}</h1>
-            <span className="d-detail-header-serving">{product.serving}</span>
+
+          <MacroStrip protein={n.protein} carbs={n.carbs} fat={n.fat} calories={n.calories} />
+
+          {/* 섹션 앵커 탭 */}
+          <SectionNav activeId={activeSection} navRef={navRef} />
+
+          <div className="d-detail-sections">
+            <div id="guide">
+              <CategoryGuide category={raw?.category} />
+            </div>
+            <div id="nutrition">
+              <NutritionTable
+                nutrition={n}
+                serving={product.serving}
+                foodNutrients={raw?._raw?.foodNutrients}
+                servingSize={raw?._raw?.servingSize}
+                servingUnit={raw?._raw?.servingUnit}
+              />
+            </div>
+            <div id="ingredients">
+              <IngredientList
+                ingredients={product.ingredients}
+                rawText={raw?._raw?.ingredientsText}
+                annotations={raw?._raw?.ingredientAnnotations}
+              />
+            </div>
+            <ProductNotice
+              additionalContent={raw?._raw?.additionalContent}
+              cautionNotes={raw?._raw?.cautionNotes}
+              crossContamination={raw?._raw?.crossContaminationText}
+            />
+            <div id="analysis">
+              <AnalysisReport nutrition={n} ingredients={product.ingredients} category={raw?.category} />
+            </div>
+            <div id="reviews">
+              <ReviewSection productId={product.id} />
+            </div>
+            <RelatedProducts
+              currentProduct={raw}
+              onNavigate={(nextId) => navigate(`/product/${nextId}`)}
+              limit={4}
+            />
           </div>
-          <QuickGlance nutrition={n} />
-          <div className="d-detail-header-actions">
-            <CompareButton inCart={inCart} onClick={handleToggleCompare} />
+        </div>
+
+        {/* 우측 가격 비교 패널 — 스크롤 시 고정 */}
+        <aside className="d-detail-aside">
+          <div className="d-detail-aside-inner">
+            <PurchaseOffers offers={product.purchaseLinks} title="가격 비교" showUpdatedAt stacked />
           </div>
-        </div>
-      </div>
-
-      <PurchaseOffers offers={product.purchaseLinks} className="d-detail-offers" />
-
-      <MacroStrip protein={n.protein} carbs={n.carbs} fat={n.fat} calories={n.calories} />
-
-      {/* 섹션 앵커 탭 */}
-      <SectionNav activeId={activeSection} navRef={navRef} />
-
-      <div className="d-detail-sections">
-        <div id="guide">
-          <CategoryGuide category={raw?.category} />
-        </div>
-        <div id="nutrition">
-          <NutritionTable
-            nutrition={n}
-            serving={product.serving}
-            foodNutrients={raw?._raw?.foodNutrients}
-            servingSize={raw?._raw?.servingSize}
-            servingUnit={raw?._raw?.servingUnit}
-          />
-        </div>
-        <div id="ingredients">
-          <IngredientList
-            ingredients={product.ingredients}
-            rawText={raw?._raw?.ingredientsText}
-            annotations={raw?._raw?.ingredientAnnotations}
-          />
-        </div>
-        <ProductNotice
-          additionalContent={raw?._raw?.additionalContent}
-          cautionNotes={raw?._raw?.cautionNotes}
-          crossContamination={raw?._raw?.crossContaminationText}
-        />
-        <div id="analysis">
-          <AnalysisReport nutrition={n} ingredients={product.ingredients} category={raw?.category} />
-        </div>
-        <div id="reviews">
-          <ReviewSection productId={product.id} />
-        </div>
-        <RelatedProducts
-          currentProduct={raw}
-          onNavigate={(nextId) => navigate(`/product/${nextId}`)}
-          limit={4}
-        />
+        </aside>
       </div>
     </div>
   );

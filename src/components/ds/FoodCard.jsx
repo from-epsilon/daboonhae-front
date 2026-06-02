@@ -424,7 +424,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare }) {
 }
 
 // grid 레이아웃: 1:1 썸네일 + 하단 텍스트
-function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey }) {
+function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurchase }) {
   return (
     <div
       onClick={onClick}
@@ -502,6 +502,10 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey }) {
             ))}
           <TrustBadgeRow trustBadges={food.trustBadges} />
         </div>
+        {/* 가격링크 — 추천 그리드 등에서만 표시 (최저가 1개) */}
+        {showPurchase && (
+          <PurchaseOffers offers={food.purchaseLinks} compact maxItems={1} />
+        )}
         {/* 후기 N건 — 카드 trust 신호 */}
       </div>
     </div>
@@ -546,7 +550,7 @@ function ReviewMeta({ reviewCount }) {
   );
 }
 
-export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, sortKey, tabId, subLabel }) {
+export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, sortKey, tabId, subLabel, showPurchase = false }) {
   if (!food) return null;
   if (layout === 'list') {
     return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} />;
@@ -554,5 +558,5 @@ export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare,
   if (layout === 'wide') {
     return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
   }
-  return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} sortKey={sortKey} />;
+  return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} sortKey={sortKey} showPurchase={showPurchase} />;
 }

@@ -99,6 +99,7 @@ function parsePurchaseLinks(links) {
       url: l.url,
       quantity: l.quantity ?? 1,
       price: l.price ?? null,
+      updatedAt: l.updated_at ?? null,
     }));
 }
 
@@ -223,7 +224,7 @@ const ALIAS_JOIN = `
   food_aliases ( alias, normalized_alias ),
 `;
 const PURCHASE_JOIN = `
-  food_purchase_links ( vendor_name, url, quantity, price, is_active ),
+  food_purchase_links ( vendor_name, url, quantity, price, is_active, updated_at ),
 `;
 
 // ── 목록 select 절 (목록/검색 공통). optional=true면 family/purpose 조인 포함

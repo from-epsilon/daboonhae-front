@@ -25,6 +25,19 @@ function getRedirectUrl(offer, delaySeconds = 1.5) {
   return `/redirect?${params.toString()}`;
 }
 
+// 오퍼 목록 중 가장 최근 가격 갱신 시각 (YYYY.MM.DD) — 없으면 null
+function latestUpdatedLabel(offers) {
+  const times = (offers ?? [])
+    .map((o) => o.updatedAt)
+    .filter(Boolean)
+    .map((t) => new Date(t).getTime())
+    .filter((t) => Number.isFinite(t));
+  if (times.length === 0) return null;
+  const d = new Date(Math.max(...times));
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
+}
+
 export default function PurchaseOffers({
   offers,
   title = '가격 비교',
@@ -33,14 +46,18 @@ export default function PurchaseOffers({
   emptyLabel = '가격 정보 준비중',
   className = '',
   redirectDelay = 1.5,
+  showUpdatedAt = false,
+  stacked = false,
 }) {
   const sorted = normalizeOffers(offers);
   const visible = typeof maxItems === 'number' ? sorted.slice(0, maxItems) : sorted;
   const unitPrices = sorted.map(unitPriceOf).filter((price) => typeof price === 'number');
   const cheapestUnitPrice = unitPrices.length > 0 ? Math.min(...unitPrices) : null;
+  const updatedLabel = showUpdatedAt ? latestUpdatedLabel(sorted) : null;
   const rootClass = [
     'purchase-offers',
     compact ? 'purchase-offers--compact' : '',
+    stacked ? 'purchase-offers--stacked' : '',
     className,
   ].filter(Boolean).join(' ');
 
@@ -97,6 +114,11 @@ export default function PurchaseOffers({
           );
         })}
       </div>
+      {updatedLabel && (
+        <p className="purchase-offers-updated">
+          가격 정보 기준 {updatedLabel} · 실제 가격과 다를 수 있어 구매 전 확인해 주세요
+        </p>
+      )}
       <p className="purchase-offers-affiliate">
         ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
       </p>

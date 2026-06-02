@@ -87,7 +87,12 @@ select:focus-visible {
   height: 56px;
   display: flex; align-items: center; gap: 16px;
 }
-.header-logo { font-size: 24px; font-weight: 700; color: var(--c-primary); flex-shrink: 0; }
+.header-logo {
+  font-size: 24px; font-weight: 700; color: var(--c-primary); flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.header-logo-mark { display: block; color: var(--c-primary); flex-shrink: 0; }
+.header-logo-text { display: inline-flex; align-items: baseline; }
 .header-logo-black { color: var(--c-text); }
 .header-logo-dot { color: var(--c-text); }
 
@@ -1006,12 +1011,33 @@ img.product-thumb { object-fit: cover; }
   color: var(--text-tertiary);
 }
 
+/* 가격 정보 기준일 안내 (최신 정보 아닐 수 있음) */
+.purchase-offers-updated {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
 .purchase-offers--compact {
   gap: 5px;
   padding: 0;
   border: none;
   border-radius: 0;
   background: transparent;
+}
+
+/* stacked: 세로로 쌓고 가로 스크롤 제거 (상세 우측 가격 패널) */
+.purchase-offers--stacked .purchase-offers-list {
+  flex-direction: column;
+  overflow-x: visible;
+}
+.purchase-offers--stacked .purchase-offer {
+  flex: 1 1 auto;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .purchase-offers-compact-title {

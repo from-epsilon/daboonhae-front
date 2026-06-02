@@ -85,13 +85,14 @@ export default function MainPage() {
       <section className="d-home-section">
         <SectionHeader
           title="추천 식품"
-          subtitle="다분해 점수가 높은 식품을 모았어요"
+          subtitle="다이어트에 추천하는 식품을 골라봤어요"
           onMore={handleMore}
         />
         <FoodGrid
           items={recommended}
           onItemClick={handleFoodClick}
           onCompare={handleToggleCompare}
+          showPurchase
         />
       </section>
 

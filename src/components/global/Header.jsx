@@ -5,6 +5,18 @@ import { IconInfo, IconSearch } from '../ds/Icons.jsx';
 
 const HIDE_SEARCH_PATHS = ['/about', '/faq', '/contact'];
 
+// 다분해 심볼 마크 (배너에서 헤더로 이동) — currentColor로 브랜드 그린 상속
+function BrandMark() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true" className="header-logo-mark">
+      <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="currentColor" strokeWidth="7.5" strokeLinecap="round" />
+      <circle cx="49.5" cy="14.5" r="3.6" fill="currentColor" />
+      <circle cx="41" cy="6.5" r="2.4" fill="currentColor" opacity="0.75" />
+      <circle cx="57" cy="22" r="2" fill="currentColor" opacity="0.5" />
+    </svg>
+  );
+}
+
 const MENU_ITEMS = [
   { to: '/about', label: '다분해 소개', Icon: IconInfo },
 ];
@@ -48,8 +60,11 @@ export default function Header() {
     <header className="header">
       <div className="header-inner">
         <Link to="/" className="header-logo">
-          <span className="header-logo-black">다</span>분<span className="header-logo-black">해</span>
-          <span className="header-logo-dot">.</span>
+          <BrandMark />
+          <span className="header-logo-text">
+            <span className="header-logo-black">다</span>분<span className="header-logo-black">해</span>
+            <span className="header-logo-dot">.</span>
+          </span>
         </Link>
 
         {!hideSearch && <HeaderSearchBar />}

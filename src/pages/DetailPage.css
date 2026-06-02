@@ -2,6 +2,31 @@
 
 .d-detail { display: flex; flex-direction: column; gap: 20px; }
 
+/* ───────── 2단 레이아웃 (본문 + 우측 가격 패널) ───────── */
+.d-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+}
+.d-detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0; /* 그리드 자식 overflow 방지 */
+}
+/* 우측 가격 패널 — 헤더 높이만큼 띄워 sticky */
+.d-detail-aside-inner {
+  position: sticky;
+  top: 80px;
+}
+/* 좁은 데스크톱/태블릿: 단일 컬럼으로 스택, 가격 패널은 본문 위로 */
+@media (max-width: 960px) {
+  .d-detail-layout { grid-template-columns: 1fr; gap: 20px; }
+  .d-detail-aside { order: -1; }
+  .d-detail-aside-inner { position: static; }
+}
+
 /* 스켈레톤 로딩 */
 .d-detail-skeleton-wrap {
   max-width: 1240px;
