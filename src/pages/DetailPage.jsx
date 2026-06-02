@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProductById, useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
@@ -10,6 +10,7 @@ import ProductThumb from '../components/global/ProductThumb.jsx';
 import { NutritionTable } from '../components/desktop/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
 import { IngredientList } from '../components/desktop/detail/IngredientList.jsx';
+import { ProductNotice } from '../components/desktop/detail/ProductNotice.jsx';
 import { CategoryGuide } from '../components/desktop/detail/CategoryGuide.jsx';
 import { ReviewSection } from '../components/desktop/detail/ReviewSection.jsx';
 import { RelatedProducts } from '../components/desktop/detail/RelatedProducts.jsx';
@@ -283,8 +284,17 @@ export default function DetailPage() {
           />
         </div>
         <div id="ingredients">
-          <IngredientList ingredients={product.ingredients} rawText={raw?._raw?.ingredientsText} />
+          <IngredientList
+            ingredients={product.ingredients}
+            rawText={raw?._raw?.ingredientsText}
+            annotations={raw?._raw?.ingredientAnnotations}
+          />
         </div>
+        <ProductNotice
+          additionalContent={raw?._raw?.additionalContent}
+          cautionNotes={raw?._raw?.cautionNotes}
+          crossContamination={raw?._raw?.crossContaminationText}
+        />
         <div id="analysis">
           <AnalysisReport nutrition={n} ingredients={product.ingredients} category={raw?.category} />
         </div>
@@ -300,4 +310,3 @@ export default function DetailPage() {
     </div>
   );
 }
-

@@ -14,6 +14,7 @@ import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
 import { NutritionTable } from '../../components/mobile/detail/NutritionTable.jsx';
 import { AnalysisCard } from '../../components/mobile/detail/AnalysisCard.jsx';
 import { IngredientList } from '../../components/mobile/detail/IngredientList.jsx';
+import { ProductNotice } from '../../components/mobile/detail/ProductNotice.jsx';
 import { ReviewSection } from '../../components/mobile/detail/ReviewSection.jsx';
 import { CategoryGuideCard } from '../../components/mobile/detail/CategoryGuideCard.jsx';
 import { RelatedProducts } from '../../components/mobile/detail/RelatedProducts.jsx';
@@ -121,7 +122,18 @@ export default function DetailPageMobile() {
         <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />
 
         {/* 5. 원료 · 성분 */}
-        <IngredientList ingredients={product.ingredients} />
+        <IngredientList
+          ingredients={product.ingredients}
+          rawText={raw?._raw?.ingredientsText}
+          annotations={raw?._raw?.ingredientAnnotations}
+        />
+
+        {/* 5-1. 추가 안내 (additional_content / 주의사항 / 교차오염) */}
+        <ProductNotice
+          additionalContent={raw?._raw?.additionalContent}
+          cautionNotes={raw?._raw?.cautionNotes}
+          crossContamination={raw?._raw?.crossContaminationText}
+        />
 
         {/* 6. 분석 리포트 (목적별 룰 기반) */}
         <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} />

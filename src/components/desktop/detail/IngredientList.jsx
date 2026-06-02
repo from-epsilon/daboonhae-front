@@ -2,6 +2,47 @@ import { useState } from 'react';
 import { Badge } from '../../ds/Badge.jsx';
 import { IconAlert } from '../../ds/Icons.jsx';
 import { HelpCircle, ChevronDown } from 'lucide-react';
+import { buildIngredientSegments } from '../../../utils/ingredientHighlight.js';
+
+// 원재료명 구간 마킹 색상 클래스 (type → 클래스)
+const MARK_CLASS = {
+  protein_source: 'd-detail-ingr-mark d-detail-ingr-mark--protein',
+  alternative_sweetener: 'd-detail-ingr-mark d-detail-ingr-mark--sweetener',
+};
+
+// 원재료 전문 + annotation 구간 하이라이트 렌더
+function HighlightedText({ text, annotations }) {
+  const segments = buildIngredientSegments(text, annotations);
+  if (segments.length === 0) return text;
+  return segments.map((seg, i) =>
+    seg.type && MARK_CLASS[seg.type] ? (
+      <mark key={i} className={MARK_CLASS[seg.type]} title={seg.label || undefined}>
+        {seg.text}
+      </mark>
+    ) : (
+      <span key={i}>{seg.text}</span>
+    ),
+  );
+}
+
+// 하이라이트 색상 범례 (annotation이 있을 때만)
+function HighlightLegend({ annotations }) {
+  const types = new Set((Array.isArray(annotations) ? annotations : []).map((a) => a?.type));
+  const legend = [];
+  if (types.has('protein_source')) legend.push({ cls: 'd-detail-ingr-mark--protein', label: '단백질원료' });
+  if (types.has('alternative_sweetener')) legend.push({ cls: 'd-detail-ingr-mark--sweetener', label: '대체당' });
+  if (legend.length === 0) return null;
+  return (
+    <div className="d-detail-ingr-raw-legend">
+      {legend.map((l) => (
+        <span key={l.cls} className="d-detail-ingr-raw-legend-item">
+          <span className={`d-detail-ingr-raw-legend-dot ${l.cls}`} />
+          {l.label}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 function ItemWithTooltip({ label, info }) {
   return (
@@ -53,7 +94,7 @@ function SweetenerNotice({ sweeteners }) {
   );
 }
 
-function RawTextToggle({ rawText }) {
+function RawTextToggle({ rawText, annotations }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="d-detail-ingr-raw">
@@ -67,15 +108,22 @@ function RawTextToggle({ rawText }) {
         <ChevronDown size={14} className={`d-detail-ingr-raw-chevron${open ? ' is-open' : ''}`} />
       </button>
       {open && (
-        rawText
-          ? <p className="d-detail-ingr-raw-text">{rawText}</p>
-          : <p className="d-detail-ingr-raw-text d-detail-ingr-raw-empty">원재료명 정보가 아직 등록되지 않았습니다.</p>
+        rawText ? (
+          <>
+            <p className="d-detail-ingr-raw-text">
+              <HighlightedText text={rawText} annotations={annotations} />
+            </p>
+            <HighlightLegend annotations={annotations} />
+          </>
+        ) : (
+          <p className="d-detail-ingr-raw-text d-detail-ingr-raw-empty">원재료명 정보가 아직 등록되지 않았습니다.</p>
+        )
       )}
     </div>
   );
 }
 
-export function IngredientList({ ingredients, rawText }) {
+export function IngredientList({ ingredients, rawText, annotations }) {
   const ing = ingredients ?? {};
 
   const otherItems = [];
@@ -97,7 +145,7 @@ export function IngredientList({ ingredients, rawText }) {
         <IngrSection label="기타" items={otherItems.length > 0 ? otherItems : null} />
       </div>
       <SweetenerNotice sweeteners={ing.sweeteners} />
-      <RawTextToggle rawText={rawText} />
+      <RawTextToggle rawText={rawText} annotations={annotations} />
     </section>
   );
 }

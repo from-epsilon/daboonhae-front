@@ -483,6 +483,42 @@
   color: var(--text-secondary); word-break: keep-all;
 }
 
+/* 원재료명 구간 마킹 (단백질원료/대체당) */
+.d-detail-ingr-mark {
+  border-radius: 3px; padding: 0 2px; font-weight: 600;
+}
+.d-detail-ingr-mark--protein { background: var(--green-100); color: var(--green-800); }
+.d-detail-ingr-mark--sweetener { background: var(--blue-100); color: var(--blue-700); }
+
+/* 마킹 색상 범례 */
+.d-detail-ingr-raw-legend {
+  display: flex; gap: 16px; margin-top: 10px;
+  font-size: 12px; color: var(--text-tertiary);
+}
+.d-detail-ingr-raw-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.d-detail-ingr-raw-legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* ───────── 추가 안내 카드 ───────── */
+.d-detail-notice-list { display: flex; flex-direction: column; gap: 16px; }
+.d-detail-notice-item-title {
+  font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;
+}
+.d-detail-notice-item-body {
+  margin: 0; font-size: 13px; line-height: 1.7;
+  color: var(--text-secondary); word-break: keep-all;
+}
+.d-detail-notice-cautions { display: flex; flex-direction: column; gap: 8px; }
+.d-detail-notice-list + .d-detail-notice-cautions {
+  margin-top: 16px; border-top: 1px solid var(--border-tertiary); padding-top: 16px;
+}
+.d-detail-notice-caution {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 10px 12px; background: var(--orange-50); border-radius: var(--radius-md);
+  font-size: 13px; line-height: 1.6; color: var(--orange-700);
+}
+.d-detail-notice-caution-label { font-weight: 700; margin-right: 6px; }
+.d-detail-notice-caution-text { color: var(--text-secondary); }
+
 /* ───────── 후기 ───────── */
 .d-review-form {
   border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);

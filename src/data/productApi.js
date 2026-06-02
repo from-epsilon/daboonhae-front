@@ -131,6 +131,23 @@ function parseAllergens(text) {
   return text.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
 }
 
+// ── ingredient_annotations → 단백질원료/대체당 배열
+// - type별로 원문 구간 text를 추출 (없으면 label 폴백), 중복 제거
+function parseIngredientAnnotations(anns) {
+  const list = Array.isArray(anns) ? anns : [];
+  const pick = (type) =>
+    [...new Set(
+      list
+        .filter((a) => a && a.type === type)
+        .map((a) => (a.text ?? a.label ?? '').trim())
+        .filter(Boolean),
+    )];
+  return {
+    proteinSources: pick('protein_source'),
+    sweeteners: pick('alternative_sweetener'),
+  };
+}
+
 // ── Supabase row → mock product shape
 function transformProduct(food) {
   const nutrition = parseNutrition(food.food_nutrients);
@@ -140,6 +157,8 @@ function transformProduct(food) {
   const basis = nutritionBasisOf(food);
   const family = parseFamily(food.food_families);
   const purchaseLinks = parsePurchaseLinks(food.food_purchase_links);
+  // 원재료 구간 마킹 → 단백질원료/대체당 추출
+  const { proteinSources, sweeteners } = parseIngredientAnnotations(food.ingredient_annotations);
 
   // 영양 기준량 표기 (예: '250ml', '100g'); 기준량 없으면 빈 문자열
   const volume = basis.amount != null ? `${basis.amount}${basis.unit ?? ''}` : '';
@@ -158,8 +177,8 @@ function transformProduct(food) {
     purposesFit: derivePurposesFit(nutrition),
     nutrition,
     ingredients: {
-      sweeteners: [],
-      proteinSources: [],
+      sweeteners,
+      proteinSources,
       allergens,
       lactoseFree,
     },
@@ -171,6 +190,9 @@ function transformProduct(food) {
       ingredientsText: food.ingredients_text ?? '',
       allergensText: food.allergens_text ?? '',
       crossContaminationText: food.cross_contamination_text ?? '',
+      cautionNotes: food.caution_notes ?? '',
+      additionalContent: Array.isArray(food.additional_content) ? food.additional_content : [],
+      ingredientAnnotations: Array.isArray(food.ingredient_annotations) ? food.ingredient_annotations : [],
       barcode: food.barcode ?? '',
       foodNutrients: food.food_nutrients ?? [],
       // 영양표 토글/per100 계산에 쓰는 '기준량' (이전 servingSize 자리)
@@ -212,6 +234,7 @@ const LIST_SELECT_BASE = (optional) => `
   package_unit_count, package_unit_name, package_unit_amount,
   serving_amount, serving_description, nutrition_basis_type,
   ingredients_text, allergens_text, cross_contamination_text,
+  caution_notes, additional_content, ingredient_annotations,
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories ( code, name_ko ),
   ${optional ? FAMILY_JOIN : ''}
@@ -231,6 +254,7 @@ const DETAIL_SELECT_BASE = (optional) => `
   package_unit_count, package_unit_name, package_unit_amount,
   serving_amount, serving_description, nutrition_basis_type,
   ingredients_text, allergens_text, cross_contamination_text,
+  caution_notes, additional_content, ingredient_annotations,
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories ( code, name_ko ),
   ${optional ? FAMILY_JOIN : ''}
