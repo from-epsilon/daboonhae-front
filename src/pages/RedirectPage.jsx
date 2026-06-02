@@ -15,14 +15,16 @@ function DabunhaeLogo() {
 export default function RedirectPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState(3);
-  const [progress, setProgress] = useState(100);
-  const [isStopped, setIsStopped] = useState(false);
-  const intervalRef = useRef(null);
 
   const targetUrl = searchParams.get('url');
   const vendorName = searchParams.get('vendor') || '판매처';
-  const delaySeconds = parseInt(searchParams.get('delay') ?? '3', 10);
+  // 대기 시간 — 1.5초 같은 소수점 값도 허용
+  const delaySeconds = parseFloat(searchParams.get('delay') ?? '1.5');
+
+  const [timeLeft, setTimeLeft] = useState(() => Math.ceil(delaySeconds));
+  const [progress, setProgress] = useState(100);
+  const [isStopped, setIsStopped] = useState(false);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     if (!targetUrl) return;
@@ -32,16 +34,19 @@ export default function RedirectPage() {
 
     intervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, delaySeconds - Math.ceil(elapsed / 1000));
+      // 남은 시간을 올림한 정수 초로 표시 (1.5초 → 2초→1초 카운트다운)
+      const remaining = Math.max(0, Math.ceil((totalDuration - elapsed) / 1000));
       const progressPercent = Math.max(0, 100 - (elapsed / totalDuration) * 100);
 
       setTimeLeft(remaining);
       setProgress(progressPercent);
 
       // 대기 시간 경과 후 자동 이동
+      // replace로 이동해 히스토리에서 리다이렉트 페이지를 교체 →
+      // 구매 페이지에서 뒤로가기 시 진입 직전 페이지로 돌아감
       if (elapsed >= totalDuration) {
         clearInterval(intervalRef.current);
-        window.location.href = decodeURIComponent(targetUrl);
+        window.location.replace(decodeURIComponent(targetUrl));
       }
     }, 100);
 
@@ -55,9 +60,10 @@ export default function RedirectPage() {
   };
 
   // 카운트다운을 건너뛰고 즉시 판매처로 이동
+  // replace로 이동해 뒤로가기 시 리다이렉트 페이지로 돌아오지 않도록 함
   const handleGoNow = () => {
     clearInterval(intervalRef.current);
-    window.location.href = decodeURIComponent(targetUrl);
+    window.location.replace(decodeURIComponent(targetUrl));
   };
 
   if (!targetUrl) {

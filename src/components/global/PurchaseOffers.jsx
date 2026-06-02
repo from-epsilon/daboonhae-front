@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router-dom';
-
 function formatPurchasePrice(price) {
   if (typeof price !== 'number') return '가격 문의';
   return `${price.toLocaleString()}원`;
@@ -18,7 +16,7 @@ function unitPriceOf(offer) {
   return offer.price / quantity;
 }
 
-function getRedirectUrl(offer, delaySeconds = 3) {
+function getRedirectUrl(offer, delaySeconds = 1.5) {
   const params = new URLSearchParams({
     url: offer.url,
     vendor: offer.vendorName || '판매처',
@@ -34,9 +32,8 @@ export default function PurchaseOffers({
   maxItems,
   emptyLabel = '가격 정보 준비중',
   className = '',
-  redirectDelay = 3,
+  redirectDelay = 1.5,
 }) {
-  const navigate = useNavigate();
   const sorted = normalizeOffers(offers);
   const visible = typeof maxItems === 'number' ? sorted.slice(0, maxItems) : sorted;
   const unitPrices = sorted.map(unitPriceOf).filter((price) => typeof price === 'number');
@@ -47,10 +44,10 @@ export default function PurchaseOffers({
     className,
   ].filter(Boolean).join(' ');
 
-  const handlePurchaseClick = (e, offer) => {
-    e.preventDefault();
+  // 리다이렉트 페이지는 새 탭에서 열리도록 자연스러운 링크로 처리.
+  // 부모 카드의 클릭 핸들러만 막고, 기본 동작(새 탭 열기)은 그대로 둔다.
+  const handlePurchaseClick = (e) => {
     e.stopPropagation();
-    navigate(getRedirectUrl(offer, redirectDelay));
   };
 
   if (sorted.length === 0) {
@@ -77,8 +74,10 @@ export default function PurchaseOffers({
             <a
               key={`${offer.vendorName}-${offer.url}-${i}`}
               className={`purchase-offer${isBest ? ' is-best' : ''}`}
-              href="#"
-              onClick={(e) => handlePurchaseClick(e, offer)}
+              href={getRedirectUrl(offer, redirectDelay)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handlePurchaseClick}
             >
               <span className="purchase-offer-main">
                 <span className="purchase-offer-vendor">

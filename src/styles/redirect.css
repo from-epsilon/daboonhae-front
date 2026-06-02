@@ -130,8 +130,8 @@
 }
 
 .redirect-btn--primary:hover {
-  background: var(--green-600, #00A800);
-  border-color: var(--green-600, #00A800);
+  background: var(--green-600);
+  border-color: var(--green-600);
 }
 
 /* 이전 페이지 — 외곽선 보조 버튼 */
