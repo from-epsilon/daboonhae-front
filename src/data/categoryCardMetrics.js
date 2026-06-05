@@ -83,6 +83,40 @@ export function getCategoryCardConfig(tabId, subLabel) {
   return GLOBAL_DEFAULT;
 }
 
+// ============================================================ 목적별 추천 카드(홈)
+// 목적에서 가장 중요한 성분 순서로 최대 3개 — 추천 슬라이더/그리드 미니 카드용
+const PURPOSE_HIGHLIGHTS = {
+  protein: [
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'bcaa', label: 'BCAA', unit: 'mg' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+  ],
+  low_sugar: [
+    { key: 'sugar', label: '당류', unit: 'g' },
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+  ],
+  meal: [
+    { key: 'calories', label: '칼로리', unit: 'kcal' },
+    { key: 'protein', label: '단백질', unit: 'g' },
+    { key: 'carbs', label: '탄수화물', unit: 'g' },
+  ],
+};
+
+export function getPurposeHighlightMetrics(tabId) {
+  return PURPOSE_HIGHLIGHTS[tabId] ?? GLOBAL_DEFAULT.metrics;
+}
+
+// 추천 카드용 표시값 — 총량만 (비율 없음)
+// - 값 없으면 null. 칼로리 외 0은 데이터 누락으로 간주해 숨김 (computeMetricValues와 동일 규칙)
+// - 단, 당류 0은 저당 맥락에서 핵심 정보라 표시
+export function getHighlightValue(food, metric) {
+  const v = food?.nutrition?.[metric.key];
+  if (v === undefined || v === null || isNaN(v)) return null;
+  if (v === 0 && metric.key !== 'calories' && metric.key !== 'sugar') return null;
+  return { num: fmt(v), unit: metric.unit };
+}
+
 // 비율 계산
 function fmt(v) {
   if (v === null || v === undefined || isNaN(v)) return '-';

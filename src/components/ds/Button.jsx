@@ -18,7 +18,7 @@ export function Button({
   const styles = {
     base: {
       fontFamily: 'var(--font-display)',
-      fontWeight: 700,
+      fontWeight: 500,
       border: '1px solid transparent',
       borderRadius: 8,
       cursor: disabled ? 'not-allowed' : 'pointer',

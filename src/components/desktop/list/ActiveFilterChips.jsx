@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { splitLabelUnit } from '../../../utils/format.js';
 
 // 활성 필터/세부 카테고리를 칩으로 노출 (각 칩 X로 개별 해제)
 // - 활성 항목이 하나도 없으면 null 렌더 (DOM 비점유)
@@ -55,16 +56,19 @@ function collectChips({ specs, value, onChange }) {
   return chips;
 }
 
-// range: 1개 칩으로 묶음 ("칼로리 100~400 kcal")
+// range: 1개 칩으로 묶음 — 단위 포함 ("칼로리 100~400kcal", "단백질 20g 이상")
 function addRangeChip(chips, spec, v, clearField) {
   const hasMin = v.min !== undefined && v.min !== '' && v.min !== null;
   const hasMax = v.max !== undefined && v.max !== '' && v.max !== null;
   if (!hasMin && !hasMax) return;
-  const minTxt = hasMin ? v.min : '';
-  const maxTxt = hasMax ? v.max : '';
+  const { name, unit } = splitLabelUnit(spec.label);
+  let rangeTxt;
+  if (hasMin && hasMax) rangeTxt = `${v.min}~${v.max}${unit}`;
+  else if (hasMin) rangeTxt = `${v.min}${unit} 이상`;
+  else rangeTxt = `${v.max}${unit} 이하`;
   chips.push({
     id: `range:${spec.key}`,
-    label: `${spec.label} ${minTxt}~${maxTxt}`,
+    label: `${name} ${rangeTxt}`,
     onRemove: () => clearField(spec.key),
   });
 }

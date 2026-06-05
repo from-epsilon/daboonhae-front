@@ -1,6 +1,13 @@
 // 카드/비교에서 highlightMetric을 표시용 문자열로 변환
 // - nutrition[key]가 있으면 숫자+단위, 없으면 ingredients에서 대체값(원료/대체당 등) 추출
 
+// 필터 라벨에서 단위 분리 — "칼로리(kcal)" → { name: '칼로리', unit: 'kcal' }
+export function splitLabelUnit(label) {
+  const m = /^(.*?)\(([^)]+)\)(.*)$/.exec(label ?? '');
+  if (!m) return { name: label, unit: '' };
+  return { name: `${m[1]}${m[3] ?? ''}`.trim(), unit: m[2] };
+}
+
 export function formatMetric(product, metric) {
   const nutritionValue = product.nutrition?.[metric.key];
   if (nutritionValue !== undefined && nutritionValue !== null && typeof nutritionValue === 'number') {

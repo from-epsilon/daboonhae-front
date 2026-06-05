@@ -40,7 +40,7 @@
 .m-home-hero-eyebrow {
   font-family: var(--font-body);
   font-size: var(--font-size-xxs);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--green-700);
   letter-spacing: 0.02em;
   margin: 0;
@@ -87,7 +87,7 @@
   color: var(--white);
   font-family: var(--font-display);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 500;
   border-radius: var(--radius-pill);
   width: max-content;
   position: relative;
@@ -192,6 +192,35 @@
   scroll-snap-align: start;
 }
 
+/* 추천 섹션 목적 세그먼트 — 회색 트랙 + 활성 흰 카드, 3등분 풀폭 */
+.m-home-rec-seg {
+  display: flex;
+  background: var(--gray-100);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+.m-home-rec-seg-btn {
+  flex: 1;
+  min-height: 38px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+.m-home-rec-seg-btn.is-active {
+  background: var(--bg-white);
+  color: var(--green-700);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
 .m-home-rec-card {
   width: 100%;
   display: flex;
@@ -227,6 +256,28 @@
   background: var(--gray-100);
 }
 
+/* 순위 배지 — 썸네일 좌상단, 1~3위는 브랜드 그린 */
+.m-home-rec-rank {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  min-width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(33, 38, 41, 0.78);
+  color: white;
+  font-family: var(--font-numeric);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-lg) 0 var(--radius-sm) 0;
+}
+.m-home-rec-rank.is-top {
+  background: var(--brand-green);
+}
+
 .m-home-rec-meta {
   display: flex;
   flex-direction: column;
@@ -246,26 +297,50 @@
 .m-home-rec-name {
   font-size: var(--font-size-s);
   color: var(--text-primary);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-medium);
   line-height: 20px;
   height: 20px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.m-home-rec-macro {
-  font-family: var(--font-numeric);
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  margin-top: 2px;
-  line-height: 18px;
-  height: 18px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* 목적별 핵심 성분 스탯 — 3컬럼 고정 그리드 (카드 간 같은 성분이 같은 위치) */
+.m-home-rec-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.m-home-rec-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.m-home-rec-stat-label {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
-.m-home-rec-macro b {
+.m-home-rec-stat.is-primary .m-home-rec-stat-label {
+  color: var(--green-700);
+}
+.m-home-rec-stat-value {
+  font-family: var(--font-numeric);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
   color: var(--text-primary);
+  white-space: nowrap;
+}
+.m-home-rec-stat.is-primary .m-home-rec-stat-value {
+  font-size: 15px;
+}
+.m-home-rec-stat-unit {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 1px;
 }
 
 /* ===========================================================================
@@ -278,40 +353,30 @@
   margin: 0 calc(-1 * var(--space-4));
 }
 
-/* 탭 헤더 — 앵커 탭 스타일, 중앙 정렬 */
-.m-cat-tabs-header {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  border-bottom: 1px solid var(--border-tertiary);
+/* 목적별 그룹 — 탭 전환 없이 전 그룹 동시 노출 */
+.m-cat-group {
+  padding: 14px 16px 2px;
 }
-.m-cat-tab {
-  padding: 13px 20px;
+.m-cat-group:last-child {
+  padding-bottom: 12px;
+}
+.m-cat-group + .m-cat-group {
+  border-top: 1px solid var(--bg-divider, var(--border-tertiary));
+}
+.m-cat-group-title {
+  margin: 0 0 6px;
   font-family: var(--font-display);
-  font-size: var(--font-size-s);
+  font-size: 14px;
   font-weight: var(--fw-medium);
   color: var(--text-primary);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.15s;
-  white-space: nowrap;
-}
-.m-cat-tab.is-active {
-  color: var(--green-700);
-  font-weight: var(--fw-bold);
-  border-bottom-color: var(--green-600);
 }
 
-/* 아이콘 그리드 — 고정폭 아이템 + 가운데 정렬 (간격은 항상 일정, 한 줄 약 4개) */
+/* 아이콘 그리드 — 고정폭 아이템 (간격은 그룹과 무관하게 항상 일정) */
 .m-cat-grid {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 14px 10px;
-  padding: 16px;
+  gap: 14px 18px;
+  padding: 4px 0 8px;
 }
 .m-cat-item {
   display: flex;

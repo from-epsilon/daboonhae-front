@@ -222,7 +222,7 @@ select:focus-visible {
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--c-surface); border: 1px solid var(--c-border);
   box-shadow: var(--shadow-md);
-  font-size: 22px; line-height: 1; font-weight: 700; color: var(--c-text);
+  font-size: 22px; line-height: 1; font-weight: 500; color: var(--c-text);
   display: flex; align-items: center; justify-content: center;
   z-index: var(--z-content);
 }
@@ -237,7 +237,7 @@ select:focus-visible {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .ranking-card:hover { border-color: var(--c-primary); box-shadow: var(--shadow-md); }
-.ranking-rank { font-weight: 700; color: var(--c-primary); }
+.ranking-rank { font-weight: 500; color: var(--c-primary); }
 .ranking-brand { font-size: 12px; color: var(--c-text-sub); }
 .ranking-name { font-size: 14px; font-weight: 600; }
 .ranking-empty { color: var(--c-text-sub); padding: 16px; }
@@ -259,7 +259,7 @@ select:focus-visible {
 }
 .list-result-count {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--c-primary);
   margin: 0 2px;
 }
@@ -314,7 +314,7 @@ select:focus-visible {
 }
 
 .filter-panel { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 16px; }
-.filter-panel-title { font-weight: 700; margin-bottom: 12px; }
+.filter-panel-title { font-weight: 500; margin-bottom: 12px; }
 .filter-item { margin-bottom: 14px; }
 .filter-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
 .filter-range { display: flex; align-items: center; gap: 6px; }
@@ -333,7 +333,7 @@ select:focus-visible {
   /* 사이드바 안의 조밀한 컨트롤이라 44는 과해서 36 + 명시 hit-area로 보정 */
   width: 36px; height: 36px; border-radius: var(--radius-sm);
   border: 1px solid var(--c-border); background: var(--c-surface);
-  font-size: 13px; font-weight: 700; color: var(--c-text-sub);
+  font-size: 13px; font-weight: 500; color: var(--c-text-sub);
   display: inline-flex; align-items: center; justify-content: center;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -499,7 +499,7 @@ select:focus-visible {
 .product-thumb {
   border-radius: var(--radius-md);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; letter-spacing: -0.04em;
+  font-weight: 700; letter-spacing: -0.04em;
   user-select: none;
   position: relative; overflow: hidden;
   container-type: inline-size;
@@ -651,7 +651,7 @@ img.product-thumb { object-fit: cover; }
 .compare-col-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; flex: 1; }
 .compare-brand { font-size: 12px; color: var(--c-text-sub); }
 .compare-name {
-  font-weight: 700; font-size: 15px; line-height: 1.35;
+  font-weight: 500; font-size: 15px; line-height: 1.35;
   word-break: keep-all; overflow-wrap: anywhere;
 }
 .compare-volume { font-size: 12px; color: var(--c-text-sub); }
@@ -678,7 +678,7 @@ img.product-thumb { object-fit: cover; }
   box-shadow: var(--shadow-md);
   max-width: 90vw;
 }
-.compare-tray-count strong { font-weight: 700; color: #fbbf24; margin: 0 2px; }
+.compare-tray-count strong { font-weight: 500; color: #fbbf24; margin: 0 2px; }
 .compare-tray-actions { display: flex; gap: 8px; }
 .compare-tray-clear { background: transparent; color: rgba(255,255,255,0.7); border: none; font-size: 13px; padding: 8px 12px; min-height: 36px; transition: color 0.15s; }
 .compare-tray-clear:hover { color: white; }
@@ -705,7 +705,7 @@ img.product-thumb { object-fit: cover; }
   width: 300px; background: var(--c-surface); border: 1px solid var(--c-border);
   border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-md);
 }
-.site-feedback-title { font-weight: 700; margin-bottom: 8px; }
+.site-feedback-title { font-weight: 500; margin-bottom: 8px; }
 .site-feedback-textarea { width: 100%; border: 1px solid var(--c-border); border-radius: var(--radius-sm); padding: 8px; font: inherit; resize: vertical; }
 .site-feedback-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
 .site-feedback-cancel { padding: 8px 14px; min-height: 36px; background: transparent; border: 1px solid var(--c-border); border-radius: var(--radius-sm); font-size: 13px; transition: border-color 0.15s; }
@@ -776,9 +776,9 @@ img.product-thumb { object-fit: cover; }
 }
 .ds-top-tab {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
-  padding: 14px 12px;
+  padding: 15px 12px;
   color: var(--text-tertiary);
   position: relative;
   cursor: pointer;
@@ -793,7 +793,7 @@ img.product-thumb { object-fit: cover; }
   color: var(--text-secondary);
 }
 .ds-top-tab.is-active {
-  font-weight: 700;
+  font-weight: 500;
   color: var(--green-700);
 }
 .ds-top-tab-indicator {
@@ -815,7 +815,7 @@ img.product-thumb { object-fit: cover; }
   background: var(--bg-white);
   color: var(--text-secondary);
   font-family: var(--font-body);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-medium);
   line-height: 1;
   cursor: pointer;
   white-space: nowrap;
@@ -883,7 +883,7 @@ img.product-thumb { object-fit: cover; }
   border-radius: var(--radius-pill);
   color: var(--text-secondary);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
   transition: background-color 150ms ease, color 150ms ease;
 }
@@ -963,7 +963,7 @@ img.product-thumb { object-fit: cover; }
   gap: 6px;
   min-width: 0;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
@@ -979,7 +979,7 @@ img.product-thumb { object-fit: cover; }
 
 .purchase-offer-unit {
   color: var(--text-tertiary);
-  font-weight: 700;
+  font-weight: 500;
   font-size: 14px;
 }
 
@@ -1042,7 +1042,7 @@ img.product-thumb { object-fit: cover; }
 
 .purchase-offers-compact-title {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 

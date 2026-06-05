@@ -35,26 +35,10 @@
   padding: 0 16px;
 }
 
-/* 더 보기 버튼 */
-.m-list-load-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* 무한 스크롤 센티널 — 뷰포트 진입 시 다음 페이지 로드 */
+.m-list-sentinel {
   width: 100%;
-  padding: 14px;
-  margin-top: 8px;
-  background: var(--gray-100);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: var(--font-size-s);
-  font-weight: var(--fw-medium);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-.m-list-load-more:active {
-  background: var(--gray-200);
+  height: 1px;
 }
 
 /* 스켈레톤 카드 */

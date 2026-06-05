@@ -38,7 +38,7 @@
 .d-compare-page-count {
   font-family: var(--font-numeric);
   font-size: var(--font-size-m);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--brand-green);
   letter-spacing: 0;
 }
@@ -110,7 +110,7 @@
   padding: var(--space-4) var(--space-5);
   font-family: var(--font-body);
   font-size: var(--font-size-s);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
   border-right: 1px solid var(--bg-divider);
   background: var(--bg-white);
@@ -201,7 +201,7 @@
   color: var(--white);
   font-family: var(--font-body);
   font-size: var(--font-size-xxs);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1;
   padding: 4px 8px;
   border-radius: var(--radius-pill);
@@ -257,7 +257,7 @@
 .d-compare-col-name {
   font-family: var(--font-body);
   font-size: var(--font-size-m);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
   line-height: 1.35;
   display: -webkit-box;
@@ -438,7 +438,7 @@
 .d-compare-add-label {
   font-family: var(--font-body);
   font-size: var(--font-size-m);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
 }
 .d-compare-add-sub {

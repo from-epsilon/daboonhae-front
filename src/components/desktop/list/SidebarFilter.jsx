@@ -1,4 +1,5 @@
 import { X, RotateCcw, Check } from 'lucide-react';
+import { splitLabelUnit } from '../../../utils/format.js';
 
 // 데스크탑 좌측 사이드바 필터
 // - 280px 고정 폭, sticky 상단 고정
@@ -65,11 +66,13 @@ function SubCategorySection({ subCategories, value, onChange }) {
 }
 
 // 단일 필터 섹션 (label + 타입별 컨트롤)
+// - range는 단위를 인풋 내부 suffix로 표시하므로 섹션 라벨에서는 괄호 단위 제거
 function FilterSection({ spec, value, onChange }) {
   const typeClass = spec.type !== 'range' ? ` d-list-filter-section--${spec.type}` : '';
+  const label = spec.type === 'range' ? splitLabelUnit(spec.label).name : spec.label;
   return (
     <div className={`d-list-filter-section${typeClass}`}>
-      <div className="d-list-filter-section-label">{spec.label}</div>
+      <div className="d-list-filter-section-label">{label}</div>
       {renderControl(spec, value, onChange)}
     </div>
   );
@@ -95,31 +98,38 @@ function RadioRow({ label, checked, onChange }) {
   );
 }
 
-// range: min/max number input + 단위
+// range: min/max number input — 단위는 인풋 내부 우측 suffix로 표시
 function RangeControl({ spec, value, onChange }) {
   const min = value?.min ?? '';
   const max = value?.max ?? '';
+  const { unit } = splitLabelUnit(spec.label);
   const handleMin = (e) => onChange({ ...value, min: e.target.value === '' ? undefined : Number(e.target.value) });
   const handleMax = (e) => onChange({ ...value, max: e.target.value === '' ? undefined : Number(e.target.value) });
   return (
     <div className="d-list-range">
-      <input
-        type="number"
-        className="d-list-range-input"
-        placeholder={String(spec.min)}
-        value={min}
-        onChange={handleMin}
-        aria-label={`${spec.label} 최솟값`}
-      />
+      <div className="d-list-range-field">
+        <input
+          type="number"
+          className="d-list-range-input"
+          placeholder="0"
+          value={min}
+          onChange={handleMin}
+          aria-label={`${spec.label} 최솟값`}
+        />
+        {unit && <span className="d-list-range-unit" aria-hidden="true">{unit}</span>}
+      </div>
       <span className="d-list-range-sep">~</span>
-      <input
-        type="number"
-        className="d-list-range-input"
-        placeholder={String(spec.max)}
-        value={max}
-        onChange={handleMax}
-        aria-label={`${spec.label} 최댓값`}
-      />
+      <div className="d-list-range-field">
+        <input
+          type="number"
+          className="d-list-range-input"
+          placeholder="0"
+          value={max}
+          onChange={handleMax}
+          aria-label={`${spec.label} 최댓값`}
+        />
+        {unit && <span className="d-list-range-unit" aria-hidden="true">{unit}</span>}
+      </div>
     </div>
   );
 }

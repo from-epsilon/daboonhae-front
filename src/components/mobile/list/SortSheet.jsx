@@ -29,7 +29,7 @@ function SortOptionRow({ option, active, onPick }) {
         cursor: 'pointer',
         fontFamily: 'var(--font-body)',
         fontSize: 15,
-        fontWeight: active ? 700 : 500,
+        fontWeight: 500,
         color: active ? 'var(--green-700)' : 'var(--text-primary)',
         textAlign: 'left',
       }}

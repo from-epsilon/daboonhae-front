@@ -13,7 +13,8 @@
 
 .d-list-page-inner {
   max-width: 1240px;
-  margin: 0 auto;
+  /* 헤더(.header-inner)의 하단 패딩 40px가 커서 목적 탭과의 간격을 당김 */
+  margin: -16px auto 0;
   padding: 0 40px 96px;
 }
 
@@ -26,14 +27,16 @@
 /* ---------- 식품유형 카테고리 탭 ---------- */
 .d-list-category-chips {
   display: flex; gap: 4px;
-  padding: var(--space-3) 0;
+  /* 하단 패딩 0 — 활성 탭 강조선(::after bottom:-1px)이 컨테이너 구분선 위에 정확히 겹침 */
+  padding: var(--space-1) 0 0;
   margin-bottom: var(--space-2);
   border-bottom: 1px solid var(--border-tertiary);
 }
 .d-list-category-chip {
-  padding: 10px 14px;
+  padding: 12px 18px;
   background: none; border: none;
-  font-size: 14px; color: var(--text-tertiary);
+  font-family: var(--font-display);
+  font-size: 16px; color: var(--text-tertiary);
   cursor: pointer; position: relative;
   transition: color 0.15s;
   white-space: nowrap;
@@ -71,13 +74,14 @@
   background: var(--gray-900);
   border-color: var(--gray-900);
   color: var(--white);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* ---------- 2단 본문 ---------- */
 .d-list-body {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  /* 사이드바 240px — range 인풋(숫자+단위)이 답답하지 않게 */
+  grid-template-columns: 240px 1fr;
   gap: var(--space-8);
   align-items: start;
 }
@@ -125,7 +129,7 @@
   color: var(--white);
   font-family: var(--font-numeric);
   font-size: var(--font-size-xs);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-medium);
   line-height: 1;
 }
 
@@ -158,21 +162,22 @@
 
 /* ---------- 필터 섹션 ---------- */
 .d-list-filter-section {
-  padding: var(--space-1) 0;
+  padding: var(--space-2) 0;
 }
 .d-list-filter-section + .d-list-filter-section--tristate,
 .d-list-filter-section + .d-list-filter-section--bool,
 .d-list-filter-section--tristate + .d-list-filter-section,
+.d-list-filter-section--exclude_only + .d-list-filter-section,
 .d-list-filter-section--bool + .d-list-filter-section {
   border-top: 1px solid var(--border-tertiary);
-  padding-top: var(--space-4);
-  margin-top: var(--space-1);
+  padding-top: var(--space-5);
+  margin-top: var(--space-2);
 }
 
 .d-list-filter-section-label {
   font-family: var(--font-body);
   font-size: var(--font-size-s);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-medium);
   color: var(--text-primary);
   margin-bottom: var(--space-3);
 }
@@ -213,7 +218,7 @@
 }
 
 .d-list-radio-dot.is-active {
-  border-color: var(--gray-900);
+  border-color: var(--brand-green);
 }
 
 .d-list-radio-dot.is-active::after {
@@ -221,7 +226,7 @@
   position: absolute;
   inset: 2px;
   border-radius: 50%;
-  background: var(--gray-900);
+  background: var(--brand-green);
 }
 
 .d-list-radio-label {
@@ -255,17 +260,37 @@
   gap: var(--space-2);
 }
 
-.d-list-range-input {
+/* 인풋 + 내부 단위 suffix 래퍼 */
+.d-list-range-field {
+  position: relative;
   flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.d-list-range-input {
+  width: 100%;
   min-width: 0;
   font-family: var(--font-numeric);
   font-size: var(--font-size-s);
-  padding: 5px 10px;
+  padding: 5px 34px 5px 10px; /* 우측 단위 공간 확보 */
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-sm);
   background: var(--bg-white);
   color: var(--text-primary);
   transition: border-color 150ms ease;
+}
+
+/* 인풋 내부 우측 단위 표기 */
+.d-list-range-unit {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  pointer-events: none;
 }
 
 .d-list-range-input:focus {
@@ -363,7 +388,7 @@
 }
 
 .d-list-bool-switch.is-on {
-  background: var(--gray-900);
+  background: var(--brand-green);
 }
 
 .d-list-bool-thumb {
@@ -429,7 +454,7 @@
 .d-list-result-count {
   font-family: var(--font-numeric);
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--brand-green);
   margin-left: 6px;
 }
@@ -540,7 +565,7 @@
 }
 
 .d-list-sort-option.is-active {
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-medium);
 }
 
 .d-list-sort-option.is-active svg {
@@ -709,26 +734,10 @@
   border-color: var(--gray-800);
 }
 
-/* ---------- 더 보기 버튼 ---------- */
-.d-list-load-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ---------- 무한 스크롤 센티널 — 뷰포트 진입 시 다음 페이지 로드 ---------- */
+.d-list-sentinel {
   width: 100%;
-  padding: 14px;
-  margin-top: var(--space-4);
-  background: var(--gray-100);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: var(--font-size-s);
-  font-weight: var(--fw-medium);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-.d-list-load-more:hover {
-  background: var(--gray-200);
+  height: 1px;
 }
 
 /* ===========================================================================

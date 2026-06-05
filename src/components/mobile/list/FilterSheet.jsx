@@ -80,7 +80,7 @@ function FilterRange({ spec, value, onChange }) {
             onClick={() => applyPreset(p)}
             style={{
               fontSize: 12,
-              fontWeight: isPresetActive(p) ? 700 : 500,
+              fontWeight: 500,
               padding: '6px 12px',
               borderRadius: 999,
               border: '1px solid',
@@ -211,7 +211,6 @@ function TristateChip({ label, state, onClick }) {
       background: 'var(--green-50)',
       color: 'var(--green-700)',
       borderColor: 'var(--green-500)',
-      fontWeight: 700,
     };
     prefix = <IconCheck size={12} stroke={2.5} />;
   } else if (state === 'exclude') {
@@ -220,7 +219,6 @@ function TristateChip({ label, state, onClick }) {
       background: 'var(--red-50)',
       color: 'var(--red-700)',
       borderColor: 'var(--red-500)',
-      fontWeight: 700,
       textDecoration: 'line-through',
     };
     prefix = <IconClose size={12} stroke={2.5} />;
@@ -250,7 +248,7 @@ function FilterBool({ spec, value, onChange }) {
         borderColor: active ? 'var(--green-500)' : 'var(--border-tertiary)',
         background: active ? 'var(--green-50)' : 'white',
         color: active ? 'var(--green-700)' : 'var(--text-primary)',
-        fontWeight: active ? 700 : 500,
+        fontWeight: 500,
         fontSize: 13,
         cursor: 'pointer',
         fontFamily: 'var(--font-body)',
@@ -271,7 +269,7 @@ function FilterGroup({ spec, value, onChange }) {
         <div
           style={{
             fontFamily: 'var(--font-display)',
-            fontWeight: 700,
+            fontWeight: 500,
             fontSize: 14,
             color: 'var(--text-primary)',
             marginBottom: 10,

@@ -10,6 +10,8 @@ import { RecentList } from '../../components/mobile/main/RecentList.jsx';
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import Footer from '../../components/desktop/home/Footer.jsx';
+import { CATEGORY_TABS, productMatchesTab } from '../../data/categoryTabs.js';
+import { getPurposeHighlightMetrics } from '../../data/categoryCardMetrics.js';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import './MainPage.css';
 
@@ -30,10 +32,34 @@ function SectionHeader({ title, subtitle, moreLabel, onMore }) {
   );
 }
 
-function useRecommended(adapted) {
+// 목적별 추천 — 선택한 목적에 속한 제품을 다분해 점수순 상위 8개로
+function usePurposeRecommended(adapted, tabId) {
   return useMemo(() => {
-    return [...adapted].sort((a, b) => b.score - a.score).slice(0, 8);
-  }, [adapted]);
+    return adapted
+      .filter((p) => productMatchesTab(p, tabId))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+  }, [adapted, tabId]);
+}
+
+// 추천 섹션 목적 선택 — 세그먼트 컨트롤 (회색 트랙 + 활성 흰 카드)
+function PurposeSegment({ value, onChange }) {
+  return (
+    <div className="m-home-rec-seg" role="tablist" aria-label="추천 목적 선택">
+      {CATEGORY_TABS.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          role="tab"
+          aria-selected={t.id === value}
+          className={`m-home-rec-seg-btn${t.id === value ? ' is-active' : ''}`}
+          onClick={() => onChange(t.id)}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function useRecent(adapted) {
@@ -73,7 +99,8 @@ export default function MainPageMobile() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
-  const recommended = useRecommended(adapted);
+  const [recTabId, setRecTabId] = useState(CATEGORY_TABS[0].id);
+  const recommended = usePurposeRecommended(adapted, recTabId);
   const recent = useRecent(adapted);
 
   const handleSearch = () => setSearchOpen(true);
@@ -132,14 +159,20 @@ export default function MainPageMobile() {
 
         <div className="m-home-divider" aria-hidden="true" />
 
-        {/* 2. 추천 식품 — 가로 슬라이더 */}
+        {/* 2. 목적별 추천 식품 — 목적 칩 + 순위 슬라이더 */}
         <section className="m-home-section m-home-section--rec">
           <SectionHeader
-            title="추천 식품"
-            subtitle="다분해 점수가 높은 식품이에요"
-            onMore={() => navigate('/list')}
+            title="목적별 추천 식품"
+            onMore={() => navigate(`/list?tab=${recTabId}`)}
           />
-          <RecommendSlider items={recommended} onItemClick={handleFoodClick} />
+          <PurposeSegment value={recTabId} onChange={setRecTabId} />
+          <RecommendSlider
+            key={recTabId}
+            items={recommended}
+            onItemClick={handleFoodClick}
+            showRank
+            metrics={getPurposeHighlightMetrics(recTabId)}
+          />
         </section>
 
         <div className="m-home-divider" aria-hidden="true" />
@@ -148,7 +181,6 @@ export default function MainPageMobile() {
         <section className="m-home-section">
           <SectionHeader
             title="최근 추가된 식품"
-            subtitle="새로 분석된 영양 정보예요"
             onMore={() => navigate('/list')}
           />
           <RecentList

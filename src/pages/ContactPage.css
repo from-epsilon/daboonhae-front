@@ -45,7 +45,7 @@
   align-self: flex-start;
   padding: 14px 32px; border-radius: var(--radius-pill);
   background: var(--brand-green); color: white;
-  font-size: 15px; font-weight: 700;
+  font-size: 15px; font-weight: 500;
   transition: background-color 0.15s; cursor: pointer;
 }
 .d-contact-submit:hover { background: var(--green-600); }

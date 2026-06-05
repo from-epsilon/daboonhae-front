@@ -113,8 +113,11 @@ function FullRow({ protein, carbs, fat }) {
 }
 
 // wide 변형: 비율 막대 + 수치 한 줄 + kcal 강조 (데스크톱 가로형 카드용)
-function WideRow({ protein, carbs, fat, kcal }) {
+// - ratioOnly: 그램 대신 비율(%)만 표시, kcal 생략 — 카드 내 다른 영역과 수치 중복 방지
+function WideRow({ protein, carbs, fat, kcal, ratioOnly = false }) {
   const total = protein + carbs + fat;
+  const pct = (v) => (total > 0 ? Math.round((v / total) * 100) : 0);
+  const fmt = (v) => (ratioOnly ? `${pct(v)}%` : `${v}g`);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <div
@@ -152,7 +155,7 @@ function WideRow({ protein, carbs, fat, kcal }) {
               verticalAlign: 'middle',
             }}
           />
-          탄 <b style={{ color: 'var(--text-primary)' }}>{carbs}g</b>
+          탄 <b style={{ color: 'var(--text-primary)' }}>{fmt(carbs)}</b>
         </span>
         <span>
           <span
@@ -166,7 +169,7 @@ function WideRow({ protein, carbs, fat, kcal }) {
               verticalAlign: 'middle',
             }}
           />
-          단 <b style={{ color: 'var(--text-primary)' }}>{protein}g</b>
+          단 <b style={{ color: 'var(--text-primary)' }}>{fmt(protein)}</b>
         </span>
         <span>
           <span
@@ -180,23 +183,25 @@ function WideRow({ protein, carbs, fat, kcal }) {
               verticalAlign: 'middle',
             }}
           />
-          지 <b style={{ color: 'var(--text-primary)' }}>{fat}g</b>
+          지 <b style={{ color: 'var(--text-primary)' }}>{fmt(fat)}</b>
         </span>
-        <span style={{ marginLeft: 'auto', fontSize: 14 }}>
-          <b style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{kcal}</b>
-          <span style={{ fontSize: 11 }}>kcal</span>
-        </span>
+        {!ratioOnly && (
+          <span style={{ marginLeft: 'auto', fontSize: 14 }}>
+            <b style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{kcal}</b>
+            <span style={{ fontSize: 11 }}>kcal</span>
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = false, wide = false }) {
+export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = false, wide = false, ratioOnly = false }) {
   if (compact) {
     return <CompactRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} />;
   }
   if (wide) {
-    return <WideRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} />;
+    return <WideRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} ratioOnly={ratioOnly} />;
   }
   return <FullRow protein={protein} carbs={carbs} fat={fat} />;
 }

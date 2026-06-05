@@ -72,7 +72,7 @@ function QuickTerms({ onPick }) {
         style={{
           fontSize: 12,
           color: 'var(--text-tertiary)',
-          fontWeight: 700,
+          fontWeight: 500,
           marginBottom: 10,
           letterSpacing: '.02em',
         }}

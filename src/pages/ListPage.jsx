@@ -11,6 +11,7 @@ import ResultHeader from '../components/desktop/list/ResultHeader.jsx';
 import ResultGrid from '../components/desktop/list/ResultGrid.jsx';
 import EmptyResult from '../components/desktop/list/EmptyResult.jsx';
 import ActiveFilterChips from '../components/desktop/list/ActiveFilterChips.jsx';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -74,6 +75,12 @@ export default function ListPage() {
     [products, visibleCount],
   );
   const hasMore = visibleCount < products.length;
+
+  // 무한 스크롤 — 리스트 하단 센티널 노출 시 다음 페이지 로드
+  const sentinelRef = useInfiniteScroll({
+    hasMore,
+    onLoadMore: () => setVisibleCount((c) => c + PAGE_SIZE),
+  });
 
   if (loading) {
     return (
@@ -178,13 +185,7 @@ export default function ListPage() {
                   sortKey={sortKey}
                 />
                 {hasMore && (
-                  <button
-                    type="button"
-                    className="d-list-load-more"
-                    onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                  >
-                    더 보기 ({products.length - visibleCount}개 남음)
-                  </button>
+                  <div ref={sentinelRef} className="d-list-sentinel" aria-hidden="true" />
                 )}
               </>
             )}

@@ -96,7 +96,7 @@ function FilterButton({ activeCount, onClick }) {
         cursor: 'pointer',
         color: active ? 'var(--green-700)' : 'var(--text-primary)',
         fontSize: 13,
-        fontWeight: active ? 700 : 500,
+        fontWeight: 500,
         fontFamily: 'var(--font-body)',
       }}
     >

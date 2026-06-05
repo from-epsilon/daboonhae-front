@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Drumstick, Milk, Zap, Ham,
@@ -43,51 +42,42 @@ const TABS = [
   },
 ];
 
+// 탭 전환 없이 목적별 그룹 섹션으로 모든 카테고리 아이콘을 한 번에 노출
 export default function CategoryTabsDesktop() {
-  const [activeTab, setActiveTab] = useState(0);
   const navigate = useNavigate();
-  const tab = TABS[activeTab];
 
-  const handleItemClick = (item) => {
+  const handleItemClick = (tab, item) => {
     navigate(`/list?tab=${tab.id}&sub=${encodeURIComponent(item.label)}`);
   };
 
   return (
     <section className="d-home-cattabs">
-      <nav className="d-home-cattabs-head">
-        {TABS.map((t, i) => (
-          <button
-            key={t.id}
-            type="button"
-            className={`d-home-cattab${i === activeTab ? ' is-active' : ''}`}
-            onClick={() => setActiveTab(i)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="d-home-cattabs-grid" key={tab.id}>
-        {tab.items.map((item) => {
-          const Icon = item.Icon;
-          return (
-            <button
-              key={item.label}
-              type="button"
-              className="d-home-cattabs-item"
-              onClick={() => handleItemClick(item)}
-            >
-              <span
-                className="d-home-cattabs-icon"
-                style={{ background: item.bg, color: item.color }}
-              >
-                <Icon size={36} strokeWidth={1.5} />
-              </span>
-              <span className="d-home-cattabs-label">{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {TABS.map((tab) => (
+        <div key={tab.id} className="d-home-catgroup">
+          <h3 className="d-home-catgroup-title">{tab.label}</h3>
+          <div className="d-home-cattabs-grid">
+            {tab.items.map((item) => {
+              const Icon = item.Icon;
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  className="d-home-cattabs-item"
+                  onClick={() => handleItemClick(tab, item)}
+                >
+                  <span
+                    className="d-home-cattabs-icon"
+                    style={{ background: item.bg, color: item.color }}
+                  >
+                    <Icon size={34} strokeWidth={1.5} />
+                  </span>
+                  <span className="d-home-cattabs-label">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </section>
   );
 }
