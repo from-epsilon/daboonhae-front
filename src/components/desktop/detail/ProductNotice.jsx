@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { IconAlert } from '../../ds/Icons.jsx';
 
 // 제품별 추가 안내(additional_content) 단일 항목 — { title, body }
@@ -27,6 +29,7 @@ function CautionBlock({ label, text }) {
 // 추가 안내 카드 — additional_content + caution_notes + 교차오염
 // 표시할 내용이 하나도 없으면 렌더하지 않음
 export function ProductNotice({ additionalContent, cautionNotes, crossContamination }) {
+  const [open, setOpen] = useState(false);
   const items = (Array.isArray(additionalContent) ? additionalContent : []).filter(
     (it) => it && (it.title || it.body),
   );
@@ -36,23 +39,35 @@ export function ProductNotice({ additionalContent, cautionNotes, crossContaminat
 
   return (
     <section className="d-detail-card d-detail-notice">
-      <header className="d-detail-card-head">
-        <h2 className="d-detail-card-title">추가 안내</h2>
+      <header className="d-detail-card-head d-detail-notice-head">
+        <button
+          type="button"
+          className="d-detail-notice-toggle"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+        >
+          <span className="d-detail-card-title">추가 안내</span>
+          <ChevronDown size={18} className={open ? 'is-open' : ''} />
+        </button>
       </header>
 
-      {items.length > 0 && (
-        <div className="d-detail-notice-list">
-          {items.map((it, i) => (
-            <NoticeItem key={i} title={it.title} body={it.body} />
-          ))}
-        </div>
-      )}
+      {open && (
+        <>
+          {items.length > 0 && (
+            <div className="d-detail-notice-list">
+              {items.map((it, i) => (
+                <NoticeItem key={i} title={it.title} body={it.body} />
+              ))}
+            </div>
+          )}
 
-      {hasCaution && (
-        <div className="d-detail-notice-cautions">
-          <CautionBlock label="주의사항" text={cautionNotes} />
-          <CautionBlock label="교차오염 가능성" text={crossContamination} />
-        </div>
+          {hasCaution && (
+            <div className="d-detail-notice-cautions">
+              <CautionBlock label="주의사항" text={cautionNotes} />
+              <CautionBlock label="교차오염 가능성" text={crossContamination} />
+            </div>
+          )}
+        </>
       )}
     </section>
   );

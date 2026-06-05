@@ -23,7 +23,7 @@
 /* 좁은 데스크톱/태블릿: 단일 컬럼으로 스택, 가격 패널은 본문 위로 */
 @media (max-width: 960px) {
   .d-detail-layout { grid-template-columns: 1fr; gap: 20px; }
-  .d-detail-aside { order: -1; }
+  .d-detail-aside { order: initial; }
   .d-detail-aside-inner { position: static; }
 }
 
@@ -94,38 +94,132 @@
 }
 .d-detail-empty-link:hover { border-color: var(--brand-green); color: var(--brand-green); }
 
-/* ───────── 제품 헤더 ───────── */
-.d-detail-header {
-  padding: 24px; background: var(--bg-white);
-  border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);
+/* ───────── 제품 요약 영역 ───────── */
+.d-detail-overview {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 24px;
+  padding: 24px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
 }
-.d-detail-header-top {
-  display: flex; align-items: center; gap: 20px;
+.d-detail-overview-media {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--gray-50);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.d-detail-header-thumb {
-  flex-shrink: 0;
+.d-detail-overview-media .product-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
-.d-detail-header-info {
-  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+.d-detail-overview-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.d-detail-overview-titlebar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.d-detail-overview-title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .d-detail-header-brand { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
 .d-detail-header-name {
-  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  font-family: var(--font-display); font-size: 23px; font-weight: 700;
   line-height: 1.3; color: var(--text-primary); margin: 0;
   word-break: keep-all; overflow-wrap: anywhere;
 }
 .d-detail-header-serving { font-size: 12px; color: var(--text-tertiary); font-family: var(--font-numeric); }
-.d-detail-header-score { flex-shrink: 0; }
-
 /* #2 Quick Glance */
 .d-detail-quick {
-  display: flex; gap: 16px; flex-shrink: 0;
-  padding-left: 16px; border-left: 1px solid var(--border-tertiary);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  flex-shrink: 0;
 }
-.d-detail-quick-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.d-detail-quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 12px 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+}
 .d-detail-quick-label { font-size: 11px; color: var(--text-tertiary); }
 .d-detail-quick-value { font-family: var(--font-numeric); font-size: 18px; font-weight: 700; color: var(--text-primary); }
 .d-detail-quick-unit { font-size: 11px; font-weight: 400; color: var(--text-tertiary); margin-left: 1px; }
+.d-detail-rank {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 2px;
+}
+.d-detail-rank-item {
+  padding: 12px 14px;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.d-detail-rank-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.d-detail-rank-value {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+}
+.d-detail-rank-item strong {
+  font-family: var(--font-numeric);
+  font-size: 21px;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.d-detail-rank-value span {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.d-detail-rank-item strong.is-muted {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+.d-detail-rank-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  max-width: 520px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
 
 /* 헤더 액션 */
 .d-detail-header-actions {
@@ -150,39 +244,6 @@
   100% { transform: scale(1); }
 }
 .d-detail-compare-btn.is-flash { animation: compare-flash 0.4s ease; }
-
-/* ───────── #8 매크로 스트립 ───────── */
-.d-detail-macro {
-  padding: 20px 24px; background: var(--bg-white);
-  border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);
-  display: flex; flex-direction: column; gap: 12px;
-}
-.d-detail-macro-head {
-  display: flex; justify-content: space-between; align-items: baseline;
-}
-.d-detail-macro-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.d-detail-macro-kcal { font-family: var(--font-numeric); font-size: 13px; color: var(--text-secondary); }
-.d-detail-macro-kcal b { color: var(--text-primary); font-size: 18px; margin-right: 2px; }
-.d-detail-macro-bar {
-  display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--gray-100);
-}
-.d-detail-macro-seg {
-  position: relative; display: flex; align-items: center; justify-content: center;
-  min-width: 0; transition: width 0.3s ease;
-}
-.d-detail-macro-seg-pct {
-  font-size: 9px; font-weight: 700; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-.d-detail-macro-legend {
-  display: flex; gap: 24px; font-size: 12px; font-family: var(--font-numeric);
-}
-.d-detail-macro-legend-item { display: flex; align-items: center; gap: 6px; }
-.d-detail-macro-dot {
-  width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
-}
-.d-detail-macro-legend-label { color: var(--text-secondary); }
-.d-detail-macro-legend-item b { color: var(--text-primary); }
-.d-detail-macro-legend-pct { color: var(--text-tertiary); font-size: 11px; }
 
 /* ───────── #3 섹션 앵커 탭 (sticky) ───────── */
 .d-detail-section-nav {
@@ -226,6 +287,10 @@
   display: inline-flex; align-items: center; gap: 8px;
 }
 .d-detail-card-sub { font-size: 13px; color: var(--text-tertiary); font-family: var(--font-numeric); }
+.d-detail-guide .d-detail-card-title,
+.d-review .d-detail-card-title {
+  font-size: 16px;
+}
 
 /* ───────── 영양성분 리스트 ───────── */
 .d-detail-nutri-head-right {
@@ -245,13 +310,42 @@
 }
 .d-detail-nutri-toggle-btn:hover:not(.is-active) { background: var(--gray-50); }
 
+.d-detail-nutri-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  align-items: start;
+}
+.d-detail-nutri-columns.has-single-column {
+  grid-template-columns: 1fr;
+}
+.d-detail-nutri-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.d-detail-nutri-group + .d-detail-nutri-group {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.d-detail-nutri-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+.d-detail-nutri-group--optional .d-detail-nutri-group-title {
+  color: var(--text-tertiary);
+}
 .d-detail-nutri-list {
   list-style: none; margin: 0; padding: 0;
   display: flex; flex-direction: column;
 }
 .d-detail-nutri-cell {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0;
+  gap: 16px;
+  padding: 8px 0;
   border-bottom: 1px solid var(--border-tertiary);
 }
 .d-detail-nutri-cell:last-child { border-bottom: none; }
@@ -260,11 +354,25 @@
 }
 .d-detail-nutri-cell.is-indent .d-detail-nutri-cell-label { color: var(--text-tertiary); }
 .d-detail-nutri-cell-label {
-  display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-primary); font-weight: 500;
+  display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text-primary); font-weight: 500;
 }
-.d-detail-nutri-cell-value { display: flex; align-items: baseline; gap: 2px; }
+.d-detail-nutri-cell-label .d-detail-tooltip-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--gray-400);
+}
+.d-detail-nutri-cell-value {
+  width: 96px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 2px;
+}
 .d-detail-nutri-cell-num {
-  font-family: var(--font-numeric); font-size: 15px; font-weight: 700; color: var(--text-primary);
+  min-width: 50px;
+  font-family: var(--font-numeric); font-size: 14px; font-weight: 700; color: var(--text-primary);
+  text-align: right;
 }
 .d-detail-nutri-cell-unit { font-size: 12px; color: var(--text-secondary); margin-left: 2px; }
 
@@ -320,53 +428,119 @@
 }
 .d-analysis-section-title svg { color: var(--text-tertiary); flex-shrink: 0; }
 
-/* 종합 평가: 강점/주의 리스트 */
-.d-analysis-list { display: flex; flex-direction: column; gap: 8px; }
-.d-analysis-item {
-  display: flex; align-items: flex-start; gap: 8px;
-  font-size: 14px; line-height: 1.6; color: var(--text-primary);
-  padding: 10px 14px; border-radius: var(--radius-md);
+/* 종합 평가: 강점/주의 요약 */
+.d-analysis-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
-.d-analysis-item.is-good {
-  background: var(--green-50); color: var(--green-700);
+.d-analysis-summary-col {
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card-ui);
+  border: none;
 }
-.d-analysis-item.is-good svg { color: var(--green-600); flex-shrink: 0; margin-top: 3px; }
-.d-analysis-item.is-caution {
-  background: var(--orange-50); color: var(--orange-700);
+.d-analysis-summary-col.is-good {
+  background: var(--green-50);
 }
-.d-analysis-item.is-caution svg { color: var(--orange-500); flex-shrink: 0; margin-top: 3px; }
+.d-analysis-summary-col.is-caution {
+  background: var(--orange-50);
+}
+.d-analysis-summary-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.d-analysis-summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.d-analysis-summary-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  word-break: keep-all;
+}
+.d-analysis-summary-item svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.d-analysis-summary-col.is-good svg { color: var(--green-600); }
+.d-analysis-summary-col.is-caution svg { color: var(--orange-600); }
 .d-analysis-empty { font-size: 14px; color: var(--text-tertiary); margin: 0; }
 
-/* 영양성분 분석 */
-.d-analysis-nutrients { display: flex; flex-direction: column; gap: 2px; }
-.d-analysis-nutri-row {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-tertiary);
+/* BCAA/EAA 분석 */
+.d-analysis-amino-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
-.d-analysis-nutri-row:last-child { border-bottom: none; }
-.d-analysis-nutri-head {
-  display: flex; align-items: center; gap: 10px;
+.d-analysis-amino-card {
+  padding: 16px;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  background: var(--bg-card-ui);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.d-analysis-nutri-label {
-  font-size: 14px; font-weight: 600; color: var(--text-primary); min-width: 72px;
+.d-analysis-amino-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
 }
-.d-analysis-nutri-value {
-  font-family: var(--font-numeric); font-size: 14px; font-weight: 700;
-  color: var(--text-primary); min-width: 64px;
+.d-analysis-amino-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
-.d-analysis-nutri-comment {
-  margin: 6px 0 0; font-size: 13px; line-height: 1.6;
+.d-analysis-amino-head strong {
+  font-family: var(--font-numeric);
+  font-size: 21px;
+  color: var(--text-primary);
+}
+.d-analysis-amino-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.62;
+  color: var(--text-secondary);
+  word-break: keep-all;
+}
+.d-analysis-amino-intro {
+  max-width: 44em;
+  color: var(--text-primary);
+}
+.d-analysis-amino-card p strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.d-analysis-amino-detail {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  font-family: var(--font-numeric);
   color: var(--text-secondary);
 }
 
 /* 감미료/단백질원 분석 카드 */
 .d-analysis-ingredients {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px;
 }
 .d-analysis-ingr-card {
-  padding: 14px 16px; border-radius: var(--radius-md);
+  padding: 13px 15px; border-radius: var(--radius-md);
   background: var(--bg-card-ui);
-  display: flex; flex-direction: column; gap: 6px;
+  border: none;
+  display: flex; flex-direction: column; gap: 5px;
 }
 .d-analysis-ingr-card.is-good { border-left: 3px solid var(--green-400); }
 .d-analysis-ingr-card.is-caution { border-left: 3px solid var(--orange-400); }
@@ -381,48 +555,29 @@
   margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary);
 }
 
-/* 목적별 적합도 */
-.d-analysis-purpose-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
-}
-.d-analysis-purpose-card {
-  padding: 16px; border-radius: var(--radius-md);
-  display: flex; flex-direction: column; gap: 8px;
-}
-.d-analysis-purpose-head {
-  display: flex; justify-content: space-between; align-items: center;
-}
-.d-analysis-purpose-label {
-  font-size: 14px; font-weight: 700; color: var(--text-primary);
-}
-.d-analysis-purpose-badge {
-  font-size: 12px; font-weight: 700;
-}
-.d-analysis-purpose-reason {
-  margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary);
-}
-
 @media (max-width: 720px) {
-  .d-analysis-purpose-grid { grid-template-columns: 1fr; }
+  .d-analysis-summary-grid { grid-template-columns: 1fr; }
+  .d-analysis-amino-grid { grid-template-columns: 1fr; }
   .d-analysis-ingredients { grid-template-columns: 1fr; }
 }
 
 /* ───────── 선택 가이드 ───────── */
 .d-detail-guide-hero {
-  padding: 20px 24px;
-  background: var(--bg-card-ui);
+  padding: 16px 18px;
+  background: var(--gray-50);
+  border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-md);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 .d-detail-guide-headline {
-  font-size: 17px; line-height: 1.6; color: var(--text-primary);
-  margin: 0 0 8px;
+  font-size: 15px; line-height: 1.55; color: var(--text-primary);
+  margin: 0 0 6px;
 }
 .d-detail-guide-headline strong {
   color: var(--brand-green);
 }
 .d-detail-guide-intro {
-  font-size: 14px; line-height: 1.7; color: var(--text-secondary);
+  font-size: 13px; line-height: 1.65; color: var(--text-secondary);
   margin: 0;
 }
 .d-detail-guide-list {
@@ -430,34 +585,34 @@
   display: flex; flex-direction: column; gap: 0;
 }
 .d-detail-guide-item {
-  display: flex; gap: 16px; align-items: flex-start;
-  padding: 20px 0;
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 16px 0;
   border-bottom: 1px solid var(--border-tertiary);
 }
 .d-detail-guide-item:last-child { border-bottom: none; }
 .d-detail-guide-item-num {
-  width: 32px; height: 32px; flex-shrink: 0;
+  width: 28px; height: 28px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: var(--gray-900); color: white;
   border-radius: 50%;
-  font-family: var(--font-numeric); font-size: 14px; font-weight: 700;
+  font-family: var(--font-numeric); font-size: 13px; font-weight: 700;
 }
 .d-detail-guide-item-body { flex: 1; min-width: 0; }
 .d-detail-guide-item-title {
-  font-size: 15px; font-weight: 700; color: var(--text-primary);
-  margin: 0 0 8px; line-height: 1.4;
+  font-size: 14px; font-weight: 700; color: var(--text-primary);
+  margin: 0 0 6px; line-height: 1.4;
 }
 .d-detail-guide-item-text {
-  font-size: 14px; line-height: 1.7; color: var(--text-secondary);
+  font-size: 13px; line-height: 1.65; color: var(--text-secondary);
   margin: 0; word-break: keep-all;
 }
 .d-detail-guide-summary {
-  margin-top: 20px; padding: 16px 20px;
-  background: var(--green-50); border-radius: var(--radius-md);
-  border-left: 3px solid var(--brand-green);
+  margin-top: 16px; padding: 13px 16px;
+  background: var(--gray-50); border-radius: var(--radius-md);
+  border-left: 3px solid var(--green-300);
 }
 .d-detail-guide-summary-text {
-  font-size: 14px; line-height: 1.7; color: var(--green-800, var(--green-700));
+  font-size: 13px; line-height: 1.65; color: var(--text-secondary);
   margin: 0; font-weight: 500;
 }
 
@@ -524,7 +679,37 @@
 .d-detail-ingr-raw-legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
 /* ───────── 추가 안내 카드 ───────── */
-.d-detail-notice-list { display: flex; flex-direction: column; gap: 16px; }
+.d-detail-notice {
+  padding: 16px 20px;
+}
+.d-detail-notice-head {
+  margin-bottom: 0;
+}
+.d-detail-notice-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+.d-detail-notice-toggle svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+  transition: transform 0.18s ease;
+}
+.d-detail-notice .d-detail-card-title {
+  font-size: 16px;
+}
+.d-detail-notice-toggle svg.is-open {
+  transform: rotate(180deg);
+}
+.d-detail-notice-list { display: flex; flex-direction: column; gap: 12px; }
+.d-detail-notice-head + .d-detail-notice-list,
+.d-detail-notice-head + .d-detail-notice-cautions {
+  margin-top: 14px;
+}
 .d-detail-notice-item-title {
   font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;
 }
@@ -534,11 +719,12 @@
 }
 .d-detail-notice-cautions { display: flex; flex-direction: column; gap: 8px; }
 .d-detail-notice-list + .d-detail-notice-cautions {
-  margin-top: 16px; border-top: 1px solid var(--border-tertiary); padding-top: 16px;
+  margin-top: 14px; border-top: 1px solid var(--border-tertiary); padding-top: 14px;
 }
 .d-detail-notice-caution {
   display: flex; gap: 8px; align-items: flex-start;
-  padding: 10px 12px; background: var(--orange-50); border-radius: var(--radius-md);
+  padding: 9px 11px; background: var(--gray-50); border-radius: var(--radius-md);
+  border-left: 3px solid var(--orange-300);
   font-size: 13px; line-height: 1.6; color: var(--orange-700);
 }
 .d-detail-notice-caution-label { font-weight: 700; margin-right: 6px; }
@@ -547,8 +733,8 @@
 /* ───────── 후기 ───────── */
 .d-review-form {
   border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);
-  padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;
-  margin-bottom: 24px;
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
+  margin-bottom: 18px;
 }
 .d-review-form--done {
   align-items: center; justify-content: center; min-height: 80px; gap: 8px;
@@ -614,7 +800,7 @@
 /* 후기 리스트 */
 .d-review-list { display: flex; flex-direction: column; }
 .d-review-item {
-  padding: 16px 0; border-bottom: 1px solid var(--border-tertiary);
+  padding: 14px 0; border-bottom: 1px solid var(--border-tertiary);
   display: flex; flex-direction: column; gap: 8px;
 }
 .d-review-item:last-child { border-bottom: none; }
@@ -650,7 +836,7 @@
   display: flex; justify-content: space-between; align-items: center;
 }
 .d-detail-related-title {
-  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
   color: var(--text-primary); margin: 0;
 }
 .d-detail-related-more {
@@ -672,22 +858,42 @@
 
 /* 반응형 */
 @media (max-width: 960px) {
-  .d-detail-header-top { flex-wrap: wrap; }
-  .d-detail-quick { border-left: none; padding-left: 0; padding-top: 12px; border-top: 1px solid var(--border-tertiary); width: 100%; justify-content: space-around; }
-  .d-detail-header-actions { flex-direction: row; width: 100%; }
-  .d-detail-header-actions > * { flex: 1; text-align: center; }
+  .d-detail-overview {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 22px;
+    padding: 24px;
+  }
+  .d-detail-overview-titlebar {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .d-detail-overview-titlebar .d-detail-compare-btn {
+    align-self: flex-start;
+  }
+  .d-detail-quick {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .d-review-form-row { flex-wrap: wrap; }
   .d-detail-related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
+  .d-detail-overview {
+    grid-template-columns: 1fr;
+  }
+  .d-detail-overview-media {
+    max-width: 280px;
+  }
+  .d-detail-rank {
+    grid-template-columns: 1fr;
+  }
+  .d-detail-nutri-columns {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
   .d-detail-ingr-grid { grid-template-columns: 1fr; }
   .d-detail-related-grid { grid-template-columns: 1fr; }
-  .d-detail-macro-legend { flex-direction: column; gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .d-detail-compare-btn.is-flash { animation: none; }
-  .d-detail-macro-seg { transition: none; }
 }
-
-

@@ -15,21 +15,32 @@ const NUTRI_INFO = {
   protein_g: '단백질 함량입니다. 단백질 제품이라면 칼로리 대비 단백질이 충분한지 보는 게 중요해요.',
 };
 
-const REQUIRED_ORDER = [
+const NUTRIENT_ORDER = [
   { code: 'energy_kcal',     indent: false },
-  { code: 'sodium_mg',       indent: false },
   { code: 'carbohydrate_g',  indent: false },
   { code: 'sugars_g',        indent: true },
-  { code: 'dietary_fiber',   indent: true },
-  { code: 'src_알룰로오스_g', indent: true },
-  { code: 'fat_g',           indent: false },
-  { code: 'trans_fat_g',     indent: true },
-  { code: 'saturated_fat_g', indent: true },
-  { code: 'cholesterol_mg',  indent: false },
   { code: 'protein_g',       indent: false },
+  { code: 'fat_g',           indent: false },
+  { code: 'saturated_fat_g', indent: true },
+  { code: 'trans_fat_g',     indent: true },
+  { code: 'cholesterol_mg',  indent: false },
+  { code: 'sodium_mg',       indent: false },
+  { code: 'dietary_fiber',   indent: false },
+  { code: 'src_알룰로오스_g', indent: false },
 ];
 
-const REQUIRED_CODES = new Set(REQUIRED_ORDER.map(r => r.code));
+const KNOWN_CODES = new Set(NUTRIENT_ORDER.map(r => r.code));
+const MANDATORY_CODES = new Set([
+  'energy_kcal',
+  'carbohydrate_g',
+  'sugars_g',
+  'protein_g',
+  'fat_g',
+  'saturated_fat_g',
+  'trans_fat_g',
+  'cholesterol_mg',
+  'sodium_mg',
+]);
 
 function formatValue(fn, ratio) {
   if (ratio === 1) {
@@ -96,36 +107,38 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
   }, [basis, servingSize]);
 
   const unit = servingUnit?.includes('ml') ? 'ml' : 'g';
-  const basisLabel = basis === 'serving' ? serving : `100${unit}`;
 
-  const rows = useMemo(() => {
-    if (!foodNutrients || foodNutrients.length === 0) return [];
+  const { mandatoryRows, optionalRows } = useMemo(() => {
+    if (!foodNutrients || foodNutrients.length === 0) return { mandatoryRows: [], optionalRows: [] };
 
     const byCode = {};
     for (const fn of foodNutrients) {
       byCode[fn.nutrient_code] = fn;
     }
 
-    const result = [];
+    const mandatory = [];
+    const optional = [];
 
-    for (const spec of REQUIRED_ORDER) {
+    for (const spec of NUTRIENT_ORDER) {
       const fn = byCode[spec.code];
       if (!fn) continue;
-      result.push({
+      const row = {
         key: spec.code,
         label: fn.nutrients?.name_ko || spec.code,
         display: formatValue(fn, ratio),
         info: NUTRI_INFO[spec.code],
         indent: spec.indent,
-      });
+      };
+      if (MANDATORY_CODES.has(spec.code)) mandatory.push(row);
+      else optional.push(row);
     }
 
     const extras = foodNutrients
-      .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code))
+      .filter(fn => !KNOWN_CODES.has(fn.nutrient_code))
       .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999));
 
     for (const fn of extras) {
-      result.push({
+      optional.push({
         key: fn.nutrient_code,
         label: fn.nutrients?.name_ko || fn.nutrient_code,
         display: formatValue(fn, ratio),
@@ -134,7 +147,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
       });
     }
 
-    return result;
+    return { mandatoryRows: mandatory, optionalRows: optional };
   }, [foodNutrients, ratio]);
 
   return (
@@ -148,17 +161,38 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
           <span className="d-detail-card-sub">100{unit} 기준</span>
         )}
       </header>
-      <ul className="d-detail-nutri-list">
-        {rows.map((r) => (
-          <NutritionCell
-            key={r.key}
-            label={r.label}
-            display={r.display}
-            info={r.info}
-            indent={r.indent}
-          />
-        ))}
-      </ul>
+      <div className={`d-detail-nutri-columns${optionalRows.length === 0 ? ' has-single-column' : ''}`}>
+        <div className="d-detail-nutri-group">
+          <div className="d-detail-nutri-group-title">필수 표기 영양성분</div>
+          <ul className="d-detail-nutri-list">
+            {mandatoryRows.map((r) => (
+              <NutritionCell
+                key={r.key}
+                label={r.label}
+                display={r.display}
+                info={r.info}
+                indent={r.indent}
+              />
+            ))}
+          </ul>
+        </div>
+        {optionalRows.length > 0 && (
+          <div className="d-detail-nutri-group d-detail-nutri-group--optional">
+            <div className="d-detail-nutri-group-title">선택 표기 영양성분</div>
+            <ul className="d-detail-nutri-list">
+            {optionalRows.map((r) => (
+              <NutritionCell
+                key={r.key}
+                label={r.label}
+                display={r.display}
+                info={r.info}
+                indent={r.indent}
+              />
+            ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

@@ -1,27 +1,6 @@
 import { useMemo } from 'react';
-import { getCategoryMetrics } from '../../../data/purposes.jsx';
 import { Badge } from '../../ds/Badge.jsx';
 import { IconCheck, IconAlert, IconInfo } from '../../ds/Icons.jsx';
-
-// 영양 분석 기준값
-const THRESHOLDS = {
-  calories:     { low: 100, mid: 250, high: 400, unit: 'kcal' },
-  protein:      { low: 5,   mid: 15,  high: 25,  unit: 'g' },
-  sugar:        { low: 1,   mid: 5,   high: 10,  unit: 'g' },
-  fat:          { low: 3,   mid: 10,  high: 20,  unit: 'g' },
-  saturatedFat: { low: 1,   mid: 5,   high: 10,  unit: 'g' },
-  sodium:       { low: 100, mid: 400, high: 800, unit: 'mg' },
-  fiber:        { low: 1,   mid: 3,   high: 5,   unit: 'g' },
-  carbs:        { low: 5,   mid: 20,  high: 40,  unit: 'g' },
-  cholesterol:  { low: 10,  mid: 50,  high: 100, unit: 'mg' },
-  transFat:     { low: 0,   mid: 0.5, high: 1,   unit: 'g' },
-};
-
-const NUTRI_LABELS = {
-  calories: '칼로리', protein: '단백질', sugar: '당류', fat: '지방',
-  saturatedFat: '포화지방', sodium: '나트륨', fiber: '식이섬유',
-  carbs: '탄수화물', cholesterol: '콜레스테롤', transFat: '트랜스지방',
-};
 
 // 감미료별 특성 설명
 const SWEETENER_INFO = {
@@ -44,89 +23,6 @@ const PROTEIN_SOURCE_INFO = {
   '닭고기': '동물성 단백질 원료로, 저지방 고단백이 특징입니다.',
   '계란': '아미노산 조성이 우수한 완전 단백질입니다. 난백(흰자)은 거의 순수 단백질이에요.',
 };
-
-function getVerdict(key, val) {
-  const t = THRESHOLDS[key];
-  if (!t || val == null) return null;
-  if (key === 'protein' || key === 'fiber') {
-    if (val >= t.high) return 'good';
-    if (val >= t.mid) return 'neutral';
-    return 'low';
-  }
-  if (val <= t.low) return 'good';
-  if (val <= t.mid) return 'neutral';
-  return 'caution';
-}
-
-function getVerdictLabel(v) {
-  if (v === 'good') return { text: '좋음', variant: 'softGreen' };
-  if (v === 'neutral') return { text: '보통', variant: 'info' };
-  if (v === 'caution') return { text: '주의', variant: 'softOrange' };
-  if (v === 'low') return { text: '부족', variant: 'softOrange' };
-  return { text: '-', variant: 'outline' };
-}
-
-// 영양 분석 코멘트 생성
-function getNutrientComment(key, val, category) {
-  if (val == null) return '';
-  const comments = {
-    calories: () => {
-      if (val <= 50) return '매우 낮은 칼로리로, 간식이나 음료로 부담 없이 섭취할 수 있어요.';
-      if (val <= 150) return '비교적 낮은 칼로리입니다. 체중 관리 중에도 무리 없는 수준이에요.';
-      if (val <= 300) return '한 끼 간식이나 가벼운 식사 대용으로 적당한 칼로리예요.';
-      return '칼로리가 높은 편이에요. 한 끼 식사 대용이나 운동 전후 에너지 보충에 적합합니다.';
-    },
-    protein: () => {
-      if (val >= 25) return `${val}g은 상당히 높은 단백질 함량입니다. 운동 후 회복이나 근육 유지에 효과적이에요.`;
-      if (val >= 15) return `${val}g으로 단백질이 충분한 편입니다. 일반적인 단백질 보충 목적에 적합해요.`;
-      if (val >= 5) return `단백질이 ${val}g으로, 간식 수준입니다. 주요 단백질원으로는 부족할 수 있어요.`;
-      return '단백질 함량이 매우 적습니다. 단백질 보충이 목적이라면 다른 제품을 고려해보세요.';
-    },
-    sugar: () => {
-      if (val <= 1) return `당류 ${val}g으로 거의 무당에 가깝습니다. 혈당 관리에 안심할 수 있는 수준이에요.`;
-      if (val <= 3) return `당류 ${val}g으로 저당 기준을 충족합니다.`;
-      if (val <= 5) return `당류 ${val}g입니다. 저당은 아니지만, 일반 제품 대비 적은 편이에요.`;
-      if (val <= 10) return `당류 ${val}g으로 약간 높은 편입니다. 혈당 관리 중이라면 섭취량에 주의하세요.`;
-      return `당류 ${val}g으로 높은 편이에요. 당류 섭취를 줄이려는 분에게는 적합하지 않을 수 있습니다.`;
-    },
-    fat: () => {
-      if (val <= 2) return '지방이 매우 적어요. 저지방 식단에 적합합니다.';
-      if (val <= 8) return '적당한 지방 함량이에요.';
-      return `지방이 ${val}g으로 높은 편입니다. 특히 포화지방 비율을 함께 확인해보세요.`;
-    },
-    sodium: () => {
-      if (val <= 100) return '나트륨이 매우 낮아요.';
-      if (val <= 300) return '나트륨이 적절한 수준입니다.';
-      if (val <= 600) return `나트륨 ${val}mg으로 다소 높은 편이에요. 하루 섭취량(2,000mg)을 고려해서 드세요.`;
-      return `나트륨 ${val}mg으로 높습니다. 특히 ${category || '이 카테고리'} 제품 중에서도 높은 편이에요.`;
-    },
-    fiber: () => {
-      if (val >= 5) return `식이섬유 ${val}g으로 풍부합니다. 포만감과 장 건강에 도움이 돼요.`;
-      if (val >= 2) return '식이섬유가 적당히 포함되어 있어요.';
-      return '식이섬유는 거의 없습니다.';
-    },
-    saturatedFat: () => {
-      if (val <= 1) return '포화지방이 매우 적어요.';
-      if (val <= 4) return '포화지방이 보통 수준입니다.';
-      return `포화지방 ${val}g으로 높은 편이에요. 하루 권장량(15g)의 ${Math.round(val / 15 * 100)}%에 해당합니다.`;
-    },
-    transFat: () => {
-      if (val === 0) return '트랜스지방 0g으로 안심할 수 있어요.';
-      return `트랜스지방이 ${val}g 포함되어 있어요. 가급적 0에 가까운 제품을 권장합니다.`;
-    },
-    cholesterol: () => {
-      if (val <= 10) return '콜레스테롤이 거의 없어요.';
-      if (val <= 50) return '콜레스테롤이 보통 수준이에요.';
-      return `콜레스테롤 ${val}mg으로, 동물성 원료가 포함된 제품입니다. 하루 권장량(300mg) 대비 ${Math.round(val / 300 * 100)}%예요.`;
-    },
-    carbs: () => {
-      if (val <= 5) return '탄수화물이 매우 적어요. 저탄수 식단에 적합합니다.';
-      if (val <= 15) return '탄수화물이 적당한 수준입니다.';
-      return `탄수화물 ${val}g입니다. 당류 함량과 함께 확인하는 것이 좋아요.`;
-    },
-  };
-  return comments[key]?.() ?? '';
-}
 
 // 종합 강점/주의사항 자동 생성
 function generateInsights(nutrition, ingredients, category) {
@@ -154,74 +50,6 @@ function generateInsights(nutrition, ingredients, category) {
   return { strengths, cautions };
 }
 
-// 목적별 적합도
-function getPurposeFit(nutrition, ingredients) {
-  const n = nutrition ?? {};
-  const fits = [];
-
-  // 체중감량
-  const wlScore = (n.calories <= 150 ? 2 : n.calories <= 250 ? 1 : 0)
-    + (n.sugar <= 3 ? 2 : n.sugar <= 5 ? 1 : 0)
-    + (n.protein >= 15 ? 1 : 0);
-  fits.push({
-    label: '체중감량',
-    level: wlScore >= 4 ? 'high' : wlScore >= 2 ? 'mid' : 'low',
-    reason: wlScore >= 4
-      ? '저칼로리·저당으로 체중 관리에 적합한 제품이에요.'
-      : wlScore >= 2
-        ? '보통 수준이에요. 칼로리나 당류 중 하나가 다소 높을 수 있어요.'
-        : '체중 관리 목적으로는 칼로리 또는 당류가 높은 편이에요.',
-  });
-
-  // 근성장
-  const msScore = (n.protein >= 25 ? 3 : n.protein >= 15 ? 2 : n.protein >= 10 ? 1 : 0);
-  fits.push({
-    label: '근성장/단백질 보충',
-    level: msScore >= 3 ? 'high' : msScore >= 2 ? 'mid' : 'low',
-    reason: msScore >= 3
-      ? '25g 이상의 고단백으로 근육 합성에 효과적이에요.'
-      : msScore >= 2
-        ? '단백질이 적당히 포함되어 있어요.'
-        : '단백질 함량이 부족한 편이에요.',
-  });
-
-  // 혈당 관리
-  const bgScore = (n.sugar <= 1 ? 3 : n.sugar <= 3 ? 2 : n.sugar <= 5 ? 1 : 0)
-    + (n.fiber >= 3 ? 1 : 0);
-  fits.push({
-    label: '혈당 관리',
-    level: bgScore >= 3 ? 'high' : bgScore >= 2 ? 'mid' : 'low',
-    reason: bgScore >= 3
-      ? '당류가 매우 낮아 혈당 관리에 적합합니다.'
-      : bgScore >= 2
-        ? '당류가 적은 편이지만, 완전한 저당은 아닙니다.'
-        : '당류가 높아 혈당 관리에는 적합하지 않을 수 있어요.',
-  });
-
-  // 식사대용
-  const mrScore = (n.calories >= 200 ? 1 : 0)
-    + (n.protein >= 15 ? 1 : 0)
-    + (n.carbs >= 15 ? 1 : 0)
-    + (n.fiber >= 3 ? 1 : 0);
-  fits.push({
-    label: '식사 대용',
-    level: mrScore >= 3 ? 'high' : mrScore >= 2 ? 'mid' : 'low',
-    reason: mrScore >= 3
-      ? '칼로리·단백질·탄수화물이 균형 잡혀 식사 대용으로 적합해요.'
-      : mrScore >= 2
-        ? '어느 정도 식사 대용이 가능하지만, 영양 균형이 완벽하지는 않아요.'
-        : '간식 수준이에요. 식사를 대체하기에는 영양이 부족합니다.',
-  });
-
-  return fits;
-}
-
-const FIT_STYLES = {
-  high: { bg: 'var(--green-50)', color: 'var(--green-700)', label: '적합' },
-  mid: { bg: 'var(--blue-50)', color: 'var(--blue-700)', label: '보통' },
-  low: { bg: 'var(--gray-100)', color: 'var(--text-tertiary)', label: '부적합' },
-};
-
 // 섹션 카드 래퍼
 function AnalysisSection({ title, icon, children }) {
   return (
@@ -235,30 +63,98 @@ function AnalysisSection({ title, icon, children }) {
   );
 }
 
-export function AnalysisReport({ nutrition, ingredients, category }) {
+function SummaryColumn({ title, type, items, empty }) {
+  const Icon = type === 'good' ? IconCheck : IconAlert;
+  return (
+    <div className={`d-analysis-summary-col is-${type}`}>
+      <h4 className="d-analysis-summary-title">{title}</h4>
+      <ul className="d-analysis-summary-list">
+        {(items.length > 0 ? items : [empty]).map((item, i) => (
+          <li key={i} className="d-analysis-summary-item">
+            <Icon size={14} stroke={2.5} />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function formatMg(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
+  return value >= 1000 ? `${Math.round(value).toLocaleString()}mg` : `${Math.round(value * 10) / 10}mg`;
+}
+
+function aminoAcidComment(kind, value, protein) {
+  if (!value) return `${kind} 함량 데이터가 아직 등록되지 않았어요.`;
+  const gram = value / 1000;
+  const ratio = protein > 0 ? Math.round((gram / protein) * 100) : null;
+  if (kind === 'EAA') {
+    return ratio
+      ? <>필수아미노산이 <strong>단백질 대비 비율</strong> 약 {ratio}% 수준으로 표시돼요. 단백질 품질을 볼 때 함께 확인하면 좋아요.</>
+      : '필수아미노산 총량이 등록되어 있어요.';
+  }
+  return ratio
+    ? <>BCAA가 <strong>단백질 대비 비율</strong> 약 {ratio}% 수준으로 표시돼요. 운동 후 회복 관점에서 참고할 수 있어요.</>
+    : 'BCAA 총량이 등록되어 있어요.';
+}
+
+function aminoAcidIntro(kind) {
+  if (kind === 'EAA') {
+    return <>EAA는 몸에서 충분히 만들 수 없어 식품으로 섭취해야 하는 <strong>필수아미노산 9종</strong>의 합계예요. 단백질 총량이 같아도 EAA가 충분해야 단백질 품질을 더 좋게 볼 수 있어요.</>;
+  }
+  return <>BCAA는 EAA 중 <strong>류신·이소류신·발린</strong> 3종을 따로 묶어 보는 값이에요. 특히 류신은 근단백 합성 신호와 관련이 있어 단백질 음료에서 자주 확인하는 지표예요.</>;
+}
+
+function aminoAcidDetail(kind, nutrition) {
+  if (kind !== 'BCAA') return <>류신·이소류신·발린을 포함해 <strong>필수아미노산 9종</strong>을 모두 합산한 값입니다.</>;
+  const parts = [
+    { label: '류신', value: nutrition?.leucine },
+    { label: '이소류신', value: nutrition?.isoleucine },
+    { label: '발린', value: nutrition?.valine },
+  ].filter((item) => typeof item.value === 'number' && item.value > 0);
+  if (parts.length === 0) return <>BCAA 총량은 <strong>류신·이소류신·발린</strong>을 합산해 계산합니다.</>;
+  return <>류신·이소류신·발린 구성: {parts.map((item) => `${item.label} ${formatMg(item.value)}`).join(' + ')}</>;
+}
+
+function AminoAcidAnalysis({ nutrition }) {
+  const protein = nutrition?.protein ?? 0;
+  const items = [
+    { label: 'EAA', value: nutrition?.eaa },
+    { label: 'BCAA', value: nutrition?.bcaa },
+  ];
+
+  return (
+    <AnalysisSection title="BCAA/EAA 함량" icon={<IconInfo size={16} />}>
+      <div className="d-analysis-amino-grid">
+        {items.map((item) => {
+          const hasValue = typeof item.value === 'number' && item.value > 0;
+          return (
+            <div key={item.label} className="d-analysis-amino-card">
+              <div className="d-analysis-amino-head">
+                <span className="d-analysis-amino-label">{item.label}</span>
+                <strong>{formatMg(item.value) ?? '데이터 없음'}</strong>
+              </div>
+              <p className="d-analysis-amino-intro">{aminoAcidIntro(item.label)}</p>
+              <p className="d-analysis-amino-detail">{aminoAcidDetail(item.label, nutrition)}</p>
+              <p>{aminoAcidComment(item.label, hasValue ? item.value : 0, protein)}</p>
+            </div>
+          );
+        })}
+      </div>
+    </AnalysisSection>
+  );
+}
+
+export function AnalysisReport({ nutrition, ingredients, category, categoryCode }) {
   const n = nutrition ?? {};
   const ing = ingredients ?? {};
+  const isProteinDrink = categoryCode === 'protein_drink' || category === '단백질 음료';
 
   const { strengths, cautions } = useMemo(
     () => generateInsights(n, ing, category),
     [n, ing, category],
   );
-
-  const nutrientAnalysis = useMemo(() => {
-    const keys = ['calories', 'protein', 'carbs', 'sugar', 'fat', 'saturatedFat', 'transFat', 'sodium', 'fiber', 'cholesterol'];
-    return keys
-      .filter((k) => n[k] !== undefined)
-      .map((k) => ({
-        key: k,
-        label: NUTRI_LABELS[k],
-        value: n[k],
-        unit: THRESHOLDS[k]?.unit ?? '',
-        verdict: getVerdict(k, n[k]),
-        comment: getNutrientComment(k, n[k], category),
-      }));
-  }, [n, category]);
-
-  const purposeFits = useMemo(() => getPurposeFit(n, ing), [n, ing]);
 
   const sweetenerNotes = useMemo(() => {
     if (!ing.sweeteners?.length) return [];
@@ -285,53 +181,23 @@ export function AnalysisReport({ nutrition, ingredients, category }) {
 
       {/* 종합 평가 */}
       <AnalysisSection title="종합 평가" icon={<IconInfo size={16} />}>
-        {strengths.length > 0 && (
-          <div className="d-analysis-list">
-            {strengths.map((s, i) => (
-              <div key={i} className="d-analysis-item is-good">
-                <IconCheck size={14} stroke={2.5} />
-                <span>{s}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        {cautions.length > 0 && (
-          <div className="d-analysis-list" style={{ marginTop: strengths.length > 0 ? 12 : 0 }}>
-            {cautions.map((c, i) => (
-              <div key={i} className="d-analysis-item is-caution">
-                <IconAlert size={14} stroke={2.5} />
-                <span>{c}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        {strengths.length === 0 && cautions.length === 0 && (
-          <p className="d-analysis-empty">특이사항 없음</p>
-        )}
-      </AnalysisSection>
-
-      {/* 영양성분 분석 */}
-      <AnalysisSection title="영양성분 분석" icon={<IconInfo size={16} />}>
-        <div className="d-analysis-nutrients">
-          {nutrientAnalysis.map((item) => {
-            const vl = getVerdictLabel(item.verdict);
-            return (
-              <div key={item.key} className="d-analysis-nutri-row">
-                <div className="d-analysis-nutri-head">
-                  <span className="d-analysis-nutri-label">{item.label}</span>
-                  <span className="d-analysis-nutri-value">
-                    {item.value}{item.unit}
-                  </span>
-                  <Badge variant={vl.variant}>{vl.text}</Badge>
-                </div>
-                {item.comment && (
-                  <p className="d-analysis-nutri-comment">{item.comment}</p>
-                )}
-              </div>
-            );
-          })}
+        <div className="d-analysis-summary-grid">
+          <SummaryColumn
+            title="좋은 점"
+            type="good"
+            items={strengths}
+            empty="눈에 띄는 강점은 많지 않아요. 아래 항목별 분석을 확인해보세요."
+          />
+          <SummaryColumn
+            title="확인할 점"
+            type="caution"
+            items={cautions}
+            empty="현재 기준으로 큰 주의 포인트는 많지 않아요."
+          />
         </div>
       </AnalysisSection>
+
+      {isProteinDrink && <AminoAcidAnalysis nutrition={n} />}
 
       {/* 감미료 분석 */}
       {sweetenerNotes.length > 0 && (
@@ -365,24 +231,6 @@ export function AnalysisReport({ nutrition, ingredients, category }) {
           </div>
         </AnalysisSection>
       )}
-
-      {/* 목적별 적합도 */}
-      <AnalysisSection title="목적별 적합도" icon={<IconInfo size={16} />}>
-        <div className="d-analysis-purpose-grid">
-          {purposeFits.map((f) => {
-            const st = FIT_STYLES[f.level];
-            return (
-              <div key={f.label} className="d-analysis-purpose-card" style={{ background: st.bg }}>
-                <div className="d-analysis-purpose-head">
-                  <span className="d-analysis-purpose-label">{f.label}</span>
-                  <span className="d-analysis-purpose-badge" style={{ color: st.color }}>{st.label}</span>
-                </div>
-                <p className="d-analysis-purpose-reason">{f.reason}</p>
-              </div>
-            );
-          })}
-        </div>
-      </AnalysisSection>
     </section>
   );
 }

@@ -151,6 +151,7 @@ export function getMockReviewCount(product) {
 // - 디테일/필터링용 원본 필드(purposesFit/ingredients/nutrition)는 보존
 export function getAdapted(product) {
   const n = product?.nutrition ?? {};
+  const calculatedBcaa = (n.leucine || 0) + (n.isoleucine || 0) + (n.valine || 0);
   const eaa = (n.leucine || 0) + (n.isoleucine || 0) + (n.valine || 0) +
     (n.lysine || 0) + (n.methionine || 0) + (n.phenylalanine || 0) +
     (n.threonine || 0) + (n.tryptophan || 0) + (n.histidine || 0);
@@ -174,7 +175,7 @@ export function getAdapted(product) {
     purchaseLinks: product.purchaseLinks ?? [],
     purposesFit: product.purposesFit,
     ingredients: product.ingredients,
-    nutrition: { ...n, eaa, bcaa: n.bcaa || 0 },
+    nutrition: { ...n, eaa, bcaa: calculatedBcaa || n.bcaa || 0 },
     sweeteners: product.ingredients?.sweeteners ?? [],
   };
 }

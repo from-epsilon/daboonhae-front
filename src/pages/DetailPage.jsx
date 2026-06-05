@@ -54,20 +54,92 @@ function Breadcrumb({ category, categoryCode, productName, onBack }) {
   );
 }
 
-// #2 Quick Glance 수치
-function QuickGlance({ nutrition }) {
-  const items = [
+function formatNumber(value) {
+  if (value == null || Number.isNaN(Number(value))) return '-';
+  return Number.isInteger(Number(value)) ? String(value) : String(Math.round(Number(value) * 10) / 10);
+}
+
+function RankValue({ rankInfo, emptyLabel = '가격 정보 없음' }) {
+  if (!rankInfo) {
+    return <strong className="is-muted">{emptyLabel}</strong>;
+  }
+  return (
+    <span className="d-detail-rank-value">
+      <strong>{rankInfo.rank}위</strong>
+      <span>{rankInfo.total}개 중</span>
+    </span>
+  );
+}
+
+function cheapestUnitPrice(product) {
+  const prices = (product?.purchaseLinks ?? [])
+    .map((offer) => {
+      if (typeof offer?.price !== 'number') return null;
+      const quantity = Number(offer.quantity ?? 1);
+      if (!Number.isFinite(quantity) || quantity <= 0) return offer.price;
+      return offer.price / quantity;
+    })
+    .filter((price) => typeof price === 'number' && Number.isFinite(price) && price > 0);
+  return prices.length > 0 ? Math.min(...prices) : null;
+}
+
+function rankAmong(items, currentId, getScore) {
+  const scored = items
+    .map((item) => ({ item, score: getScore(item) }))
+    .filter(({ score }) => typeof score === 'number' && Number.isFinite(score) && score > 0)
+    .sort((a, b) => b.score - a.score);
+  const index = scored.findIndex(({ item }) => String(item.id) === String(currentId));
+  if (index < 0) return null;
+  return { rank: index + 1, total: scored.length, score: scored[index].score };
+}
+
+function getCategoryPeers(allProducts, product) {
+  return (allProducts ?? []).filter((item) => {
+    if (product?.categoryCode) return item?.categoryCode === product.categoryCode;
+    return item?.category === product?.category;
+  });
+}
+
+function getProteinDrinkRanks(allProducts, product) {
+  const peers = getCategoryPeers(allProducts, product);
+  return {
+    proteinPerPrice: rankAmong(peers, product.id, (item) => {
+      const unitPrice = cheapestUnitPrice(item);
+      const protein = item?.nutrition?.protein;
+      if (!unitPrice || typeof protein !== 'number') return null;
+      return protein / unitPrice;
+    }),
+    proteinPerCalorie: rankAmong(peers, product.id, (item) => {
+      const protein = item?.nutrition?.protein;
+      const calories = item?.nutrition?.calories;
+      if (typeof protein !== 'number' || typeof calories !== 'number' || calories <= 0) return null;
+      return protein / calories;
+    }),
+  };
+}
+
+function getOverviewMetrics(raw, nutrition) {
+  if (raw?.categoryCode === 'protein_drink' || raw?.category === '단백질 음료') {
+    return [
+      { label: '칼로리', value: nutrition?.calories, unit: 'kcal' },
+      { label: '단백질', value: nutrition?.protein, unit: 'g' },
+    ];
+  }
+  return [
     { label: '칼로리', value: nutrition?.calories, unit: 'kcal' },
     { label: '단백질', value: nutrition?.protein, unit: 'g' },
-    { label: '당류', value: nutrition?.sugar, unit: 'g' },
   ];
+}
+
+function QuickGlance({ raw, nutrition }) {
+  const items = getOverviewMetrics(raw, nutrition);
   return (
     <div className="d-detail-quick">
       {items.map((item) => (
         <div key={item.label} className="d-detail-quick-item">
           <span className="d-detail-quick-label">{item.label}</span>
           <span className="d-detail-quick-value">
-            {item.value ?? '-'}<span className="d-detail-quick-unit">{item.unit}</span>
+            {formatNumber(item.value)}<span className="d-detail-quick-unit">{item.unit}</span>
           </span>
         </div>
       ))}
@@ -75,48 +147,53 @@ function QuickGlance({ nutrition }) {
   );
 }
 
-// #8 매크로 비율 바 + 퍼센트 라벨
-function MacroStrip({ protein = 0, carbs = 0, fat = 0, calories = 0 }) {
-  const total = protein + carbs + fat;
-  const pct = (v) => total > 0 ? Math.round((v / total) * 100) : 0;
-  const segments = [
-    { label: '탄수화물', value: carbs, color: 'var(--orange-400)', pct: pct(carbs) },
-    { label: '단백질', value: protein, color: 'var(--green-500)', pct: pct(protein) },
-    { label: '지방', value: fat, color: 'var(--blue-400)', pct: pct(fat) },
-  ];
+function ProteinDrinkRankSummary({ ranks }) {
   return (
-    <div className="d-detail-macro">
-      <div className="d-detail-macro-head">
-        <span className="d-detail-macro-title">탄단지 비율</span>
-        <span className="d-detail-macro-kcal"><b>{calories}</b> kcal</span>
+    <div className="d-detail-rank">
+      <div className="d-detail-rank-item">
+        <span className="d-detail-rank-label">가격 대비 단백질</span>
+        <RankValue rankInfo={ranks.proteinPerPrice} />
       </div>
-      <div className="d-detail-macro-bar">
-        {segments.map((s) => (
-          <div key={s.label} className="d-detail-macro-seg" style={{ width: `${s.pct}%`, background: s.color }}>
-            {s.pct >= 15 && <span className="d-detail-macro-seg-pct">{s.pct}%</span>}
-          </div>
-        ))}
+      <div className="d-detail-rank-item">
+        <span className="d-detail-rank-label">칼로리 대비 단백질</span>
+        <RankValue rankInfo={ranks.proteinPerCalorie} emptyLabel="순위 정보 없음" />
       </div>
-      <div className="d-detail-macro-legend">
-        {segments.map((s) => (
-          <div key={s.label} className="d-detail-macro-legend-item">
-            <span className="d-detail-macro-dot" style={{ background: s.color }} />
-            <span className="d-detail-macro-legend-label">{s.label}</span>
-            <b>{s.value}g</b>
-            <span className="d-detail-macro-legend-pct">{s.pct}%</span>
-          </div>
-        ))}
-      </div>
+      <p className="d-detail-rank-note">가격 순위는 등록된 구매링크의 개당 최저가 기준이며, 실제 판매가와 다를 수 있어요.</p>
     </div>
+  );
+}
+
+function ProductOverview({ product, raw, nutrition, allProducts, inCart, onToggleCompare }) {
+  const isProteinDrink = raw?.categoryCode === 'protein_drink' || raw?.category === '단백질 음료';
+  const ranks = isProteinDrink ? getProteinDrinkRanks(allProducts, raw) : null;
+
+  return (
+    <section className="d-detail-overview">
+      <div className="d-detail-overview-media">
+        <ProductThumb product={product} size="card" />
+      </div>
+      <div className="d-detail-overview-body">
+        <div className="d-detail-overview-titlebar">
+          <div className="d-detail-overview-title">
+            <span className="d-detail-header-brand">{product.brand}</span>
+            <h1 className="d-detail-header-name">{product.name}</h1>
+            <span className="d-detail-header-serving">{product.serving} 기준</span>
+          </div>
+          <CompareButton inCart={inCart} onClick={onToggleCompare} />
+        </div>
+        <QuickGlance raw={raw} nutrition={nutrition} />
+        {isProteinDrink && <ProteinDrinkRankSummary ranks={ranks} />}
+      </div>
+    </section>
   );
 }
 
 // #3 섹션 앵커 탭
 const SECTIONS = [
-  { id: 'guide', label: '선택 가이드' },
+  { id: 'analysis', label: '분석 리포트' },
   { id: 'nutrition', label: '영양성분' },
   { id: 'ingredients', label: '원재료' },
-  { id: 'analysis', label: '분석 리포트' },
+  { id: 'guide', label: '선택 가이드' },
   { id: 'reviews', label: '후기' },
 ];
 
@@ -150,9 +227,9 @@ function SectionNav({ activeId, navRef }) {
 }
 
 function useActiveSection(productId) {
-  const [activeId, setActiveId] = useState('nutrition');
+  const [activeId, setActiveId] = useState('analysis');
   useEffect(() => {
-    setActiveId('nutrition');
+    setActiveId('analysis');
     const timer = setTimeout(() => {
       const observer = new IntersectionObserver(
         (entries) => {
@@ -200,7 +277,7 @@ export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { has, toggle, isFull, max } = useCompare();
-  const { loading } = useProducts();
+  const { loading, products: allProducts } = useProducts();
   const activeSection = useActiveSection(id);
   const navRef = useRef(null);
 
@@ -248,32 +325,26 @@ export default function DetailPage() {
       {/* 2단 레이아웃 — 좌: 본문 / 우: 가격 비교 sticky 패널 */}
       <div className="d-detail-layout">
         <div className="d-detail-main">
-          {/* 제품 헤더 — 컴팩트 한 줄 + Quick Glance */}
-          <div className="d-detail-header">
-            <div className="d-detail-header-top">
-              <div className="d-detail-header-thumb">
-                <ProductThumb product={product} size="compact" />
-              </div>
-              <div className="d-detail-header-info">
-                <span className="d-detail-header-brand">{product.brand}</span>
-                <h1 className="d-detail-header-name">{product.name}</h1>
-                <span className="d-detail-header-serving">{product.serving}</span>
-              </div>
-              <QuickGlance nutrition={n} />
-              <div className="d-detail-header-actions">
-                <CompareButton inCart={inCart} onClick={handleToggleCompare} />
-              </div>
-            </div>
-          </div>
-
-          <MacroStrip protein={n.protein} carbs={n.carbs} fat={n.fat} calories={n.calories} />
+          <ProductOverview
+            product={product}
+            raw={raw}
+            nutrition={n}
+            allProducts={allProducts}
+            inCart={inCart}
+            onToggleCompare={handleToggleCompare}
+          />
 
           {/* 섹션 앵커 탭 */}
           <SectionNav activeId={activeSection} navRef={navRef} />
 
           <div className="d-detail-sections">
-            <div id="guide">
-              <CategoryGuide category={raw?.category} />
+            <div id="analysis">
+              <AnalysisReport
+                nutrition={n}
+                ingredients={product.ingredients}
+                category={raw?.category}
+                categoryCode={raw?.categoryCode}
+              />
             </div>
             <div id="nutrition">
               <NutritionTable
@@ -296,8 +367,8 @@ export default function DetailPage() {
               cautionNotes={raw?._raw?.cautionNotes}
               crossContamination={raw?._raw?.crossContaminationText}
             />
-            <div id="analysis">
-              <AnalysisReport nutrition={n} ingredients={product.ingredients} category={raw?.category} />
+            <div id="guide">
+              <CategoryGuide category={raw?.category} />
             </div>
             <div id="reviews">
               <ReviewSection productId={product.id} />
