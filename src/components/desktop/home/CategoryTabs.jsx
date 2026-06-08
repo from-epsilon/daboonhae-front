@@ -14,6 +14,7 @@ const ITEMS = [
   { label: '셰이크', img: `${IMG}/shake.jpg`, tab: 'protein' },
   { label: '아이스크림', img: `${IMG}/ice-cream.jpg`, tab: 'low_sugar' },
   { label: '과자/초콜릿/젤리', img: `${IMG}/snack-sweets.jpg`, tab: 'low_sugar' },
+  { label: '에너지바', img: `${IMG}/energy-bar.jpg`, tab: 'protein', disabled: true },
   { label: '제로 음료', img: `${IMG}/zero-drink.jpg`, tab: 'low_sugar', disabled: true },
   { label: '밥', img: `${IMG}/rice.jpg`, tab: 'meal', disabled: true },
   { label: '면', img: `${IMG}/noodle.jpg`, tab: 'meal', disabled: true },
