@@ -11,7 +11,7 @@ import ResultHeader from '../components/desktop/list/ResultHeader.jsx';
 import ResultGrid from '../components/desktop/list/ResultGrid.jsx';
 import EmptyResult from '../components/desktop/list/EmptyResult.jsx';
 import ActiveFilterChips from '../components/desktop/list/ActiveFilterChips.jsx';
-import { useInfiniteScroll } from '../hooks/useInfiniteScroll.js';
+import { Pagination } from '../components/ds/Pagination.jsx';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -26,7 +26,7 @@ export default function ListPage() {
 
   const [activeSub, setActiveSub] = useState(subParam || 'all');
   const [filterState, setFilterState] = useState({});
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [page, setPage] = useState(1);
 
   const [sortKey, setSortKey] = useState('default');
 
@@ -42,7 +42,6 @@ export default function ListPage() {
   const resetFilters = () => {
     setFilterState({});
     setActiveSub('all');
-    setVisibleCount(PAGE_SIZE);
   };
 
   const clearSearch = () => navigate('/list');
@@ -58,17 +57,22 @@ export default function ListPage() {
     return result;
   }, [q, PRODUCTS, activeCode, filterState, sortKey]);
 
-  const visibleProducts = useMemo(
-    () => products.slice(0, visibleCount),
-    [products, visibleCount],
-  );
-  const hasMore = visibleCount < products.length;
+  // 검색·필터·정렬·카테고리 변경 시 1페이지로 초기화
+  useEffect(() => {
+    setPage(1);
+  }, [q, activeCode, filterState, sortKey]);
 
-  // 무한 스크롤 — 리스트 하단 센티널 노출 시 다음 페이지 로드
-  const sentinelRef = useInfiniteScroll({
-    hasMore,
-    onLoadMore: () => setVisibleCount((c) => c + PAGE_SIZE),
-  });
+  const pageCount = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const pageProducts = useMemo(
+    () => products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [products, page],
+  );
+
+  // 페이지 이동 — 리스트 상단으로 스크롤
+  const goPage = (next) => {
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (loading) {
     return (
@@ -103,7 +107,7 @@ export default function ListPage() {
           <button
             type="button"
             className={`d-list-sub-chip${activeSub === 'all' ? ' is-active' : ''}`}
-            onClick={() => { setActiveSub('all'); setVisibleCount(PAGE_SIZE); }}
+            onClick={() => setActiveSub('all')}
           >
             전체
           </button>
@@ -112,7 +116,7 @@ export default function ListPage() {
               key={ft.label}
               type="button"
               className={`d-list-sub-chip${activeSub === ft.label ? ' is-active' : ''}`}
-              onClick={() => { setActiveSub(ft.label); setVisibleCount(PAGE_SIZE); }}
+              onClick={() => setActiveSub(ft.label)}
             >
               {ft.label}
             </button>
@@ -154,14 +158,12 @@ export default function ListPage() {
             ) : (
               <>
                 <ResultGrid
-                  products={visibleProducts}
+                  products={pageProducts}
                   onCardClick={(id) => navigate(`/product/${id}`)}
                   onCompare={(id) => compare.toggle(id)}
                   sortKey={sortKey}
                 />
-                {hasMore && (
-                  <div ref={sentinelRef} className="d-list-sentinel" aria-hidden="true" />
-                )}
+                <Pagination page={page} pageCount={pageCount} onChange={goPage} />
               </>
             )}
           </section>

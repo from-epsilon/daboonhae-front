@@ -35,12 +35,6 @@
   padding: 0 16px;
 }
 
-/* 무한 스크롤 센티널 — 뷰포트 진입 시 다음 페이지 로드 */
-.m-list-sentinel {
-  width: 100%;
-  height: 1px;
-}
-
 /* 스켈레톤 카드 */
 .m-list-skeleton-card {
   display: flex;

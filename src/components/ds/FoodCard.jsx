@@ -13,7 +13,8 @@ import PurchaseOffers from '../global/PurchaseOffers.jsx';
 
 // 썸네일 이미지 (URL → img, 빈값 → 회색 placeholder)
 // - 원본 DS는 thumb 가 CSS gradient 문자열이라 background 로 적용했지만
-//   우리 데이터의 thumb 은 실제 이미지 URL → <img>로 처리 + object-fit cover
+//   우리 데이터의 thumb 은 실제 이미지 URL → <img>로 처리
+// - object-fit: contain — 제품이 잘리지 않게 전체를 보여줌 (흰 배경 사진 기준)
 function ThumbImage({ src, alt }) {
   if (!src) {
     // 빈 URL 폴백: 회색 placeholder
@@ -36,7 +37,7 @@ function ThumbImage({ src, alt }) {
       style={{
         width: '100%',
         height: '100%',
-        objectFit: 'cover',
+        objectFit: 'contain',
         borderRadius: 'inherit',
         display: 'block',
       }}
@@ -107,7 +108,7 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
             height: 88,
             borderRadius: 'var(--radius-sm)',
             overflow: 'hidden',
-            background: 'var(--gray-100)',
+            background: '#fff',
           }}
         >
           <ThumbImage src={food.thumb} alt={food.name} />
@@ -134,7 +135,7 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
           <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
         )}
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} />
-        <PurchaseOffers offers={food.purchaseLinks} compact />
+        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" />
       </div>
     </div>
   );
@@ -315,7 +316,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare }) {
           borderRadius: 'var(--radius-md)',
           flexShrink: 0,
           overflow: 'hidden',
-          background: 'var(--gray-100)',
+          background: '#fff',
         }}
       >
         <ThumbImage src={food.thumb} alt={food.name} />
@@ -377,7 +378,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare }) {
 
         {/* 원재료·성분 상세 */}
         <IngredientDetails ingredients={food.ingredients} />
-        <PurchaseOffers offers={food.purchaseLinks} compact />
+        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" />
       </div>
     </div>
   );
@@ -474,7 +475,7 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
           position: 'relative',
           borderRadius: 'var(--radius-md)',
           overflow: 'hidden',
-          background: 'var(--gray-100)',
+          background: '#fff',
         }}
       >
         <ThumbImage src={food.thumb} alt={food.name} />
@@ -504,9 +505,15 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
         </div>
         {/* 성분 스탯 — 라벨/수치 정렬 그리드 */}
         <StatGrid stats={stats} />
-        {/* 가격링크 — 추천 그리드 등에서만 표시 (최저가 1개) */}
+        {/* 가격링크 — 추천 그리드 등에서만 표시 (개당 최저가 1개) */}
         {showPurchase && (
-          <PurchaseOffers offers={food.purchaseLinks} compact maxItems={1} />
+          <PurchaseOffers
+            offers={food.purchaseLinks}
+            compact
+            maxItems={1}
+            pricePer="unit"
+            title="개당 최저가"
+          />
         )}
         {/* 후기 N건 — 카드 trust 신호 */}
       </div>

@@ -1,0 +1,58 @@
+/* 다분해 DS 페이지네이션 — 데스크톱/모바일 공용 */
+.ds-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 28px 0 8px;
+  flex-wrap: wrap;
+}
+
+.ds-pagination-arrow,
+.ds-pagination-num {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-white);
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ds-pagination-arrow {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.ds-pagination-arrow:hover:not(:disabled),
+.ds-pagination-num:hover {
+  border-color: var(--gray-500);
+  color: var(--text-primary);
+}
+
+.ds-pagination-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ds-pagination-num.is-active {
+  background: var(--gray-900);
+  border-color: var(--gray-900);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.ds-pagination-ellipsis {
+  min-width: 24px;
+  text-align: center;
+  color: var(--text-tertiary);
+  user-select: none;
+}

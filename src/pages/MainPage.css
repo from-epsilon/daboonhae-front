@@ -536,7 +536,7 @@
   text-align: center;
   gap: 8px;
   padding: 8px 2px;
-  width: 84px;
+  width: 100px;
   box-sizing: border-box;
   background: none;
   border: 1px solid transparent;
@@ -583,8 +583,8 @@
 }
 .d-home-cattabs-icon {
   position: relative;
-  width: 68px;
-  height: 68px;
+  width: 84px;
+  height: 84px;
   border-radius: var(--radius-lg);
   display: inline-flex;
   align-items: center;

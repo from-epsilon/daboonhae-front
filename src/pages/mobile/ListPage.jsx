@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { FoodCard } from '../../components/ds/FoodCard.jsx';
@@ -9,8 +9,8 @@ import { SortSheet, getSortShortLabel } from '../../components/mobile/list/SortS
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
+import { Pagination } from '../../components/ds/Pagination.jsx';
 import { useProducts } from '../../store/ProductsContext.jsx';
-import { useInfiniteScroll } from '../../hooks/useInfiniteScroll.js';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
 import { ALL_FILTERS } from '../../data/purposes.jsx';
@@ -118,7 +118,7 @@ export default function ListPageMobile() {
   const [activeSub, setActiveSub] = useState(initSub);
   const [filterState, setFilterState] = useState({});
   const [sortKey, setSortKey] = useState('ranking');
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [page, setPage] = useState(1);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -145,21 +145,18 @@ export default function ListPageMobile() {
 
   const handleSubSelect = useCallback((label) => {
     setActiveSub(label === 'all' ? 'all' : label);
-    setVisibleCount(PAGE_SIZE);
   }, []);
 
   const handleSearchSubmit = (next) => {
     const trimmed = (next ?? '').trim();
     setSearchParams(trimmed ? { q: trimmed } : {});
-    setVisibleCount(PAGE_SIZE);
   };
 
-  const clearSearch = () => { setSearchParams({}); setVisibleCount(PAGE_SIZE); };
+  const clearSearch = () => { setSearchParams({}); };
 
   const resetFilters = () => {
     setFilterState({});
     setActiveSub('all');
-    setVisibleCount(PAGE_SIZE);
   };
 
   const goCompare = () => navigate('/compare');
@@ -175,17 +172,22 @@ export default function ListPageMobile() {
     return result;
   }, [q, PRODUCTS, activeCode, filterState, sortKey]);
 
-  const visibleProducts = useMemo(
-    () => products.slice(0, visibleCount),
-    [products, visibleCount],
-  );
-  const hasMore = visibleCount < products.length;
+  // 검색·필터·정렬·카테고리 변경 시 1페이지로 초기화
+  useEffect(() => {
+    setPage(1);
+  }, [q, activeCode, filterState, sortKey]);
 
-  // 무한 스크롤 — 리스트 하단 센티널 노출 시 다음 페이지 로드
-  const sentinelRef = useInfiniteScroll({
-    hasMore,
-    onLoadMore: () => setVisibleCount((c) => c + PAGE_SIZE),
-  });
+  const pageCount = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const pageProducts = useMemo(
+    () => products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [products, page],
+  );
+
+  // 페이지 이동 — 리스트 상단으로 스크롤
+  const goPage = (next) => {
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="m-list-root">
@@ -226,7 +228,7 @@ export default function ListPageMobile() {
         </div>
       ) : (
         <div className="m-list-cards">
-          {visibleProducts.map((p) => {
+          {pageProducts.map((p) => {
             // 카드 메트릭은 제품의 식품유형(목적 탭 + 라벨) 기준
             const ft = getFoodTypeByCode(p.categoryCode);
             return (
@@ -242,9 +244,7 @@ export default function ListPageMobile() {
               />
             );
           })}
-          {hasMore && (
-            <div ref={sentinelRef} className="m-list-sentinel" aria-hidden="true" />
-          )}
+          <Pagination page={page} pageCount={pageCount} onChange={goPage} />
         </div>
       )}
 

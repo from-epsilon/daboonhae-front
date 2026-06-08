@@ -3,10 +3,43 @@ function formatPurchasePrice(price) {
   return `${price.toLocaleString()}원`;
 }
 
+// 유효 오퍼만 추려 총액 오름차순 정렬 (기본 정렬)
 function normalizeOffers(offers) {
   return (offers ?? [])
     .filter((offer) => offer && offer.url && offer.is_active !== false)
     .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
+}
+
+// 표시 순서 결정
+// - 'total'      : 총액 오름차순
+// - 'unit'       : 개당(단가) 오름차순
+// - 'unit-first' : 개당 최저가 1개를 맨 앞에 고정 + 나머지는 총액 오름차순
+function orderOffers(offers, mode) {
+  const base = normalizeOffers(offers); // 총액 오름차순 + 유효 필터
+  if (base.length <= 1) return base;
+
+  if (mode === 'unit') {
+    return [...base].sort(
+      (a, b) => (unitPriceOf(a) ?? Infinity) - (unitPriceOf(b) ?? Infinity),
+    );
+  }
+
+  if (mode === 'unit-first') {
+    let bestIdx = -1;
+    let bestUnit = Infinity;
+    base.forEach((offer, i) => {
+      const u = unitPriceOf(offer);
+      if (typeof u === 'number' && u < bestUnit) {
+        bestUnit = u;
+        bestIdx = i;
+      }
+    });
+    if (bestIdx < 0) return base;
+    // 개당 최저가를 맨 앞으로, 나머지는 base(총액 오름차순) 순서 유지
+    return [base[bestIdx], ...base.filter((_, i) => i !== bestIdx)];
+  }
+
+  return base; // 'total'
 }
 
 function unitPriceOf(offer) {
@@ -14,6 +47,12 @@ function unitPriceOf(offer) {
   const quantity = Number(offer.quantity ?? 1);
   if (!Number.isFinite(quantity) || quantity <= 0) return offer.price;
   return offer.price / quantity;
+}
+
+// 개당 가격 표기 (개당 N원) — 단가 없으면 가격 문의
+function formatUnitPrice(unitPrice) {
+  if (typeof unitPrice !== 'number') return '가격 문의';
+  return `개당 ${Math.round(unitPrice).toLocaleString()}원`;
 }
 
 function getRedirectUrl(offer, delaySeconds = 1.5) {
@@ -48,8 +87,13 @@ export default function PurchaseOffers({
   redirectDelay = 1.5,
   showUpdatedAt = false,
   stacked = false,
+  pricePer = 'total', // 'total' 총액 표시 | 'unit' 개당(단가) 최저가 표시
+  sortBy = 'total',   // 'total' 총액순 | 'unit' 개당순 | 'unit-first' 개당 최저가 먼저+나머지 총액순
 }) {
-  const sorted = normalizeOffers(offers);
+  const isUnit = pricePer === 'unit';
+  // 개당 표시 모드는 자연히 개당순 정렬
+  const sortMode = isUnit ? 'unit' : sortBy;
+  const sorted = orderOffers(offers, sortMode);
   const visible = typeof maxItems === 'number' ? sorted.slice(0, maxItems) : sorted;
   const unitPrices = sorted.map(unitPriceOf).filter((price) => typeof price === 'number');
   const cheapestUnitPrice = unitPrices.length > 0 ? Math.min(...unitPrices) : null;
@@ -102,14 +146,17 @@ export default function PurchaseOffers({
                 </span>
                 <span className="purchase-offer-meta">
                   {offer.quantity ?? 1}개입
-                  {typeof unitPrice === 'number' && (
+                  {/* 개당 모드에선 메인 가격이 이미 개당가라 중복 표기 생략 */}
+                  {!isUnit && typeof unitPrice === 'number' && (
                     <span className="purchase-offer-unit">
                       · 개당 {Math.round(unitPrice).toLocaleString()}원
                     </span>
                   )}
                 </span>
               </span>
-              <span className="purchase-offer-price">{formatPurchasePrice(offer.price)}</span>
+              <span className="purchase-offer-price">
+                {isUnit ? formatUnitPrice(unitPrice) : formatPurchasePrice(offer.price)}
+              </span>
             </a>
           );
         })}
