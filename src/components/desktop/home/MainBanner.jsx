@@ -17,7 +17,10 @@ export default function MainBanner({
     "다이어트 식품, 고르기 어렵죠?",
     { before: "성분표 없이도 ", em: "한눈에 비교", after: "하세요" },
   ],
-  subline = "저당·고단백·식사대용 식품의 당류·단백질·칼로리부터 전성분까지, 다분해가 정리해 비교해 드려요.",
+  subline = [
+    "저당·고단백·식사대용 식품의 당류·단백질·칼로리부터 원재료까지",
+    "다분해가 정리해 비교해 드려요.",
+  ],
   ctaLabel = "다이어트 식품 둘러보기",
   ctaHref = "#",
   onCtaClick,
@@ -45,7 +48,13 @@ export default function MainBanner({
           )}
         </h1>
 
-        <p className="mb__sub">{subline}</p>
+        <p className="mb__sub">
+          {Array.isArray(subline)
+            ? subline.map((line, i) => (
+                <span key={i} className="mb__sub-line">{line}</span>
+              ))
+            : subline}
+        </p>
 
         <a
           className="mb__cta"

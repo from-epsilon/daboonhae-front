@@ -2,8 +2,9 @@
 // props:
 //   - active: boolean — 선택 상태 (검은 배경)
 //   - variant: 'default' | 'brand' (브랜드 그린 톤)
+//   - disabled: boolean — 분석 준비중 등 비활성 (클릭 불가 + 흐리게)
 //   - onClick: () => void
-export function Chip({ active = false, variant = 'default', children, onClick }) {
+export function Chip({ active = false, variant = 'default', disabled = false, children, onClick }) {
   // 기본 스타일
   const styles = {
     fontFamily: 'var(--font-body)',
@@ -33,14 +34,30 @@ export function Chip({ active = false, variant = 'default', children, onClick })
       borderColor: 'var(--green-200)',
     });
   }
+  // 비활성(준비중) — active/brand보다 우선해 흐린 회색으로 덮어씀
+  if (disabled) {
+    Object.assign(styles, {
+      background: 'var(--gray-100)',
+      color: 'var(--text-tertiary)',
+      borderColor: 'var(--border-tertiary)',
+      cursor: 'default',
+    });
+  }
 
-  // 클릭 핸들러 타입 안전
+  // 클릭 핸들러 타입 안전 — 비활성 시 무시
   const handleClick = (e) => {
+    if (disabled) return;
     if (typeof onClick === 'function') onClick(e);
   };
 
   return (
-    <button type="button" style={styles} onClick={handleClick}>
+    <button
+      type="button"
+      style={styles}
+      onClick={handleClick}
+      disabled={disabled}
+      aria-disabled={disabled || undefined}
+    >
       {children}
     </button>
   );

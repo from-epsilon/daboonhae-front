@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AppBar } from '../../components/ds/AppBar.jsx';
-import { TopTabs } from '../../components/ds/TopTabs.jsx';
 import { FoodCard } from '../../components/ds/FoodCard.jsx';
 import { SubCategoryChips } from '../../components/mobile/list/SubCategoryChips.jsx';
 import { ActionBar } from '../../components/mobile/list/ActionBar.jsx';
@@ -15,11 +14,10 @@ import { useInfiniteScroll } from '../../hooks/useInfiniteScroll.js';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
 import { ALL_FILTERS } from '../../data/purposes.jsx';
-import { CATEGORY_TABS, productMatchesTab } from '../../data/categoryTabs.js';
+import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeByCode } from '../../data/categoryTabs.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import './ListPage.css';
 
-const TAB_LABELS = CATEGORY_TABS.map((t) => t.label);
 const PAGE_SIZE = 20;
 
 function getIngredientList(product, key) {
@@ -110,21 +108,13 @@ export default function ListPageMobile() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const q = searchParams.get('q') ?? '';
-  const tabParam = searchParams.get('tab') ?? '';
   const subParam = searchParams.get('sub') ?? '';
-
-  const initTab = useMemo(() => {
-    if (!tabParam) return 0;
-    const idx = CATEGORY_TABS.findIndex((t) => t.id === tabParam);
-    return idx >= 0 ? idx : 0;
-  }, [tabParam]);
 
   const initSub = useMemo(() => {
     if (!subParam) return 'all';
     return subParam;
   }, [subParam]);
 
-  const [activeTab, setActiveTab] = useState(initTab);
   const [activeSub, setActiveSub] = useState(initSub);
   const [filterState, setFilterState] = useState({});
   const [sortKey, setSortKey] = useState('ranking');
@@ -134,15 +124,11 @@ export default function ListPageMobile() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
-  const tab = CATEGORY_TABS[activeTab];
-  const subLabels = tab.subs.map((s) => s.label);
-
   // activeSub이 라벨이면 해당 식품유형 코드(food_type_category_code) 찾기
   const activeCode = useMemo(() => {
     if (activeSub === 'all') return null;
-    const found = tab.subs.find((s) => s.label === activeSub);
-    return found?.code ?? null;
-  }, [activeSub, tab]);
+    return getFoodTypeByLabel(activeSub)?.code ?? null;
+  }, [activeSub]);
 
   const filterActiveCount = useMemo(() => {
     let n = 0;
@@ -156,13 +142,6 @@ export default function ListPageMobile() {
     return n;
   }, [filterState]);
   const hasActiveCondition = filterActiveCount > 0 || activeSub !== 'all';
-
-  const handleTabSelect = useCallback((i) => {
-    setActiveTab(i);
-    setActiveSub('all');
-    setFilterState({});
-    setVisibleCount(PAGE_SIZE);
-  }, []);
 
   const handleSubSelect = useCallback((label) => {
     setActiveSub(label === 'all' ? 'all' : label);
@@ -187,17 +166,14 @@ export default function ListPageMobile() {
 
   const products = useMemo(() => {
     let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
+    // 식품유형 칩 선택 시: 식품유형 코드 정확 매칭 / '전체'면 전 제품
     if (activeCode) {
-      // 서브 칩 선택 시: 식품유형 코드 정확 매칭
       result = result.filter((p) => p.categoryCode === activeCode);
-    } else {
-      // 탭 전체 시: 목적 카테고리(다대다 링크) 기반 매칭, 폴백은 식품유형 코드
-      result = result.filter((p) => productMatchesTab(p, tab.id));
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, tab.id, activeCode, filterState, sortKey]);
+  }, [q, PRODUCTS, activeCode, filterState, sortKey]);
 
   const visibleProducts = useMemo(
     () => products.slice(0, visibleCount),
@@ -221,13 +197,8 @@ export default function ListPageMobile() {
       />
 
       <div className="m-list-sticky-header">
-        <TopTabs
-          tabs={TAB_LABELS}
-          active={activeTab}
-          onSelect={handleTabSelect}
-        />
         <SubCategoryChips
-          categories={subLabels}
+          categories={ACTIVE_FOOD_TYPES}
           value={activeSub}
           onChange={handleSubSelect}
         />
@@ -255,18 +226,22 @@ export default function ListPageMobile() {
         </div>
       ) : (
         <div className="m-list-cards">
-          {visibleProducts.map((p) => (
-            <FoodCard
-              key={p.id}
-              food={getAdapted(p)}
-              layout="list"
-              tabId={tab.id}
-              subLabel={activeSub !== 'all' ? activeSub : undefined}
-              inCompare={hasCompare(p.id)}
-              onClick={() => navigate(`/product/${p.id}`)}
-              onCompare={(food) => toggleCompare(food.id)}
-            />
-          ))}
+          {visibleProducts.map((p) => {
+            // 카드 메트릭은 제품의 식품유형(목적 탭 + 라벨) 기준
+            const ft = getFoodTypeByCode(p.categoryCode);
+            return (
+              <FoodCard
+                key={p.id}
+                food={getAdapted(p)}
+                layout="list"
+                tabId={ft?.tab}
+                subLabel={ft?.label}
+                inCompare={hasCompare(p.id)}
+                onClick={() => navigate(`/product/${p.id}`)}
+                onCompare={(food) => toggleCompare(food.id)}
+              />
+            );
+          })}
           {hasMore && (
             <div ref={sentinelRef} className="m-list-sentinel" aria-hidden="true" />
           )}

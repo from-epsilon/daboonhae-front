@@ -53,6 +53,36 @@ export const CATEGORY_TABS = [
   },
 ];
 
+// 식품유형(food_type_categories) 전체 — 리스트에서 목적 탭 없이 칩으로 한 번에 노출
+// - tab: 리스트 카드 메트릭(categoryCardMetrics) 결정용 목적 키
+// - disabled: 분석 준비중(데이터 미제공) → 칩 비활성화
+// ※ 에너지바·기타 가공육은 노출 대상에서 제외
+export const FOOD_TYPES = [
+  { label: '닭가슴살', code: 'chicken_breast', tab: 'protein' },
+  { label: '단백질 음료', code: 'protein_drink', tab: 'protein' },
+  { label: '셰이크', code: 'shake', tab: 'meal' },
+  { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar' },
+  { label: '과자/초콜릿/젤리', code: 'snack_sweets', tab: 'low_sugar' },
+  { label: '제로 음료', code: 'zero_drink', tab: 'low_sugar', disabled: true },
+  { label: '밥', code: 'rice', tab: 'meal', disabled: true },
+  { label: '면', code: 'noodle', tab: 'meal', disabled: true },
+  { label: '시리얼/그래놀라/오트밀', code: 'cereal_granola_oat', tab: 'meal', disabled: true },
+];
+
+// 분석 완료(활성) 식품유형만 — 리스트 칩 노출용 (준비중 제외)
+export const ACTIVE_FOOD_TYPES = FOOD_TYPES.filter((ft) => !ft.disabled);
+
+const FOOD_TYPE_BY_CODE = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.code, ft]));
+const FOOD_TYPE_BY_LABEL = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.label, ft]));
+
+// 식품유형 코드/라벨 → FOOD_TYPES 항목 (없으면 null)
+export function getFoodTypeByCode(code) {
+  return FOOD_TYPE_BY_CODE[code] ?? null;
+}
+export function getFoodTypeByLabel(label) {
+  return FOOD_TYPE_BY_LABEL[label] ?? null;
+}
+
 // 탭의 모든 서브 카테고리(food_type) 코드 목록 (중복 제거)
 // - 서브가 'all'일 때 1차 필터로 사용
 // - 목적 링크가 비어있는 제품을 위한 폴백 매칭에도 활용

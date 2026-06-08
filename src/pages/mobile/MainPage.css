@@ -353,30 +353,12 @@
   margin: 0 calc(-1 * var(--space-4));
 }
 
-/* 목적별 그룹 — 탭 전환 없이 전 그룹 동시 노출 */
-.m-cat-group {
-  padding: 14px 16px 2px;
-}
-.m-cat-group:last-child {
-  padding-bottom: 12px;
-}
-.m-cat-group + .m-cat-group {
-  border-top: 1px solid var(--bg-divider, var(--border-tertiary));
-}
-.m-cat-group-title {
-  margin: 0 0 6px;
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: var(--fw-medium);
-  color: var(--text-primary);
-}
-
-/* 아이콘 그리드 — 고정폭 아이템 (간격은 그룹과 무관하게 항상 일정) */
+/* 아이콘 그리드 — 목적별 그룹 구분 없이 전 카테고리를 한 그리드로 노출 */
 .m-cat-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 14px 18px;
-  padding: 4px 0 8px;
+  padding: 14px 16px;
 }
 .m-cat-item {
   display: flex;
@@ -395,7 +377,37 @@
 .m-cat-item:active {
   background: var(--gray-100);
 }
+/* 분석 준비중(비활성) 카테고리 — 클릭 불가 + 흐리게 + 라벨 배지 */
+.m-cat-item.is-disabled {
+  cursor: default;
+}
+.m-cat-item.is-disabled:active {
+  background: none;
+}
+.m-cat-item.is-disabled .m-cat-icon-img {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+.m-cat-item.is-disabled .m-cat-label {
+  color: var(--text-tertiary);
+}
+.m-cat-soon {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: var(--fw-medium);
+  line-height: 1;
+}
 .m-cat-icon {
+  position: relative;
   width: 54px;
   height: 54px;
   border-radius: var(--radius-lg);
@@ -403,6 +415,15 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.15s;
+  /* 제품 사진 아이콘 — 흰 배경 사진이므로 흰 타일 + 얇은 테두리로 경계만 표시 */
+  background: #fff;
+  border: 1px solid var(--border-tertiary);
+  overflow: hidden;
+}
+.m-cat-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .m-cat-item:active .m-cat-icon {
   transform: scale(0.93);

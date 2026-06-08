@@ -99,6 +99,10 @@
   margin: 0;
   max-width: 480px;
 }
+/* 서브라인 줄바꿈 — 각 줄을 블록으로 표시 */
+.mb__sub-line {
+  display: block;
+}
 
 .mb__cta {
   margin-top: 2px;

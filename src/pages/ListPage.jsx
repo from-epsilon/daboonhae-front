@@ -4,7 +4,7 @@ import { useCompare } from '../store/CompareContext.jsx';
 import { useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
 import { ALL_FILTERS } from '../data/purposes.jsx';
-import { CATEGORY_TABS, productMatchesTab } from '../data/categoryTabs.js';
+import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel } from '../data/categoryTabs.js';
 import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
 import ResultHeader from '../components/desktop/list/ResultHeader.jsx';
@@ -22,30 +22,19 @@ export default function ListPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const q = searchParams.get('q') ?? '';
-  const tabParam = searchParams.get('tab') ?? '';
   const subParam = searchParams.get('sub') ?? '';
 
-  const initTab = useMemo(() => {
-    if (!tabParam) return 0;
-    const idx = CATEGORY_TABS.findIndex((t) => t.id === tabParam);
-    return idx >= 0 ? idx : 0;
-  }, [tabParam]);
-
-  const [activeTab, setActiveTab] = useState(initTab);
   const [activeSub, setActiveSub] = useState(subParam || 'all');
   const [filterState, setFilterState] = useState({});
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const [sortKey, setSortKey] = useState('default');
 
-  const tab = CATEGORY_TABS[activeTab];
-
-  // 서브칩 라벨 → 식품유형 코드(food_type_category_code)
+  // 식품유형 칩 라벨 → 식품유형 코드(food_type_category_code)
   const activeCode = useMemo(() => {
     if (activeSub === 'all') return null;
-    const found = tab.subs.find((s) => s.label === activeSub);
-    return found?.code ?? null;
-  }, [activeSub, tab]);
+    return getFoodTypeByLabel(activeSub)?.code ?? null;
+  }, [activeSub]);
 
   const activeFilterCount = countActiveFilters(filterState);
   const canResetSomething = activeFilterCount > 0 || activeSub !== 'all';
@@ -60,15 +49,14 @@ export default function ListPage() {
 
   const products = useMemo(() => {
     let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
+    // 식품유형 칩 선택 시: 식품유형 코드 정확 매칭 / '전체'면 전 제품
     if (activeCode) {
       result = result.filter((p) => p.categoryCode === activeCode);
-    } else {
-      result = result.filter((p) => productMatchesTab(p, tab.id));
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
     result = applySort(result, sortKey);
     return result;
-  }, [q, PRODUCTS, tab.id, activeCode, filterState, sortKey]);
+  }, [q, PRODUCTS, activeCode, filterState, sortKey]);
 
   const visibleProducts = useMemo(
     () => products.slice(0, visibleCount),
@@ -86,10 +74,11 @@ export default function ListPage() {
     return (
       <div className="d-list-page">
         <div className="d-list-page-inner">
-          <div className="d-list-category-chips">
-            {CATEGORY_TABS.map((t, i) => (
-              <button key={t.id} type="button" className={`d-list-category-chip${i === 0 ? ' is-active' : ''}`}>
-                {t.label}
+          <div className="d-list-sub-chips">
+            <button type="button" className="d-list-sub-chip is-active">전체</button>
+            {ACTIVE_FOOD_TYPES.map((ft) => (
+              <button key={ft.label} type="button" className="d-list-sub-chip">
+                {ft.label}
               </button>
             ))}
           </div>
@@ -109,21 +98,7 @@ export default function ListPage() {
   return (
     <div className="d-list-page">
       <div className="d-list-page-inner">
-        {/* 상위 3탭 */}
-        <div className="d-list-category-chips">
-          {CATEGORY_TABS.map((t, i) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`d-list-category-chip${i === activeTab ? ' is-active' : ''}`}
-              onClick={() => { setActiveTab(i); setActiveSub('all'); setVisibleCount(PAGE_SIZE); }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* 하위 서브카테고리 칩 */}
+        {/* 식품유형 칩 — 목적 탭 없이 전 식품유형을 한 줄로, 준비중은 비활성 */}
         <div className="d-list-sub-chips">
           <button
             type="button"
@@ -132,14 +107,14 @@ export default function ListPage() {
           >
             전체
           </button>
-          {tab.subs.map((s) => (
+          {ACTIVE_FOOD_TYPES.map((ft) => (
             <button
-              key={s.label}
+              key={ft.label}
               type="button"
-              className={`d-list-sub-chip${activeSub === s.label ? ' is-active' : ''}`}
-              onClick={() => { setActiveSub(s.label); setVisibleCount(PAGE_SIZE); }}
+              className={`d-list-sub-chip${activeSub === ft.label ? ' is-active' : ''}`}
+              onClick={() => { setActiveSub(ft.label); setVisibleCount(PAGE_SIZE); }}
             >
-              {s.label}
+              {ft.label}
             </button>
           ))}
         </div>
@@ -160,7 +135,7 @@ export default function ListPage() {
               sortKey={sortKey}
               onSortChange={setSortKey}
               onClearQuery={clearSearch}
-              category={activeSub !== 'all' ? activeSub : tab.label}
+              category={activeSub !== 'all' ? activeSub : '전체'}
             />
 
             <ActiveFilterChips

@@ -1,10 +1,10 @@
-// 모바일 세부 카테고리 칩 (줄바꿈 wrap — 가로 스크롤 X)
+// 모바일 식품유형 칩 (줄바꿈 wrap — 가로 스크롤 X)
 // - 첫 칩은 항상 '전체' (값 'all')
+// - categories: { label, disabled } 배열 — 준비중(disabled)은 비활성 + '준비중' 표시
 // - 칩이 많아지면 다음 줄로 넘어감
 import { Chip } from '../../ds/Chip.jsx';
 
 export function SubCategoryChips({ categories = [], value, onChange }) {
-  // 카테고리 비어있으면 (purpose=all) 영역 자체 미렌더
   if (!categories || categories.length === 0) return null;
 
   return (
@@ -23,8 +23,13 @@ export function SubCategoryChips({ categories = [], value, onChange }) {
         전체
       </Chip>
       {categories.map((cat) => (
-        <Chip key={cat} active={value === cat} onClick={() => onChange(cat)}>
-          {cat}
+        <Chip
+          key={cat.label}
+          active={value === cat.label}
+          disabled={cat.disabled}
+          onClick={() => onChange(cat.label)}
+        >
+          {cat.disabled ? `${cat.label} · 준비중` : cat.label}
         </Chip>
       ))}
     </div>

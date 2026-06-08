@@ -13,9 +13,9 @@
 
 .d-list-page-inner {
   max-width: 1240px;
-  /* 헤더(.header-inner)의 하단 패딩 40px가 커서 목적 탭과의 간격을 당김 */
-  margin: -16px auto 0;
-  padding: 0 40px 96px;
+  /* 스티키 헤더(z-30) 바로 아래에 칩이 가리지 않도록 음수 마진 제거 */
+  margin: 0 auto;
+  padding: 4px 40px 96px;
 }
 
 /* ---------- 결과 타이틀 ---------- */
@@ -24,36 +24,10 @@
   font-size: 18px; font-weight: 700; color: var(--text-primary);
 }
 
-/* ---------- 식품유형 카테고리 탭 ---------- */
-.d-list-category-chips {
-  display: flex; gap: 4px;
-  /* 하단 패딩 0 — 활성 탭 강조선(::after bottom:-1px)이 컨테이너 구분선 위에 정확히 겹침 */
-  padding: var(--space-1) 0 0;
-  margin-bottom: var(--space-2);
-  border-bottom: 1px solid var(--border-tertiary);
-}
-.d-list-category-chip {
-  padding: 12px 18px;
-  background: none; border: none;
-  font-family: var(--font-display);
-  font-size: 16px; color: var(--text-tertiary);
-  cursor: pointer; position: relative;
-  transition: color 0.15s;
-  white-space: nowrap;
-}
-.d-list-category-chip:hover { color: var(--text-primary); }
-.d-list-category-chip.is-active {
-  color: var(--text-primary); font-weight: 700;
-}
-.d-list-category-chip.is-active::after {
-  content: '';
-  position: absolute; bottom: -1px; left: 8px; right: 8px;
-  height: 2px; background: var(--gray-900); border-radius: 2px;
-}
-
-/* ---------- 서브카테고리 칩 ---------- */
+/* ---------- 식품유형 칩 (목적 탭 없이 한 줄, 준비중 비활성) ---------- */
 .d-list-sub-chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: var(--space-3) 0;
   margin-bottom: var(--space-2);
@@ -75,6 +49,17 @@
   border-color: var(--gray-900);
   color: var(--white);
   font-weight: 500;
+}
+/* 분석 준비중 — 비활성: 흐린 회색 + 클릭 불가 */
+.d-list-sub-chip.is-disabled {
+  background: var(--gray-100);
+  border-color: var(--border-tertiary);
+  color: var(--text-tertiary);
+  cursor: default;
+}
+.d-list-sub-chip.is-disabled:hover {
+  border-color: var(--border-tertiary);
+  color: var(--text-tertiary);
 }
 
 /* ---------- 2단 본문 ---------- */
