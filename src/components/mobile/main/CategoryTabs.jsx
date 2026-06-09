@@ -8,16 +8,11 @@ const IMG = '/images/categories';
 // 목적별 그룹 구분 없이 모든 카테고리 아이콘을 한 그리드로 노출
 // - tab은 클릭 시 이동할 리스트 탭(/list?tab=..) 기준값
 const ITEMS = [
-  { label: '닭가슴살', img: `${IMG}/chicken-breast.jpg`, tab: 'protein' },
-  { label: '단백질 음료', img: `${IMG}/protein-drink.jpg`, tab: 'protein' },
+  { label: '단백질 음료', img: `${IMG}/protein-drink.jpg`, tab: 'protein', imgScale: 1.12 },
   { label: '셰이크', img: `${IMG}/shake.jpg`, tab: 'protein' },
-  { label: '아이스크림', img: `${IMG}/ice-cream.jpg`, tab: 'low_sugar' },
-  { label: '과자/초콜릿/젤리', img: `${IMG}/snack-sweets.jpg`, tab: 'low_sugar' },
-  { label: '에너지바', img: `${IMG}/energy-bar.jpg`, tab: 'protein', disabled: true },
-  { label: '제로 음료', img: `${IMG}/zero-drink.jpg`, tab: 'low_sugar', disabled: true },
-  { label: '밥', img: `${IMG}/rice.jpg`, tab: 'meal', disabled: true },
-  { label: '면', img: `${IMG}/noodle.jpg`, tab: 'meal', disabled: true },
-  { label: '시리얼/그래놀라/오트밀', img: `${IMG}/cereal-granola-oat.jpg`, tab: 'meal', disabled: true },
+  { label: '닭가슴살', img: `${IMG}/chicken-breast.png`, tab: 'protein' },
+  { label: '아이스크림', img: `${IMG}/ice-cream.png`, tab: 'low_sugar' },
+  { label: '과자/초콜릿/젤리', img: `${IMG}/snack-sweets.jpg`, tab: 'low_sugar', imgScale: 0.9 },
 ];
 
 // 목적별 그룹 제목 없이 카테고리 아이콘을 한 그리드로 노출
@@ -41,7 +36,13 @@ export function CategoryTabs() {
             aria-disabled={item.disabled || undefined}
           >
             <span className="m-cat-icon">
-              <img src={item.img} alt="" className="m-cat-icon-img" loading="lazy" />
+              <img
+                src={item.img}
+                alt=""
+                className="m-cat-icon-img"
+                loading="lazy"
+                style={item.imgScale ? { transform: `scale(${item.imgScale})` } : undefined}
+              />
               {item.disabled && <span className="m-cat-soon">분석 준비중</span>}
             </span>
             <span className="m-cat-label">{item.label}</span>
