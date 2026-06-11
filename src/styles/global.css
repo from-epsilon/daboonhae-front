@@ -453,7 +453,7 @@ select:focus-visible {
 /* 우선순위 카드 — 1순위 핵심 지표 표 (총량/100kcal당/1,000원당 열 정렬) */
 .fc-ptable {
   display: grid;
-  gap: 3px 12px;
+  gap: 3px 4px;
   align-items: baseline;
   margin-top: 2px;
 }
@@ -464,8 +464,14 @@ select:focus-visible {
   color: var(--text-secondary);
   text-align: left;
   white-space: nowrap;
+  cursor: default;
   /* 라인 대신 간격으로 헤더-데이터 분리 */
   padding-bottom: 3px;
+}
+/* 열 호버 — 헤더 강조 */
+.fc-ptable-head.is-active {
+  color: var(--text-primary);
+  font-weight: 700;
 }
 /* 첫 열 헤더(축 설명) — 무엇을 비교하는지 명시 */
 .fc-ptable-corner {
@@ -491,12 +497,22 @@ select:focus-visible {
 .fc-ptable-cell {
   font-family: var(--font-numeric);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 500; /* 기본은 볼드 없음 — 호버한 열만 강조 */
   color: var(--text-primary);
   text-align: left;
   white-space: nowrap;
+  cursor: default;
+  /* 떨림 방지 — 폭이 바뀌는 font-weight는 스냅, 트랜지션은 transform만 */
+  transition: transform 0.1s ease;
   /* 자릿수 고정 정렬 — 열 간 숫자 비교 가독성 */
   font-variant-numeric: tabular-nums;
+}
+/* 열 호버 — 해당 열 값 더 크고 볼드로 강조 (레이아웃 밀어내지 않게 scale) */
+.fc-ptable-cell.is-active {
+  font-weight: 700;
+  color: var(--text-primary);
+  transform: scale(1.13);
+  transform-origin: left center;
 }
 /* 단위 — 숫자보다 작고 연하게(볼드 제외) → 숫자가 먼저 읽힘 */
 .fc-ptable-unit {
@@ -508,7 +524,7 @@ select:focus-visible {
 /* 모바일: 카드 폭이 좁아 표 간격·폰트 압축 (가로 오버플로 방지) */
 @media (max-width: 800px) {
   .fc-ptable {
-    gap: 3px 8px;
+    gap: 3px 3px;
   }
   .fc-ptable-cell {
     font-size: 14px;

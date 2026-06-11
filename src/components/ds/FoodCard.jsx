@@ -5,7 +5,7 @@
 //   - onClick: 카드 전체 클릭 핸들러 (디테일 진입)
 //   - layout: 'grid' (홈/리스트 그리드) | 'list' (리스트 페이지)
 //   - onCompare: 비교함 담기 콜백 (미지정 시 + 버튼 미표시)
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { MacroRow } from './MacroRow.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
@@ -253,6 +253,9 @@ function TieredMeta({ food, sources, secondary, lactoseFree }) {
 // - 세 지표를 같은 비중으로 두되 열로 정렬해 가독성 확보
 // - 100kcal당/1,000원당 열은 데이터(칼로리·구매가) 있을 때만 노출
 function TieredPrimaryTable({ food, metrics }) {
+  // 마우스 올린 열 — 해당 열 값들을 더 크고 볼드로 강조
+  const [hoverCol, setHoverCol] = useState(null);
+
   const rows = metrics
     .map((m) => {
       const result = computeMetricValues(food, m);
@@ -273,37 +276,63 @@ function TieredPrimaryTable({ food, metrics }) {
 
   const showKcal = rows.some((r) => r.perKcal);
   const showPrice = rows.some((r) => r.perPrice);
-  const valueCols = 1 + (showKcal ? 1 : 0) + (showPrice ? 1 : 0);
+
+  // 표시할 값 열 정의 (데이터 있을 때만)
+  const cols = [
+    { key: 'total', head: '총량', variant: 'total', pick: (r) => r.total },
+    showKcal && { key: 'kcal', head: '100kcal당', variant: 'ratio', pick: (r) => r.perKcal },
+    showPrice && { key: 'price', head: '1,000원당', variant: 'ratio', pick: (r) => r.perPrice },
+  ].filter(Boolean);
+
+  // 열 호버 핸들러 (헤더·셀 공통)
+  const colHandlers = (key) => ({
+    onMouseEnter: () => setHoverCol(key),
+    onMouseLeave: () => setHoverCol((c) => (c === key ? null : c)),
+  });
 
   return (
     <div
       className="fc-ptable"
-      style={{ gridTemplateColumns: `auto repeat(${valueCols}, minmax(0, 1fr))` }}
+      style={{ gridTemplateColumns: `auto repeat(${cols.length}, minmax(0, 1fr))` }}
     >
       {/* 헤더 — 라인 없이 타이포(작고 연함)로 구분 */}
       <span className="fc-ptable-corner" />
-      <span className="fc-ptable-head">총량</span>
-      {showKcal && <span className="fc-ptable-head">100kcal당</span>}
-      {showPrice && <span className="fc-ptable-head">1,000원당</span>}
+      {cols.map((c) => (
+        <span
+          key={c.key}
+          className={`fc-ptable-head${hoverCol === c.key ? ' is-active' : ''}`}
+          {...colHandlers(c.key)}
+        >
+          {c.head}
+        </span>
+      ))}
       {/* 지표 행 */}
       {rows.map((r) => (
         <Fragment key={r.key}>
           <span className="fc-ptable-label">{r.label}</span>
-          <PTableCell value={r.total} variant="total" />
-          {showKcal && <PTableCell value={r.perKcal} variant="ratio" />}
-          {showPrice && <PTableCell value={r.perPrice} variant="ratio" />}
+          {cols.map((c) => (
+            <PTableCell
+              key={c.key}
+              value={c.pick(r)}
+              variant={c.variant}
+              active={hoverCol === c.key}
+              {...colHandlers(c.key)}
+            />
+          ))}
         </Fragment>
       ))}
     </div>
   );
 }
 
-// 표 셀 — 숫자는 진하게, 단위는 작게 연하게 (텍스트 위계로 가독성 확보)
-// - variant: 'total' 총량(가장 진하게) | 'ratio' 대비 수치(한 톤 연하게)
-function PTableCell({ value, variant }) {
-  if (!value) return <span className="fc-ptable-cell fc-ptable-cell--ratio">-</span>;
+// 표 셀 — 단위는 작게 연하게 (텍스트 위계로 가독성 확보)
+// - variant: 'total' 총량(진한 색) | 'ratio' 대비 수치(연한 색)
+// - active: 해당 열 호버 시 더 크고 볼드로 강조
+function PTableCell({ value, variant, active, ...handlers }) {
+  const cls = `fc-ptable-cell fc-ptable-cell--${variant}${active ? ' is-active' : ''}`;
+  if (!value) return <span className={cls} {...handlers}>-</span>;
   return (
-    <span className={`fc-ptable-cell fc-ptable-cell--${variant}`}>
+    <span className={cls} {...handlers}>
       {value.num}<span className="fc-ptable-unit">{value.unit}</span>
     </span>
   );
