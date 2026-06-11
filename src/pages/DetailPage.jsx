@@ -119,12 +119,6 @@ function getProteinDrinkRanks(allProducts, product) {
 }
 
 function getOverviewMetrics(raw, nutrition) {
-  if (raw?.categoryCode === 'protein_drink' || raw?.category === '단백질 음료') {
-    return [
-      { label: '칼로리', value: nutrition?.calories, unit: 'kcal' },
-      { label: '단백질', value: nutrition?.protein, unit: 'g' },
-    ];
-  }
   return [
     { label: '칼로리', value: nutrition?.calories, unit: 'kcal' },
     { label: '단백질', value: nutrition?.protein, unit: 'g' },
@@ -163,26 +157,49 @@ function ProteinDrinkRankSummary({ ranks }) {
   );
 }
 
-function ProductOverview({ product, raw, nutrition, allProducts, inCart, onToggleCompare }) {
+function ProductOverview({ product, raw, nutrition, allProducts, inCart, onToggleCompare, detailOpen, onToggleDetail }) {
   const isProteinDrink = raw?.categoryCode === 'protein_drink' || raw?.category === '단백질 음료';
   const ranks = isProteinDrink ? getProteinDrinkRanks(allProducts, raw) : null;
 
   return (
     <section className="d-detail-overview">
-      <div className="d-detail-overview-media">
-        <ProductThumb product={product} size="card" />
-      </div>
-      <div className="d-detail-overview-body">
-        <div className="d-detail-overview-titlebar">
-          <div className="d-detail-overview-title">
-            <span className="d-detail-header-brand">{product.brand}</span>
-            <h1 className="d-detail-header-name">{product.name}</h1>
-            <span className="d-detail-header-serving">{product.serving} 기준</span>
-          </div>
-          <CompareButton inCart={inCart} onClick={onToggleCompare} />
+      {/* 상단: 제품 이미지 + 제목·핵심지표 */}
+      <div className="d-detail-overview-grid">
+        <div className="d-detail-overview-media">
+          <ProductThumb product={product} size="card" />
         </div>
-        <QuickGlance raw={raw} nutrition={nutrition} />
-        {isProteinDrink && <ProteinDrinkRankSummary ranks={ranks} />}
+        <div className="d-detail-overview-body">
+          <div className="d-detail-overview-titlebar">
+            <div className="d-detail-overview-title">
+              <span className="d-detail-header-brand">{product.brand}</span>
+              <h1 className="d-detail-header-name">{product.name}</h1>
+              <span className="d-detail-header-serving">{product.serving} 기준</span>
+            </div>
+            <CompareButton inCart={inCart} onClick={onToggleCompare} />
+          </div>
+          <QuickGlance raw={raw} nutrition={nutrition} />
+          {isProteinDrink && <ProteinDrinkRankSummary ranks={ranks} />}
+        </div>
+      </div>
+
+      {/* 하단: 영양성분(기본 열·탄·단·지) + 펼침 시 전체 성분·원재료 — 같은 박스 내 */}
+      <div className="d-detail-overview-nutri">
+        <NutritionTable
+          nutrition={nutrition}
+          serving={product.serving}
+          foodNutrients={raw?._raw?.foodNutrients}
+          servingSize={raw?._raw?.servingSize}
+          servingUnit={raw?._raw?.servingUnit}
+          expanded={detailOpen}
+          onToggleExpand={onToggleDetail}
+        />
+        {detailOpen && (
+          <IngredientList
+            ingredients={product.ingredients}
+            rawText={raw?._raw?.ingredientsText}
+            annotations={raw?._raw?.ingredientAnnotations}
+          />
+        )}
       </div>
     </section>
   );
@@ -190,10 +207,8 @@ function ProductOverview({ product, raw, nutrition, allProducts, inCart, onToggl
 
 // #3 섹션 앵커 탭
 const SECTIONS = [
-  { id: 'analysis', label: '분석 리포트' },
-  { id: 'nutrition', label: '영양성분' },
-  { id: 'ingredients', label: '원재료' },
   { id: 'guide', label: '선택 가이드' },
+  { id: 'analysis', label: '분석 리포트' },
   { id: 'reviews', label: '후기' },
 ];
 
@@ -227,9 +242,9 @@ function SectionNav({ activeId, navRef }) {
 }
 
 function useActiveSection(productId) {
-  const [activeId, setActiveId] = useState('analysis');
+  const [activeId, setActiveId] = useState('guide');
   useEffect(() => {
-    setActiveId('analysis');
+    setActiveId('guide');
     const timer = setTimeout(() => {
       const observer = new IntersectionObserver(
         (entries) => {
@@ -280,6 +295,7 @@ export default function DetailPage() {
   const { loading, products: allProducts } = useProducts();
   const activeSection = useActiveSection(id);
   const navRef = useRef(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const raw = useProductById(id);
   const product = raw ? getAdapted(raw) : null;
@@ -332,34 +348,24 @@ export default function DetailPage() {
             allProducts={allProducts}
             inCart={inCart}
             onToggleCompare={handleToggleCompare}
+            detailOpen={detailOpen}
+            onToggleDetail={() => setDetailOpen((v) => !v)}
           />
 
           {/* 섹션 앵커 탭 */}
           <SectionNav activeId={activeSection} navRef={navRef} />
 
           <div className="d-detail-sections">
+            <div id="guide">
+              <CategoryGuide category={raw?.category} />
+            </div>
             <div id="analysis">
               <AnalysisReport
                 nutrition={n}
                 ingredients={product.ingredients}
                 category={raw?.category}
                 categoryCode={raw?.categoryCode}
-              />
-            </div>
-            <div id="nutrition">
-              <NutritionTable
-                nutrition={n}
-                serving={product.serving}
                 foodNutrients={raw?._raw?.foodNutrients}
-                servingSize={raw?._raw?.servingSize}
-                servingUnit={raw?._raw?.servingUnit}
-              />
-            </div>
-            <div id="ingredients">
-              <IngredientList
-                ingredients={product.ingredients}
-                rawText={raw?._raw?.ingredientsText}
-                annotations={raw?._raw?.ingredientAnnotations}
               />
             </div>
             <ProductNotice
@@ -367,9 +373,6 @@ export default function DetailPage() {
               cautionNotes={raw?._raw?.cautionNotes}
               crossContamination={raw?._raw?.crossContaminationText}
             />
-            <div id="guide">
-              <CategoryGuide category={raw?.category} />
-            </div>
             <div id="reviews">
               <ReviewSection productId={product.id} />
             </div>

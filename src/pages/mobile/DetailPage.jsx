@@ -112,11 +112,11 @@ export default function DetailPageMobile() {
         <HeroSection product={product} />
         <PurchaseOffers offers={product.purchaseLinks} className="m-detail-purchase-offers" />
 
-        {/* 2. 매크로 분포 */}
-        <MacroSection macros={product.macros} />
-
-        {/* 3. 선택 가이드 (데스크톱과 동일하게 본문 최상단 섹션) */}
+        {/* 2. 선택 가이드 (본문 최상단 섹션, 토글로 접기 가능) */}
         <CategoryGuideCard category={raw?.category} />
+
+        {/* 3. 매크로 분포 */}
+        <MacroSection macros={product.macros} />
 
         {/* 4. 영양성분표 */}
         <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />

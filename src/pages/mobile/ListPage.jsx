@@ -64,17 +64,18 @@ function applyFilters(products, specs, value) {
   });
 }
 
+// 정렬 — 데스크톱(SortMenu)과 동일한 옵션·기준으로 통일
 function applySort(products, sortKey) {
   const arr = [...products];
   switch (sortKey) {
-    case 'ranking':
-      return arr.sort((a, b) => b.rankingScore - a.rankingScore);
-    case 'name':
-      return arr.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     case 'calories_asc':
       return arr.sort((a, b) => (a.nutrition.calories ?? 0) - (b.nutrition.calories ?? 0));
     case 'protein_desc':
       return arr.sort((a, b) => (b.nutrition.protein ?? 0) - (a.nutrition.protein ?? 0));
+    case 'carbs_asc':
+      return arr.sort((a, b) => (a.nutrition.carbs ?? 0) - (b.nutrition.carbs ?? 0));
+    case 'sugar_asc':
+      return arr.sort((a, b) => (a.nutrition.sugar ?? 0) - (b.nutrition.sugar ?? 0));
     default:
       return arr;
   }
@@ -117,7 +118,7 @@ export default function ListPageMobile() {
 
   const [activeSub, setActiveSub] = useState(initSub);
   const [filterState, setFilterState] = useState({});
-  const [sortKey, setSortKey] = useState('ranking');
+  const [sortKey, setSortKey] = useState('default');
   const [page, setPage] = useState(1);
 
   const [searchOpen, setSearchOpen] = useState(false);

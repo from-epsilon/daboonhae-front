@@ -48,13 +48,14 @@
 }
 .m-home-hero-title {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--text-primary);
   letter-spacing: -0.02em;
   margin: 0;
   position: relative;
+  word-break: keep-all;
 }
 .m-home-hero-accent {
   color: var(--green-600);
@@ -74,8 +75,10 @@
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
   color: var(--text-secondary);
-  margin: 4px 0 0;
+  line-height: 1.55;
+  margin: 6px 0 0;
   position: relative;
+  word-break: keep-all;
 }
 .m-home-hero-cta {
   display: inline-flex;
@@ -356,9 +359,10 @@
 
 /* 아이콘 그리드 — 목적별 그룹 구분 없이 전 카테고리를 한 그리드로 노출 */
 .m-cat-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 26px 50px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  gap: 22px 12px;
   padding: 14px 16px;
 }
 .m-cat-item {
@@ -367,7 +371,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px 2px;
-  width: 92px;
+  width: auto;
   box-sizing: border-box;
   background: none;
   border: none;

@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, ChevronDown } from 'lucide-react';
+
+// 접힘 기본 표시 영양소 — 열·탄·단·지
+const BASE_CODES = ['energy_kcal', 'carbohydrate_g', 'protein_g', 'fat_g'];
 
 const NUTRI_INFO = {
   energy_kcal: '식품이 제공하는 총 에너지량. 성인 1일 권장 약 2,000kcal.',
@@ -98,7 +101,7 @@ function BasisToggle({ basis, onChangeBasis, servingSize, servingUnit }) {
   );
 }
 
-export function NutritionTable({ nutrition, serving, foodNutrients, servingSize, servingUnit }) {
+export function NutritionTable({ nutrition, serving, foodNutrients, servingSize, servingUnit, expanded = false, onToggleExpand }) {
   const [basis, setBasis] = useState('serving');
 
   const ratio = useMemo(() => {
@@ -150,49 +153,116 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
     return { mandatoryRows: mandatory, optionalRows: optional };
   }, [foodNutrients, ratio]);
 
+  // 접힘 기본 표시 — 열·탄·단·지 (순서 유지)
+  const baseRows = mandatoryRows.filter((r) => BASE_CODES.includes(r.key));
+
+  // EAA·BCAA — foodNutrients엔 없고 nutrition 집계값(mg)에 존재. 접힘 상태에서도 노출
+  const aminoRows = useMemo(() => {
+    const fmt = (v) => {
+      const scaled = v * ratio;
+      return scaled >= 1000
+        ? `${Math.round(scaled).toLocaleString()}mg`
+        : `${Math.round(scaled * 10) / 10}mg`;
+    };
+    const rows = [];
+    const { eaa, bcaa } = nutrition ?? {};
+    if (typeof eaa === 'number' && eaa > 0) {
+      rows.push({ key: 'eaa', label: 'EAA', display: fmt(eaa), info: '필수아미노산 9종 합계.', indent: false });
+    }
+    if (typeof bcaa === 'number' && bcaa > 0) {
+      rows.push({ key: 'bcaa', label: 'BCAA', display: fmt(bcaa), info: '류신·이소류신·발린 3종 합계.', indent: false });
+    }
+    return rows;
+  }, [nutrition, ratio]);
+
   return (
     <section className="d-detail-card d-detail-nutri">
       <header className="d-detail-card-head">
         <h2 className="d-detail-card-title">영양성분</h2>
-        {servingSize > 0 && servingSize !== 100 && (
-          <BasisToggle basis={basis} onChangeBasis={setBasis} servingSize={servingSize} servingUnit={servingUnit} />
-        )}
-        {servingSize === 100 && (
-          <span className="d-detail-card-sub">100{unit} 기준</span>
-        )}
-      </header>
-      <div className={`d-detail-nutri-columns${optionalRows.length === 0 ? ' has-single-column' : ''}`}>
-        <div className="d-detail-nutri-group">
-          <div className="d-detail-nutri-group-title">필수 표기 영양성분</div>
-          <ul className="d-detail-nutri-list">
-            {mandatoryRows.map((r) => (
-              <NutritionCell
-                key={r.key}
-                label={r.label}
-                display={r.display}
-                info={r.info}
-                indent={r.indent}
-              />
-            ))}
-          </ul>
+        <div className="d-detail-nutri-head-actions">
+          {servingSize > 0 && servingSize !== 100 && (
+            <BasisToggle basis={basis} onChangeBasis={setBasis} servingSize={servingSize} servingUnit={servingUnit} />
+          )}
+          {servingSize === 100 && (
+            <span className="d-detail-card-sub">100{unit} 기준</span>
+          )}
+          {onToggleExpand && (
+            <button
+              type="button"
+              className="d-detail-nutri-expand"
+              onClick={onToggleExpand}
+              aria-expanded={expanded}
+            >
+              <span>{expanded ? '접기' : '전체 보기'}</span>
+              <ChevronDown size={15} className={expanded ? 'is-open' : ''} />
+            </button>
+          )}
         </div>
-        {optionalRows.length > 0 && (
-          <div className="d-detail-nutri-group d-detail-nutri-group--optional">
-            <div className="d-detail-nutri-group-title">선택 표기 영양성분</div>
+      </header>
+
+      {expanded ? (
+        <div className={`d-detail-nutri-columns${optionalRows.length === 0 && aminoRows.length === 0 ? ' has-single-column' : ''}`}>
+          <div className="d-detail-nutri-group">
             <ul className="d-detail-nutri-list">
-            {optionalRows.map((r) => (
-              <NutritionCell
-                key={r.key}
-                label={r.label}
-                display={r.display}
-                info={r.info}
-                indent={r.indent}
-              />
-            ))}
+              {mandatoryRows.map((r) => (
+                <NutritionCell
+                  key={r.key}
+                  label={r.label}
+                  display={r.display}
+                  info={r.info}
+                  indent={r.indent}
+                />
+              ))}
             </ul>
           </div>
-        )}
-      </div>
+          {(optionalRows.length > 0 || aminoRows.length > 0) && (
+            <div className="d-detail-nutri-group d-detail-nutri-group--optional">
+              <ul className="d-detail-nutri-list">
+              {[...aminoRows, ...optionalRows].map((r) => (
+                <NutritionCell
+                  key={r.key}
+                  label={r.label}
+                  display={r.display}
+                  info={r.info}
+                  indent={r.indent}
+                />
+              ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className={`d-detail-nutri-columns${aminoRows.length === 0 ? ' has-single-column' : ''}`}>
+          <div className="d-detail-nutri-group">
+            <ul className="d-detail-nutri-list">
+              {baseRows.map((r) => (
+                <NutritionCell
+                  key={r.key}
+                  label={r.label}
+                  display={r.display}
+                  info={r.info}
+                  indent={false}
+                />
+              ))}
+            </ul>
+          </div>
+          {aminoRows.length > 0 && (
+            <div className="d-detail-nutri-group d-detail-nutri-group--optional">
+              <ul className="d-detail-nutri-list">
+                {aminoRows.map((r) => (
+                  <NutritionCell
+                    key={r.key}
+                    label={r.label}
+                    display={r.display}
+                    info={r.info}
+                    indent={false}
+                  />
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }

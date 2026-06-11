@@ -3,12 +3,13 @@
 import { Sheet } from './Sheet.jsx';
 import { IconCheck } from '../../ds/Icons.jsx';
 
-// 우리 데이터는 가격 없으므로 추천순/이름순 두 가지 + 핵심 영양소
+// 데스크톱(SortMenu)과 동일한 정렬 옵션으로 통일
 export const SORT_OPTIONS = [
-  { key: 'ranking', label: '추천순 (점수 높은 순)' },
-  { key: 'name', label: '이름순 (가나다)' },
+  { key: 'default', label: '기본 정렬' },
   { key: 'calories_asc', label: '칼로리 낮은 순' },
-  { key: 'protein_desc', label: '단백질 많은 순' },
+  { key: 'protein_desc', label: '단백질 높은 순' },
+  { key: 'carbs_asc', label: '탄수화물 낮은 순' },
+  { key: 'sugar_asc', label: '당류 낮은 순' },
 ];
 
 // 단일 옵션 행 (Radio + Check)
@@ -69,16 +70,16 @@ export function SortSheet({ open, value, onChange, onClose }) {
 
 // 정렬 키 → 라벨 매핑 (액션바 표시용)
 export function getSortLabel(key) {
-  return SORT_OPTIONS.find((o) => o.key === key)?.label ?? '추천순';
+  return SORT_OPTIONS.find((o) => o.key === key)?.label ?? '기본 정렬';
 }
 
 // 정렬 키 → 짧은 표기 (액션바 한정)
 export function getSortShortLabel(key) {
   switch (key) {
-    case 'ranking': return '추천순';
-    case 'name': return '이름순';
     case 'calories_asc': return '저칼로리순';
     case 'protein_desc': return '고단백순';
-    default: return '추천순';
+    case 'carbs_asc': return '저탄수순';
+    case 'sugar_asc': return '저당순';
+    default: return '기본 정렬';
   }
 }

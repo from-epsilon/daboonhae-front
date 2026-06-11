@@ -450,6 +450,120 @@ select:focus-visible {
   margin-left: 1px;
 }
 
+/* 우선순위 카드 — 1순위 핵심 지표 표 (총량/100kcal당/1,000원당 열 정렬) */
+.fc-ptable {
+  display: grid;
+  gap: 3px 12px;
+  align-items: baseline;
+  margin-top: 2px;
+}
+.fc-ptable-head {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-align: left;
+  white-space: nowrap;
+  /* 라인 대신 간격으로 헤더-데이터 분리 */
+  padding-bottom: 3px;
+}
+/* 첫 열 헤더(축 설명) — 무엇을 비교하는지 명시 */
+.fc-ptable-corner {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  padding-right: 10px;
+  padding-bottom: 3px;
+}
+.fc-ptable-corner::before {
+  content: '성분';
+}
+.fc-ptable-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-primary);
+  white-space: nowrap;
+  /* 성분 열과 총량 열 사이 간격 확보 */
+  padding-right: 10px;
+}
+.fc-ptable-cell {
+  font-family: var(--font-numeric);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: left;
+  white-space: nowrap;
+  /* 자릿수 고정 정렬 — 열 간 숫자 비교 가독성 */
+  font-variant-numeric: tabular-nums;
+}
+/* 단위 — 숫자보다 작고 연하게(볼드 제외) → 숫자가 먼저 읽힘 */
+.fc-ptable-unit {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 1px;
+}
+/* 모바일: 카드 폭이 좁아 표 간격·폰트 압축 (가로 오버플로 방지) */
+@media (max-width: 800px) {
+  .fc-ptable {
+    gap: 3px 8px;
+  }
+  .fc-ptable-cell {
+    font-size: 14px;
+  }
+  /* 행/열 라벨은 서로 같은 크기 유지 */
+  .fc-ptable-head,
+  .fc-ptable-corner,
+  .fc-ptable-label {
+    font-size: 10px;
+  }
+}
+/* 우선순위 카드 — 표 위 구조화 블록 (단백질원 / 영양성분 / 유당Free) */
+.fc-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  /* 아래 핵심 지표 표와 구분 */
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+.fc-meta-row {
+  display: flex;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.fc-meta-label {
+  flex-shrink: 0;
+  width: 48px;
+  color: var(--text-tertiary);
+}
+.fc-meta-value {
+  min-width: 0;
+  color: var(--text-secondary);
+}
+.fc-meta-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--green-50);
+  color: var(--green-700);
+  font-size: 10px;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+/* 카드 가격 비교 블록 — 위 콘텐츠(표/성분)와 구분 */
+.fc-card-offers {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-tertiary);
+}
+
 /* ───────── DS FoodCard: 비교함 + 버튼
    - 시각 크기 26x26 유지, 의사요소(::before)로 hit-area 44x44 확장
    - 작은 비주얼 위에 큰 터치 타깃 확보 (모바일/터치 환경 안전) */
@@ -714,6 +828,14 @@ img.product-thumb { object-fit: cover; }
 .site-feedback-submit:hover:not(:disabled) { background: #2563eb; }
 .site-feedback-submit:disabled { background: var(--c-border); cursor: not-allowed; }
 .site-feedback-done { color: var(--c-accent); font-size: 14px; text-align: center; padding: 12px 0; }
+
+/* 모바일: 의견 FAB 콤팩트하게 축소 (콘텐츠 가림 최소화) */
+@media (max-width: 800px) {
+  .site-feedback { right: 12px; bottom: 12px; }
+  .site-feedback-fab {
+    padding: 8px 12px; min-height: 36px; font-size: 12px; gap: 4px;
+  }
+}
 
 /* ───────── Responsive ───────── */
 /* 상세 2단 레이아웃은 좁은 폭에서 한 줄로 무너짐 + sticky 해제 */

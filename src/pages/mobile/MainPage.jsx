@@ -139,16 +139,16 @@ export default function MainPageMobile() {
         {/* 히어로 배너 */}
         <section className="m-home-hero" onClick={() => navigate('/list')}>
           <div className="m-home-hero-glow" aria-hidden="true" />
-          <p className="m-home-hero-eyebrow">성분 비교 플랫폼</p>
+          {/* 데스크톱 배너(MainBanner)와 문구 통일 */}
           <h1 className="m-home-hero-title">
-            성분표 뒤집지 말고,<br />
-            <span className="m-home-hero-accent">한눈에 비교</span>하세요
+            다이어트 식품, 고르기 어렵죠?<br />
+            성분표 없이도 <span className="m-home-hero-accent">한눈에 비교</span>하세요
           </h1>
           <p className="m-home-hero-sub">
-            {adapted.length}개 제품의 영양 성분을 분석했어요
+            저당·고단백·식사대용 식품의 당류·단백질·칼로리부터 원재료까지 다분해가 정리해 비교해 드려요.
           </p>
           <span className="m-home-hero-cta">
-            둘러보기 <ArrowRight size={14} strokeWidth={2.5} />
+            다이어트 식품 둘러보기 <ArrowRight size={14} strokeWidth={2.5} />
           </span>
         </section>
 

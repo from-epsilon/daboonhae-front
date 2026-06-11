@@ -8,6 +8,25 @@ const PROTEIN_COMMON = [
   { key: 'bcaa', label: 'BCAA', unit: 'mg', perVol: true, perKcal: true },
 ];
 
+// 단백질 음료 — 3단 우선순위 카드
+// 1순위: 핵심 단백질 지표 (칼로리 대비 /100kcal + 가격 대비 /1,000원)
+// - unitInRatio: 비율값에도 단위 표기 → 총량/칼로리대비/가격대비 형식 통일
+const PROTEIN_DRINK_PRIMARY = [
+  { key: 'protein', label: '단백질', unit: 'g', perKcal: true, perPrice: true, unitInRatio: true },
+  { key: 'eaa', label: 'EAA', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
+  { key: 'bcaa', label: 'BCAA', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
+];
+// 3순위: 보조 영양 (작게, 총량만)
+const PROTEIN_DRINK_SECONDARY = [
+  { key: 'calories', label: '칼로리', unit: 'kcal' },
+  { key: 'carbs', label: '탄수화물', unit: 'g' },
+  { key: 'sugar', label: '당류', unit: 'g' },
+  { key: 'fat', label: '지방', unit: 'g' },
+  { key: 'saturatedFat', label: '포화지방', unit: 'g' },
+  { key: 'transFat', label: '트랜스지방', unit: 'g' },
+  { key: 'sodium', label: '나트륨', unit: 'mg' },
+];
+
 const LOW_SUGAR_COMMON = [
   { key: 'calories', label: '칼로리', unit: 'kcal', perVol: true },
   { key: 'sugar', label: '당류', unit: 'g', perVol: true },
@@ -41,7 +60,19 @@ const SHAKE_METRICS = [
 const CONFIG = {
   // 단백질 보충
   'protein:닭가슴살':    { metrics: PROTEIN_COMMON, showSweeteners: false },
-  'protein:단백질 음료': { metrics: PROTEIN_COMMON, showSweeteners: false },
+  // 단백질 음료 — 3단 우선순위(핵심 단백질 지표 → 단백질원 → 보조 영양)
+  // 탄단지 비율바·감미료·알레르기·중복 보조영양(SubNutrients)은 숨김
+  'protein:단백질 음료': {
+    primaryMetrics: PROTEIN_DRINK_PRIMARY,
+    showProteinSource: true,
+    secondaryMetrics: PROTEIN_DRINK_SECONDARY,
+    showSweeteners: false,
+    showMacroBar: false,
+    showSubNutrients: false,
+    // 단백질원·유당Free 등은 상단 구조화 블록(TieredMeta)에서 표시 →
+    // 데스크톱 wide의 IngredientDetails는 통째로 생략(중복 방지)
+    showIngredientDetails: false,
+  },
   'protein:에너지바':    { metrics: PROTEIN_COMMON, showSweeteners: false },
   'protein:기타 가공육':  { metrics: PROTEIN_COMMON, showSweeteners: false },
 
@@ -123,6 +154,27 @@ function fmt(v) {
   return v >= 100 ? Math.round(v) : Math.round(v * 10) / 10;
 }
 
+// 천단위 콤마 포함 표기 (가격 대비 함량용)
+function fmtComma(v) {
+  if (v === null || v === undefined || isNaN(v)) return '-';
+  const r = v >= 100 ? Math.round(v) : Math.round(v * 10) / 10;
+  return r.toLocaleString();
+}
+
+// 개당 최저가(원) — purchaseLinks 중 유효 오퍼의 최저 단가
+// - 단가 = price / quantity (PurchaseOffers의 unitPriceOf와 동일 규칙)
+function cheapestUnitPrice(food) {
+  const offers = food?.purchaseLinks ?? [];
+  let best = Infinity;
+  for (const o of offers) {
+    if (!o || o.is_active === false || typeof o.price !== 'number') continue;
+    const qty = Number(o.quantity ?? 1);
+    const unit = Number.isFinite(qty) && qty > 0 ? o.price / qty : o.price;
+    if (unit < best) best = unit;
+  }
+  return best === Infinity ? null : best;
+}
+
 export function computeMetricValues(food, metric) {
   const n = food.nutrition ?? {};
   const total = n[metric.key];
@@ -135,15 +187,29 @@ export function computeMetricValues(food, metric) {
 
   const result = { total: fmt(total), unit: metric.unit, ratios: [] };
 
+  // ratios 항목은 표시 문자열(value) + 숫자/단위 분리(num/unit)를 함께 제공
+  // (인라인 렌더는 value, 표 렌더는 num/unit으로 단위를 작게 표기)
   if (metric.perVol && servingSize && servingSize > 0) {
     const per100 = (total / servingSize) * 100;
     const volUnit = food.servingUnit || 'g';
-    result.ratios.push({ value: fmt(per100), label: `/100${volUnit}` });
+    result.ratios.push({ value: fmt(per100), label: `/100${volUnit}`, num: fmt(per100), unit: metric.unit });
   }
 
   if (metric.perKcal && cal && cal > 0) {
     const perCal = (total / cal) * 100;
-    result.ratios.push({ value: fmt(perCal), label: '/100kcal' });
+    const num = metric.unitInRatio ? fmtComma(perCal) : fmt(perCal);
+    const val = metric.unitInRatio ? `${num}${metric.unit}` : num;
+    result.ratios.push({ value: val, label: '/100kcal', num, unit: metric.unit });
+  }
+
+  // 가격 대비 — 1,000원당 함량 (개당 최저가 기준, 높을수록 가성비 ↑)
+  if (metric.perPrice) {
+    const unitPrice = cheapestUnitPrice(food);
+    if (unitPrice && unitPrice > 0) {
+      const per1000 = (total / unitPrice) * 1000;
+      const num = fmtComma(per1000);
+      result.ratios.push({ value: `${num}${metric.unit}`, label: '/1,000원', num, unit: metric.unit });
+    }
   }
 
   return result;

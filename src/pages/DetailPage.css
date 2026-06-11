@@ -96,13 +96,33 @@
 
 /* ───────── 제품 요약 영역 ───────── */
 .d-detail-overview {
-  display: grid;
-  grid-template-columns: 230px minmax(0, 1fr);
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
   padding: 24px;
   background: var(--bg-white);
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-lg);
+}
+/* 상단 그리드 — 이미지 + 제목·핵심지표 */
+.d-detail-overview-grid {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 24px;
+}
+/* 하단 영양성분·원재료 — 같은 박스 내, 상단과 구분선으로 분리 */
+.d-detail-overview-nutri {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+/* 박스 안에 들어온 영양성분·원재료 카드 — 자체 테두리/패딩 제거 */
+.d-detail-overview-nutri .d-detail-card {
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 .d-detail-overview-media {
   width: 100%;
@@ -168,6 +188,29 @@
 .d-detail-quick-label { font-size: 11px; color: var(--text-tertiary); }
 .d-detail-quick-value { font-family: var(--font-numeric); font-size: 18px; font-weight: 700; color: var(--text-primary); }
 .d-detail-quick-unit { font-size: 11px; font-weight: 400; color: var(--text-tertiary); margin-left: 1px; }
+/* 영양성분 헤더 우측 액션 묶음 (기준 토글 + 전체 보기) */
+.d-detail-nutri-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* 영양성분 전체 보기 토글 (헤더 우측) */
+.d-detail-nutri-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.d-detail-nutri-expand:hover { color: var(--text-secondary); }
+.d-detail-nutri-expand svg { color: var(--text-tertiary); transition: transform 0.18s ease; }
+.d-detail-nutri-expand svg.is-open { transform: rotate(180deg); }
 .d-detail-rank {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -290,6 +333,32 @@
 .d-detail-guide .d-detail-card-title,
 .d-review .d-detail-card-title {
   font-size: 16px;
+}
+
+/* 선택 가이드 토글 헤더 — 접힘 시 헤더 아래 여백 제거 */
+.d-detail-guide-head {
+  margin-bottom: 0;
+}
+.d-detail-guide-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+.d-detail-guide-toggle svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+  transition: transform 0.18s ease;
+}
+.d-detail-guide-toggle svg.is-open {
+  transform: rotate(180deg);
+}
+/* 펼침 시 토글 헤더와 고려항목 목록 사이 간격 */
+.d-detail-guide-head + .d-detail-guide-list {
+  margin-top: 16px;
 }
 
 /* ───────── 영양성분 리스트 ───────── */
@@ -477,59 +546,121 @@
 .d-analysis-summary-col.is-caution svg { color: var(--orange-600); }
 .d-analysis-empty { font-size: 14px; color: var(--text-tertiary); margin: 0; }
 
-/* BCAA/EAA 분석 */
-.d-analysis-amino-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-.d-analysis-amino-card {
-  padding: 16px;
-  border: 1px solid var(--border-tertiary);
+/* 단백질 총량 — 결이 다른 강조 스트립 */
+.d-analysis-total {
+  padding: 16px 18px;
   border-radius: var(--radius-md);
   background: var(--bg-card-ui);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  margin-bottom: 14px;
 }
-.d-analysis-amino-head {
+.d-analysis-total-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
 }
-.d-analysis-amino-label {
+.d-analysis-total-label {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
 }
-.d-analysis-amino-head strong {
-  font-family: var(--font-numeric);
-  font-size: 21px;
-  color: var(--text-primary);
+.d-analysis-total-metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
 }
-.d-analysis-amino-card p {
+.d-analysis-total-metric strong {
+  font-family: var(--font-numeric);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.d-analysis-total-unit { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+.d-analysis-total-na { font-size: 14px; font-weight: 500; color: var(--text-tertiary); }
+.d-analysis-total-text {
   margin: 0;
   font-size: 13px;
-  line-height: 1.62;
+  line-height: 1.55;
   color: var(--text-secondary);
   word-break: keep-all;
 }
-.d-analysis-amino-intro {
-  max-width: 44em;
+
+/* 분석 정보 행 리스트 — 영양성분 표와 동일한 톤의 깔끔한 행 */
+.d-analysis-rows {
+  display: flex;
+  flex-direction: column;
+}
+.d-analysis-row {
+  padding: 13px 0;
+  border-top: 1px solid var(--border-tertiary);
+}
+.d-analysis-row:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+.d-analysis-row:last-child {
+  padding-bottom: 0;
+}
+.d-analysis-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.d-analysis-row-label {
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text-primary);
 }
-.d-analysis-amino-card p strong {
-  color: var(--text-primary);
+.d-analysis-row.is-primary .d-analysis-row-label {
   font-weight: 700;
 }
-.d-analysis-amino-detail {
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
+.d-analysis-row-metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.d-analysis-row-value {
   font-family: var(--font-numeric);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.d-analysis-row.is-primary .d-analysis-row-value {
+  font-size: 18px;
+}
+.d-analysis-row-value.is-na {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.d-analysis-row-tag {
+  font-size: 12px;
+  font-weight: 700;
+}
+.d-analysis-row-tag.is-good { color: var(--green-600); }
+.d-analysis-row-tag.is-caution { color: var(--orange-600); }
+.d-analysis-row-tag.is-neutral { color: var(--text-tertiary); }
+.d-analysis-row-note {
+  margin: 5px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
   color: var(--text-secondary);
+  word-break: keep-all;
+}
+.d-analysis-row-sub {
+  margin: 3px 0 0;
+  font-family: var(--font-numeric);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
 }
 
 /* 감미료/단백질원 분석 카드 */
@@ -553,6 +684,15 @@
 }
 .d-analysis-ingr-text {
   margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary);
+}
+/* 기타 영양소 카드 — 우측 수치 */
+.d-analysis-other-amount {
+  font-family: var(--font-numeric); font-size: 14px; font-weight: 700;
+  color: var(--text-primary); flex-shrink: 0;
+}
+/* 분석 섹션 비어있을 때 안내 */
+.d-analysis-empty-note {
+  margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-tertiary);
 }
 
 @media (max-width: 720px) {
@@ -858,10 +998,9 @@
 
 /* 반응형 */
 @media (max-width: 960px) {
-  .d-detail-overview {
+  .d-detail-overview-grid {
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 22px;
-    padding: 24px;
   }
   .d-detail-overview-titlebar {
     flex-direction: column;
@@ -877,7 +1016,7 @@
   .d-detail-related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
-  .d-detail-overview {
+  .d-detail-overview-grid {
     grid-template-columns: 1fr;
   }
   .d-detail-overview-media {

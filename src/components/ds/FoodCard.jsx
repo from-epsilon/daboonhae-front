@@ -5,6 +5,7 @@
 //   - onClick: 카드 전체 클릭 핸들러 (디테일 진입)
 //   - layout: 'grid' (홈/리스트 그리드) | 'list' (리스트 페이지)
 //   - onCompare: 비교함 담기 콜백 (미지정 시 + 버튼 미표시)
+import { Fragment } from 'react';
 import { MacroRow } from './MacroRow.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
@@ -135,7 +136,7 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
           <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
         )}
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} />
-        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" />
+        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" className="fc-card-offers" />
       </div>
     </div>
   );
@@ -143,6 +144,10 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
 
 function CategoryMetricsBlock({ food, tabId, subLabel }) {
   const config = getCategoryCardConfig(tabId, subLabel);
+  // 우선순위 기반(tiered) 카드 구성이 지정된 카테고리는 전용 렌더링
+  if (config.primaryMetrics) {
+    return <TieredMetricsBlock food={food} config={config} />;
+  }
   const { metrics, showSweeteners } = config;
 
   return (
@@ -182,33 +187,125 @@ function CategoryMetricsBlock({ food, tabId, subLabel }) {
   );
 }
 
-// 카테고리별 핵심 영양 지표 (hero 숫자)
-function KeyMetrics({ nutrition, category }) {
-  const metrics = getCategoryMetrics(category);
+// 우선순위 기반 카드 메트릭 (단백질 음료 등)
+// - 상단: 단백질원·영양성분·유당Free 등 부가정보를 라벨-값 구조로 정리
+// - 하단: 핵심 지표(총량 + 칼로리/가격 대비) 열 정렬 표
+function TieredMetricsBlock({ food, config }) {
+  const primary = config.primaryMetrics ?? [];
+  const secondary = config.secondaryMetrics ?? [];
+  const sources = config.showProteinSource ? (food.ingredients?.proteinSources ?? []) : [];
+  const lactoseFree = food.ingredients?.lactoseFree === true;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+      {/* 표 위 구조화 블록: 단백질원 · 영양성분 · 유당Free */}
+      <TieredMeta food={food} sources={sources} secondary={secondary} lactoseFree={lactoseFree} />
+
+      {/* 핵심 단백질 지표 — 총량/100kcal당/1,000원당 열 정렬 표 */}
+      <TieredPrimaryTable food={food} metrics={primary} />
+    </div>
+  );
+}
+
+// 표 위 부가정보 — 단백질원 / 영양성분 / 유당Free를 라벨-값 행으로 구조화
+function TieredMeta({ food, sources, secondary, lactoseFree }) {
+  // 영양성분: 값 있는 항목만 "라벨 값" 형태로 묶음
+  const nutri = secondary
+    .map((m) => {
+      const v = food.nutrition?.[m.key];
+      if (v === undefined || v === null || isNaN(v)) return null;
+      const r = v >= 100 ? Math.round(v) : Math.round(v * 10) / 10;
+      return `${m.label} ${r}${m.unit}`;
+    })
+    .filter(Boolean);
+
+  const hasSource = sources.length > 0;
+  if (!hasSource && nutri.length === 0 && !lactoseFree) return null;
+
+  return (
+    <div className="fc-meta">
+      {hasSource && (
+        <div className="fc-meta-row">
+          <span className="fc-meta-label">단백질원</span>
+          <span className="fc-meta-value">
+            {sources.join(' · ')}
+            {lactoseFree && <span className="fc-meta-badge">유당 Free</span>}
+          </span>
+        </div>
+      )}
+      {!hasSource && lactoseFree && (
+        <div className="fc-meta-row">
+          <span className="fc-meta-label">특징</span>
+          <span className="fc-meta-value"><span className="fc-meta-badge">유당 Free</span></span>
+        </div>
+      )}
+      {nutri.length > 0 && (
+        <div className="fc-meta-row">
+          <span className="fc-meta-label">영양성분</span>
+          <span className="fc-meta-value">{nutri.join(' · ')}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 1순위 핵심 지표 — 총량/100kcal당/1,000원당 열 정렬 표
+// - 세 지표를 같은 비중으로 두되 열로 정렬해 가독성 확보
+// - 100kcal당/1,000원당 열은 데이터(칼로리·구매가) 있을 때만 노출
+function TieredPrimaryTable({ food, metrics }) {
+  const rows = metrics
+    .map((m) => {
+      const result = computeMetricValues(food, m);
+      if (!result) return null;
+      const byLabel = {};
+      result.ratios.forEach((r) => { byLabel[r.label] = r; });
+      const pick = (r) => (r ? { num: r.num, unit: r.unit } : null);
+      return {
+        key: m.key,
+        label: m.label,
+        total: { num: result.total, unit: result.unit },
+        perKcal: pick(byLabel['/100kcal']),
+        perPrice: pick(byLabel['/1,000원']),
+      };
+    })
+    .filter(Boolean);
+  if (rows.length === 0) return null;
+
+  const showKcal = rows.some((r) => r.perKcal);
+  const showPrice = rows.some((r) => r.perPrice);
+  const valueCols = 1 + (showKcal ? 1 : 0) + (showPrice ? 1 : 0);
+
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'baseline',
-        gap: 16,
-        fontFamily: 'var(--font-numeric)',
-        color: 'var(--text-secondary)',
-        flexWrap: 'wrap',
-      }}
+      className="fc-ptable"
+      style={{ gridTemplateColumns: `auto repeat(${valueCols}, minmax(0, 1fr))` }}
     >
-      {metrics.map((m, i) => {
-        const val = nutrition?.[m.key];
-        return (
-          <span key={m.key} style={{ display: 'inline-flex', alignItems: 'baseline', gap: 3 }}>
-            <span style={{ fontSize: 11 }}>{m.label}</span>
-            <b style={{ color: 'var(--text-primary)', fontSize: i === 0 ? 16 : 13, fontWeight: 700 }}>
-              {val ?? '-'}
-            </b>
-            <span style={{ fontSize: 10 }}>{m.unit}</span>
-          </span>
-        );
-      })}
+      {/* 헤더 — 라인 없이 타이포(작고 연함)로 구분 */}
+      <span className="fc-ptable-corner" />
+      <span className="fc-ptable-head">총량</span>
+      {showKcal && <span className="fc-ptable-head">100kcal당</span>}
+      {showPrice && <span className="fc-ptable-head">1,000원당</span>}
+      {/* 지표 행 */}
+      {rows.map((r) => (
+        <Fragment key={r.key}>
+          <span className="fc-ptable-label">{r.label}</span>
+          <PTableCell value={r.total} variant="total" />
+          {showKcal && <PTableCell value={r.perKcal} variant="ratio" />}
+          {showPrice && <PTableCell value={r.perPrice} variant="ratio" />}
+        </Fragment>
+      ))}
     </div>
+  );
+}
+
+// 표 셀 — 숫자는 진하게, 단위는 작게 연하게 (텍스트 위계로 가독성 확보)
+// - variant: 'total' 총량(가장 진하게) | 'ratio' 대비 수치(한 톤 연하게)
+function PTableCell({ value, variant }) {
+  if (!value) return <span className="fc-ptable-cell fc-ptable-cell--ratio">-</span>;
+  return (
+    <span className={`fc-ptable-cell fc-ptable-cell--${variant}`}>
+      {value.num}<span className="fc-ptable-unit">{value.unit}</span>
+    </span>
   );
 }
 
@@ -256,16 +353,17 @@ function SubNutrients({ nutrition, category }) {
 }
 
 // 원재료·성분 상세 (감미료, 단백질원, 알레르기, 유당)
-function IngredientDetails({ ingredients }) {
+// - hide: 숨길 섹션 키 배열 (예: ['sweeteners', 'allergens']) — 카테고리별 카드 구성용
+function IngredientDetails({ ingredients, hide = [] }) {
   if (!ingredients) return null;
   const sections = [];
-  if (ingredients.sweeteners?.length > 0) {
+  if (ingredients.sweeteners?.length > 0 && !hide.includes('sweeteners')) {
     sections.push({ label: '감미료', items: ingredients.sweeteners });
   }
-  if (ingredients.proteinSources?.length > 0) {
+  if (ingredients.proteinSources?.length > 0 && !hide.includes('proteinSources')) {
     sections.push({ label: '단백질원', items: ingredients.proteinSources });
   }
-  if (ingredients.allergens?.length > 0) {
+  if (ingredients.allergens?.length > 0 && !hide.includes('allergens')) {
     sections.push({ label: '알레르기', items: ingredients.allergens });
   }
   if (sections.length === 0 && !ingredients.lactoseFree) return null;
@@ -295,7 +393,9 @@ function IngredientDetails({ ingredients }) {
 }
 
 // wide 레이아웃: 가로형 (데스크톱 리스트 전용)
-function FoodCardWide({ food, onClick, onCompare, inCompare }) {
+function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel }) {
+  // 카테고리별 카드 구성 (탄단지 비율바·원재료 섹션 노출 여부)
+  const config = getCategoryCardConfig(tabId, subLabel);
   return (
     <div
       onClick={onClick}
@@ -365,20 +465,23 @@ function FoodCardWide({ food, onClick, onCompare, inCompare }) {
           <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
         )}
 
-        {/* 핵심 영양 지표 (카테고리별) */}
-        <div style={{ marginTop: 2 }}>
-          <KeyMetrics nutrition={food.nutrition} category={food.category} />
-        </div>
+        {/* 카테고리별 강조 지표 — 모바일 리스트 카드와 동일(CategoryMetricsBlock) */}
+        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} />
 
-        {/* 탄단지 비율 막대 — 그램 수치는 위(히어로)/아래(세부)에서 표시하므로 비율(%)만 */}
-        <MacroRow {...food.macros} wide ratioOnly />
+        {/* 탄단지 비율 막대 — 카테고리 설정에서 끌 수 있음(showMacroBar=false) */}
+        {config.showMacroBar !== false && <MacroRow {...food.macros} wide ratioOnly />}
 
-        {/* 나머지 영양성분 */}
-        <SubNutrients nutrition={food.nutrition} category={food.category} />
+        {/* 나머지 영양성분 — 카테고리 설정에서 끌 수 있음(showSubNutrients=false) */}
+        {config.showSubNutrients !== false && (
+          <SubNutrients nutrition={food.nutrition} category={food.category} />
+        )}
 
-        {/* 원재료·성분 상세 */}
-        <IngredientDetails ingredients={food.ingredients} />
-        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" />
+        {/* 원재료·성분 상세 — 카테고리별로 일부 섹션 숨김 가능(hideIngredients)
+            tiered 카드(단백질 음료)는 상단 구조화 블록에서 표시하므로 생략 */}
+        {config.showIngredientDetails !== false && (
+          <IngredientDetails ingredients={food.ingredients} hide={config.hideIngredients} />
+        )}
+        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" className="fc-card-offers" />
       </div>
     </div>
   );
@@ -548,7 +651,7 @@ export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare,
     return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} />;
   }
   if (layout === 'wide') {
-    return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} />;
+    return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} />;
   }
   return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} sortKey={sortKey} showPurchase={showPurchase} metrics={metrics} />;
 }
