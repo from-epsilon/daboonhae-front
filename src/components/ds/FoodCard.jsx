@@ -5,8 +5,9 @@
 //   - onClick: 카드 전체 클릭 핸들러 (디테일 진입)
 //   - layout: 'grid' (홈/리스트 그리드) | 'list' (리스트 페이지)
 //   - onCompare: 비교함 담기 콜백 (미지정 시 + 버튼 미표시)
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { MacroRow } from './MacroRow.jsx';
+import { useMetricColumn } from './MetricColumnContext.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
 import { getCategoryCardConfig, computeMetricValues, getHighlightValue } from '../../data/categoryCardMetrics.js';
@@ -253,8 +254,8 @@ function TieredMeta({ food, sources, secondary, lactoseFree }) {
 // - 세 지표를 같은 비중으로 두되 열로 정렬해 가독성 확보
 // - 100kcal당/1,000원당 열은 데이터(칼로리·구매가) 있을 때만 노출
 function TieredPrimaryTable({ food, metrics }) {
-  // 마우스 올린 열 — 해당 열 값들을 더 크고 볼드로 강조
-  const [hoverCol, setHoverCol] = useState(null);
+  // 강조 열 — 카드 간 공유(컨텍스트). 호버 시 모든 제품 같은 열 강조, 풀려도 유지
+  const [hoverCol, setHoverCol] = useMetricColumn();
 
   const rows = metrics
     .map((m) => {
@@ -284,16 +285,15 @@ function TieredPrimaryTable({ food, metrics }) {
     showPrice && { key: 'price', head: '1,000원당', variant: 'ratio', pick: (r) => r.perPrice },
   ].filter(Boolean);
 
-  // 열 호버 핸들러 (헤더·셀 공통)
+  // 열 호버 핸들러 (헤더·셀 공통) — 호버가 풀려도 마지막 열 유지(sticky)
   const colHandlers = (key) => ({
     onMouseEnter: () => setHoverCol(key),
-    onMouseLeave: () => setHoverCol((c) => (c === key ? null : c)),
   });
 
   return (
     <div
-      className="fc-ptable"
-      style={{ gridTemplateColumns: `auto repeat(${cols.length}, minmax(0, 1fr))` }}
+      className={`fc-ptable${hoverCol ? ' is-focused' : ''}`}
+      style={{ gridTemplateColumns: `auto repeat(${cols.length}, auto)` }}
     >
       {/* 헤더 — 라인 없이 타이포(작고 연함)로 구분 */}
       <span className="fc-ptable-corner" />

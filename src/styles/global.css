@@ -453,9 +453,12 @@ select:focus-visible {
 /* 우선순위 카드 — 1순위 핵심 지표 표 (총량/100kcal당/1,000원당 열 정렬) */
 .fc-ptable {
   display: grid;
-  gap: 3px 4px;
+  /* 값 열은 내용 너비(auto) — 1fr 신축 대신 모아 붙여 열 간 간격 살짝 확보 */
+  gap: 3px 22px;
   align-items: baseline;
   margin-top: 2px;
+  /* 표가 카드 폭을 다 쓰지 않고 좌측으로 모이게 */
+  justify-content: start;
 }
 .fc-ptable-head {
   font-family: var(--font-body);
@@ -472,6 +475,10 @@ select:focus-visible {
 .fc-ptable-head.is-active {
   color: var(--text-primary);
   font-weight: 700;
+}
+/* 강조 중엔 비활성 헤더를 연하게 → 활성 열이 더 도드라지게 */
+.fc-ptable.is-focused .fc-ptable-head:not(.is-active) {
+  color: var(--text-tertiary);
 }
 /* 첫 열 헤더(축 설명) — 무엇을 비교하는지 명시 */
 .fc-ptable-corner {
@@ -507,12 +514,19 @@ select:focus-visible {
   /* 자릿수 고정 정렬 — 열 간 숫자 비교 가독성 */
   font-variant-numeric: tabular-nums;
 }
+/* 강조 중엔 비활성 열 값을 연하게 → 활성 열에 시선 집중 */
+.fc-ptable.is-focused .fc-ptable-cell:not(.is-active) {
+  color: var(--text-tertiary);
+}
 /* 열 호버 — 해당 열 값 더 크고 볼드로 강조 (레이아웃 밀어내지 않게 scale) */
 .fc-ptable-cell.is-active {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
-  transform: scale(1.13);
+  transform: scale(1.28);
   transform-origin: left center;
+}
+.fc-ptable-cell.is-active .fc-ptable-unit {
+  color: var(--text-secondary);
 }
 /* 단위 — 숫자보다 작고 연하게(볼드 제외) → 숫자가 먼저 읽힘 */
 .fc-ptable-unit {
@@ -524,7 +538,7 @@ select:focus-visible {
 /* 모바일: 카드 폭이 좁아 표 간격·폰트 압축 (가로 오버플로 방지) */
 @media (max-width: 800px) {
   .fc-ptable {
-    gap: 3px 3px;
+    gap: 3px 16px;
   }
   .fc-ptable-cell {
     font-size: 14px;
