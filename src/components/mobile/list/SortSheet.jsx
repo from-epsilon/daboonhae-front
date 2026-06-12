@@ -1,16 +1,12 @@
 // 모바일 정렬 액션 시트
 // - 단순 라디오 리스트 (옵션 1탭으로 선택 + 자동 닫힘)
+// - 정렬 옵션은 카테고리별로 다름(단백질 음료=단백질/EAA/BCAA 전용) → listSort에서 일괄 관리
 import { Sheet } from './Sheet.jsx';
 import { IconCheck } from '../../ds/Icons.jsx';
+import { getSortOptions, getSortLabel, getSortShortLabel } from '../../../data/listSort.js';
 
-// 데스크톱(SortMenu)과 동일한 정렬 옵션으로 통일
-export const SORT_OPTIONS = [
-  { key: 'default', label: '기본 정렬' },
-  { key: 'calories_asc', label: '칼로리 낮은 순' },
-  { key: 'protein_desc', label: '단백질 높은 순' },
-  { key: 'carbs_asc', label: '탄수화물 낮은 순' },
-  { key: 'sugar_asc', label: '당류 낮은 순' },
-];
+// 액션바 등에서 재사용하도록 라벨 헬퍼를 그대로 재노출
+export { getSortLabel, getSortShortLabel };
 
 // 단일 옵션 행 (Radio + Check)
 function SortOptionRow({ option, active, onPick }) {
@@ -45,41 +41,32 @@ function SortOptionRow({ option, active, onPick }) {
   );
 }
 
-export function SortSheet({ open, value, onChange, onClose }) {
+export function SortSheet({ open, value, onChange, onClose, category }) {
+  const options = getSortOptions(category);
+  // 현재 선택값이 옵션에 없으면(카테고리 전환 직후) 첫 옵션을 활성으로 표시
+  const activeKey = options.some((o) => o.key === value) ? value : options[0].key;
+
   // 정렬 키 선택 → 변경 + 닫기
   const handlePick = (key) => {
     onChange(key);
     onClose();
   };
 
+  // 옵션이 많은 카테고리(단백질 음료 9종)는 시트를 더 높게
+  const sheetHeight = options.length > 6 ? '72vh' : '45vh';
+
   return (
-    <Sheet open={open} onClose={onClose} title="정렬" height="45vh">
+    <Sheet open={open} onClose={onClose} title="정렬" height={sheetHeight}>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {SORT_OPTIONS.map((opt) => (
+        {options.map((opt) => (
           <SortOptionRow
             key={opt.key}
             option={opt}
-            active={opt.key === value}
+            active={opt.key === activeKey}
             onPick={handlePick}
           />
         ))}
       </div>
     </Sheet>
   );
-}
-
-// 정렬 키 → 라벨 매핑 (액션바 표시용)
-export function getSortLabel(key) {
-  return SORT_OPTIONS.find((o) => o.key === key)?.label ?? '기본 정렬';
-}
-
-// 정렬 키 → 짧은 표기 (액션바 한정)
-export function getSortShortLabel(key) {
-  switch (key) {
-    case 'calories_asc': return '저칼로리순';
-    case 'protein_desc': return '고단백순';
-    case 'carbs_asc': return '저탄수순';
-    case 'sugar_asc': return '저당순';
-    default: return '기본 정렬';
-  }
 }

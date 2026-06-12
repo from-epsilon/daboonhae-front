@@ -13,6 +13,7 @@ import { Pagination } from '../../components/ds/Pagination.jsx';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
+import { applySort } from '../../data/listSort.js';
 import { ALL_FILTERS } from '../../data/purposes.jsx';
 import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeByCode } from '../../data/categoryTabs.js';
 import { useCompare } from '../../store/CompareContext.jsx';
@@ -62,23 +63,6 @@ function applyFilters(products, specs, value) {
     }
     return true;
   });
-}
-
-// 정렬 — 데스크톱(SortMenu)과 동일한 옵션·기준으로 통일
-function applySort(products, sortKey) {
-  const arr = [...products];
-  switch (sortKey) {
-    case 'calories_asc':
-      return arr.sort((a, b) => (a.nutrition.calories ?? 0) - (b.nutrition.calories ?? 0));
-    case 'protein_desc':
-      return arr.sort((a, b) => (b.nutrition.protein ?? 0) - (a.nutrition.protein ?? 0));
-    case 'carbs_asc':
-      return arr.sort((a, b) => (a.nutrition.carbs ?? 0) - (b.nutrition.carbs ?? 0));
-    case 'sugar_asc':
-      return arr.sort((a, b) => (a.nutrition.sugar ?? 0) - (b.nutrition.sugar ?? 0));
-    default:
-      return arr;
-  }
 }
 
 function ListSkeleton() {
@@ -169,9 +153,10 @@ export default function ListPageMobile() {
       result = result.filter((p) => p.categoryCode === activeCode);
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
-    result = applySort(result, sortKey);
+    // 정렬 기준은 카테고리(서브 라벨)별로 달라짐 — 단백질 음료는 단백질/EAA/BCAA 전용
+    result = applySort(result, activeSub, sortKey);
     return result;
-  }, [q, PRODUCTS, activeCode, filterState, sortKey]);
+  }, [q, PRODUCTS, activeCode, activeSub, filterState, sortKey]);
 
   // 검색·필터·정렬·카테고리 변경 시 1페이지로 초기화
   useEffect(() => {
@@ -209,7 +194,7 @@ export default function ListPageMobile() {
           count={products.length}
           query={q}
           onClearQuery={clearSearch}
-          sortLabel={getSortShortLabel(sortKey)}
+          sortLabel={getSortShortLabel(activeSub, sortKey)}
           onOpenSort={() => setSortOpen(true)}
           filterActiveCount={filterActiveCount}
           onOpenFilter={() => setFilterOpen(true)}
@@ -258,6 +243,7 @@ export default function ListPageMobile() {
       <SortSheet
         open={sortOpen}
         value={sortKey}
+        category={activeSub}
         onChange={setSortKey}
         onClose={() => setSortOpen(false)}
       />

@@ -4,6 +4,7 @@ import { useCompare } from '../store/CompareContext.jsx';
 import { useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
 import { ALL_FILTERS } from '../data/purposes.jsx';
+import { applySort } from '../data/listSort.js';
 import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel } from '../data/categoryTabs.js';
 import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
@@ -53,9 +54,10 @@ export default function ListPage() {
       result = result.filter((p) => p.categoryCode === activeCode);
     }
     result = applyFilters(result, ALL_FILTERS, filterState);
-    result = applySort(result, sortKey);
+    // 정렬 기준은 카테고리(서브 라벨)별로 달라짐 — 단백질 음료는 단백질/EAA/BCAA 전용
+    result = applySort(result, activeSub, sortKey);
     return result;
-  }, [q, PRODUCTS, activeCode, filterState, sortKey]);
+  }, [q, PRODUCTS, activeCode, activeSub, filterState, sortKey]);
 
   // 검색·필터·정렬·카테고리 변경 시 1페이지로 초기화
   useEffect(() => {
@@ -235,15 +237,4 @@ function getIngredientList(product, key) {
   if (key === 'proteinSources') return product.ingredients?.proteinSources ?? [];
   if (key === 'allergens') return product.ingredients?.allergens ?? [];
   return [];
-}
-
-function applySort(products, sortKey) {
-  const arr = [...products];
-  switch (sortKey) {
-    case 'calories_asc': return arr.sort((a, b) => (a.nutrition.calories ?? 0) - (b.nutrition.calories ?? 0));
-    case 'protein_desc': return arr.sort((a, b) => (b.nutrition.protein ?? 0) - (a.nutrition.protein ?? 0));
-    case 'carbs_asc': return arr.sort((a, b) => (a.nutrition.carbs ?? 0) - (b.nutrition.carbs ?? 0));
-    case 'sugar_asc': return arr.sort((a, b) => (a.nutrition.sugar ?? 0) - (b.nutrition.sugar ?? 0));
-    default: return arr;
-  }
 }

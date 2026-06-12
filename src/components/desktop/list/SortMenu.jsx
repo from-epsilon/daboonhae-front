@@ -1,31 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
-
-const ALL_OPTIONS = [
-  { key: 'default', label: '기본 정렬' },
-  { key: 'calories_asc', label: '칼로리 낮은 순' },
-  { key: 'protein_desc', label: '단백질 높은 순' },
-  { key: 'carbs_asc', label: '탄수화물 낮은 순' },
-  { key: 'sugar_asc', label: '당류 낮은 순' },
-];
-
-const HIDE_BY_CATEGORY = {
-  '제로 음료': ['protein_desc', 'carbs_asc'],
-  '아이스크림': ['protein_desc'],
-  '셰이크': ['carbs_asc'],
-};
-
-function getOptions(category) {
-  if (!category || category === 'all') return ALL_OPTIONS;
-  const hidden = HIDE_BY_CATEGORY[category];
-  if (!hidden) return ALL_OPTIONS;
-  return ALL_OPTIONS.filter((o) => !hidden.includes(o.key));
-}
+import { getSortOptions } from '../../../data/listSort.js';
 
 export default function SortMenu({ value, onChange, category }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
-  const options = getOptions(category);
+  const options = getSortOptions(category);
   const current = options.find((o) => o.key === value) ?? options[0];
 
   useOutsideClose(rootRef, () => setOpen(false), open);

@@ -2,6 +2,7 @@
 // - mockProducts의 raw 제품 데이터를 디자인 시스템(DS) 컴포넌트 형식으로 변환
 // - mockProducts.js는 수정하지 않고, 여기서만 매핑/파생 계산을 처리
 // - DS 컴포넌트(Score, FoodCard, Badge, MacroRow 등)는 이 어댑터의 출력 형태에 의존
+import { computeEaa, computeBcaa } from './aminoAcids.js';
 
 // ============================================================ 점수 매핑
 
@@ -151,10 +152,9 @@ export function getMockReviewCount(product) {
 // - 디테일/필터링용 원본 필드(purposesFit/ingredients/nutrition)는 보존
 export function getAdapted(product) {
   const n = product?.nutrition ?? {};
-  const calculatedBcaa = (n.leucine || 0) + (n.isoleucine || 0) + (n.valine || 0);
-  const eaa = (n.leucine || 0) + (n.isoleucine || 0) + (n.valine || 0) +
-    (n.lysine || 0) + (n.methionine || 0) + (n.phenylalanine || 0) +
-    (n.threonine || 0) + (n.tryptophan || 0) + (n.histidine || 0);
+  // EAA·BCAA는 리스트 정렬과 동일 기준(aminoAcids)으로 산출
+  const eaa = computeEaa(n);
+  const bcaa = computeBcaa(n);
 
   return {
     id: product.id,
@@ -175,7 +175,7 @@ export function getAdapted(product) {
     purchaseLinks: product.purchaseLinks ?? [],
     purposesFit: product.purposesFit,
     ingredients: product.ingredients,
-    nutrition: { ...n, eaa, bcaa: calculatedBcaa || n.bcaa || 0 },
+    nutrition: { ...n, eaa, bcaa },
     sweeteners: product.ingredients?.sweeteners ?? [],
   };
 }

@@ -163,7 +163,7 @@ function fmtComma(v) {
 
 // 개당 최저가(원) — purchaseLinks 중 유효 오퍼의 최저 단가
 // - 단가 = price / quantity (PurchaseOffers의 unitPriceOf와 동일 규칙)
-function cheapestUnitPrice(food) {
+export function cheapestUnitPrice(food) {
   const offers = food?.purchaseLinks ?? [];
   let best = Infinity;
   for (const o of offers) {
