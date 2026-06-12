@@ -3,10 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProductById, useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { CATEGORY_TABS } from '../data/categoryTabs.js';
+import { getPrimaryMetricsByCode } from '../data/categoryCardMetrics.js';
 import { useCompare } from '../store/CompareContext.jsx';
 
 import { Check } from 'lucide-react';
 import ProductThumb from '../components/global/ProductThumb.jsx';
+import { TieredPrimaryTable } from '../components/ds/FoodCard.jsx';
 import { NutritionTable } from '../components/desktop/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
 import { IngredientList } from '../components/desktop/detail/IngredientList.jsx';
@@ -59,65 +61,6 @@ function formatNumber(value) {
   return Number.isInteger(Number(value)) ? String(value) : String(Math.round(Number(value) * 10) / 10);
 }
 
-function RankValue({ rankInfo, emptyLabel = '가격 정보 없음' }) {
-  if (!rankInfo) {
-    return <strong className="is-muted">{emptyLabel}</strong>;
-  }
-  return (
-    <span className="d-detail-rank-value">
-      <strong>{rankInfo.rank}위</strong>
-      <span>{rankInfo.total}개 중</span>
-    </span>
-  );
-}
-
-function cheapestUnitPrice(product) {
-  const prices = (product?.purchaseLinks ?? [])
-    .map((offer) => {
-      if (typeof offer?.price !== 'number') return null;
-      const quantity = Number(offer.quantity ?? 1);
-      if (!Number.isFinite(quantity) || quantity <= 0) return offer.price;
-      return offer.price / quantity;
-    })
-    .filter((price) => typeof price === 'number' && Number.isFinite(price) && price > 0);
-  return prices.length > 0 ? Math.min(...prices) : null;
-}
-
-function rankAmong(items, currentId, getScore) {
-  const scored = items
-    .map((item) => ({ item, score: getScore(item) }))
-    .filter(({ score }) => typeof score === 'number' && Number.isFinite(score) && score > 0)
-    .sort((a, b) => b.score - a.score);
-  const index = scored.findIndex(({ item }) => String(item.id) === String(currentId));
-  if (index < 0) return null;
-  return { rank: index + 1, total: scored.length, score: scored[index].score };
-}
-
-function getCategoryPeers(allProducts, product) {
-  return (allProducts ?? []).filter((item) => {
-    if (product?.categoryCode) return item?.categoryCode === product.categoryCode;
-    return item?.category === product?.category;
-  });
-}
-
-function getProteinDrinkRanks(allProducts, product) {
-  const peers = getCategoryPeers(allProducts, product);
-  return {
-    proteinPerPrice: rankAmong(peers, product.id, (item) => {
-      const unitPrice = cheapestUnitPrice(item);
-      const protein = item?.nutrition?.protein;
-      if (!unitPrice || typeof protein !== 'number') return null;
-      return protein / unitPrice;
-    }),
-    proteinPerCalorie: rankAmong(peers, product.id, (item) => {
-      const protein = item?.nutrition?.protein;
-      const calories = item?.nutrition?.calories;
-      if (typeof protein !== 'number' || typeof calories !== 'number' || calories <= 0) return null;
-      return protein / calories;
-    }),
-  };
-}
-
 function getOverviewMetrics(raw, nutrition) {
   return [
     { label: '칼로리', value: nutrition?.calories, unit: 'kcal' },
@@ -141,25 +84,19 @@ function QuickGlance({ raw, nutrition }) {
   );
 }
 
-function ProteinDrinkRankSummary({ ranks }) {
+// 핵심 지표 표 — 리스트 카드와 동일한 단백질/EAA/BCAA × 총량·100kcal당·1,000원당
+function PrimaryMetricsSummary({ food, metrics }) {
   return (
-    <div className="d-detail-rank">
-      <div className="d-detail-rank-item">
-        <span className="d-detail-rank-label">가격 대비 단백질</span>
-        <RankValue rankInfo={ranks.proteinPerPrice} />
-      </div>
-      <div className="d-detail-rank-item">
-        <span className="d-detail-rank-label">칼로리 대비 단백질</span>
-        <RankValue rankInfo={ranks.proteinPerCalorie} emptyLabel="순위 정보 없음" />
-      </div>
-      <p className="d-detail-rank-note">가격 순위는 등록된 구매링크의 개당 최저가 기준이며, 실제 판매가와 다를 수 있어요.</p>
+    <div className="d-detail-metrics">
+      <span className="d-detail-metrics-title">핵심 지표</span>
+      <TieredPrimaryTable food={food} metrics={metrics} />
+      <p className="d-detail-metrics-note">1,000원당 값은 등록된 구매링크의 개당 최저가 기준이며, 실제 판매가와 다를 수 있어요.</p>
     </div>
   );
 }
 
-function ProductOverview({ product, raw, nutrition, allProducts, inCart, onToggleCompare, detailOpen, onToggleDetail }) {
-  const isProteinDrink = raw?.categoryCode === 'protein_drink' || raw?.category === '단백질 음료';
-  const ranks = isProteinDrink ? getProteinDrinkRanks(allProducts, raw) : null;
+function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, detailOpen, onToggleDetail }) {
+  const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
 
   return (
     <section className="d-detail-overview">
@@ -178,7 +115,7 @@ function ProductOverview({ product, raw, nutrition, allProducts, inCart, onToggl
             <CompareButton inCart={inCart} onClick={onToggleCompare} />
           </div>
           <QuickGlance raw={raw} nutrition={nutrition} />
-          {isProteinDrink && <ProteinDrinkRankSummary ranks={ranks} />}
+          {primaryMetrics && <PrimaryMetricsSummary food={product} metrics={primaryMetrics} />}
         </div>
       </div>
 
@@ -242,28 +179,31 @@ function SectionNav({ activeId, navRef }) {
 }
 
 function useActiveSection(productId) {
-  const [activeId, setActiveId] = useState('guide');
+  const [activeId, setActiveId] = useState(SECTIONS[0].id);
   useEffect(() => {
-    setActiveId('guide');
-    const timer = setTimeout(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          const visible = entries
-            .filter((e) => e.isIntersecting)
-            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-          if (visible.length > 0) {
-            setActiveId(visible[0].target.id);
-          }
-        },
-        { rootMargin: '-140px 0px -60% 0px' },
-      );
+    setActiveId(SECTIONS[0].id);
+    // 스크롤 위치 기준 — 스티키 탭 바로 아래 라인을 지난 마지막 섹션을 활성화
+    // (IntersectionObserver는 '변경된' 항목만 받아 중간/하단에서 강조가 끊김 → 스크롤 계산으로 대체)
+    const onScroll = () => {
+      const nav = document.querySelector('.d-detail-section-nav');
+      const line = (nav ? nav.getBoundingClientRect().bottom : 120) + 8;
+      let current = SECTIONS[0].id;
       for (const s of SECTIONS) {
         const el = document.getElementById(s.id);
-        if (el) observer.observe(el);
+        if (el && el.getBoundingClientRect().top <= line) current = s.id;
       }
-      return () => observer.disconnect();
-    }, 100);
-    return () => clearTimeout(timer);
+      // 페이지 최하단이면 마지막 섹션을 강조(짧은 섹션이 라인에 못 닿는 경우 보정)
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      if (atBottom) current = SECTIONS[SECTIONS.length - 1].id;
+      setActiveId(current);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, [productId]);
   return activeId;
 }
@@ -292,7 +232,7 @@ export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { has, toggle, isFull, max } = useCompare();
-  const { loading, products: allProducts } = useProducts();
+  const { loading } = useProducts();
   const activeSection = useActiveSection(id);
   const navRef = useRef(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -345,7 +285,6 @@ export default function DetailPage() {
             product={product}
             raw={raw}
             nutrition={n}
-            allProducts={allProducts}
             inCart={inCart}
             onToggleCompare={handleToggleCompare}
             detailOpen={detailOpen}

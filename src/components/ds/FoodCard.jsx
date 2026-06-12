@@ -253,7 +253,8 @@ function TieredMeta({ food, sources, secondary, lactoseFree }) {
 // 1순위 핵심 지표 — 총량/100kcal당/1,000원당 열 정렬 표
 // - 세 지표를 같은 비중으로 두되 열로 정렬해 가독성 확보
 // - 100kcal당/1,000원당 열은 데이터(칼로리·구매가) 있을 때만 노출
-function TieredPrimaryTable({ food, metrics }) {
+// - 리스트 카드 + 상세페이지(핵심 지표 섹션)에서 공용
+export function TieredPrimaryTable({ food, metrics }) {
   // 강조 열 — 카드 간 공유(컨텍스트). 호버 시 모든 제품 같은 열 강조, 풀려도 유지
   const [hoverCol, setHoverCol] = useMetricColumn();
 

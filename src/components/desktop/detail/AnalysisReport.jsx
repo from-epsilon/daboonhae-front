@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Badge } from '../../ds/Badge.jsx';
 import { IconCheck, IconAlert, IconInfo } from '../../ds/Icons.jsx';
+import { useProteinResolver, proteinGradeMeta, cleanProteinLabel } from '../../../data/proteinQuality.js';
 
 // 감미료별 특성 설명
 const SWEETENER_INFO = {
@@ -182,6 +183,19 @@ function ProteinContentSection({ nutrition }) {
   );
 }
 
+// 단백질 원료 카드 — 원료명 + 약자(WPC 등) + 품질 등급 배지 (근거 텍스트는 미표시)
+function ProteinNoteCard({ note }) {
+  return (
+    <div className="d-analysis-ingr-card is-neutral d-analysis-protein-card">
+      <div className="d-analysis-ingr-head d-analysis-protein-head">
+        <span className="d-analysis-ingr-name">{note.name}</span>
+        {note.abbreviation && <span className="d-analysis-ingr-abbr">{note.abbreviation}</span>}
+        {note.grade && <span className={`d-analysis-ingr-grade ${note.grade.cls}`}>{note.grade.label}</span>}
+      </div>
+    </div>
+  );
+}
+
 // [섹션 2] 단백질 원료
 function ProteinSourceSection({ proteinNotes }) {
   return (
@@ -189,10 +203,7 @@ function ProteinSourceSection({ proteinNotes }) {
       {proteinNotes.length > 0 ? (
         <div className="d-analysis-ingredients">
           {proteinNotes.map((p) => (
-            <div key={p.name} className="d-analysis-ingr-card is-neutral">
-              <span className="d-analysis-ingr-name">{p.name}</span>
-              <p className="d-analysis-ingr-text">{p.text}</p>
-            </div>
+            <ProteinNoteCard key={p.name} note={p} />
           ))}
         </div>
       ) : (
@@ -279,13 +290,20 @@ export function AnalysisReport({ nutrition, ingredients, category, categoryCode,
     }));
   }, [ing.sweeteners]);
 
-  const proteinNotes = useMemo(() => {
-    if (!ing.proteinSources?.length) return [];
-    return ing.proteinSources.map((s) => ({
-      name: s,
-      text: PROTEIN_SOURCE_INFO[s] ?? '추후 정보가 추가될 예정입니다.',
-    }));
-  }, [ing.proteinSources]);
+  // 단백질 원료 — 라벨 정리(분말/숫자 제거)+중복제거 → 정규 원료로 해석해 약자·품질등급 보강
+  const proteinLabels = useMemo(
+    () => [...new Set((ing.proteinSources ?? []).map(cleanProteinLabel).filter(Boolean))],
+    [ing.proteinSources],
+  );
+  const resolveProtein = useProteinResolver(proteinLabels);
+  const proteinNotes = useMemo(() => proteinLabels.map((name) => {
+    const ingr = resolveProtein(name);
+    return {
+      name,
+      abbreviation: ingr?.abbreviation ?? null,
+      grade: ingr ? proteinGradeMeta(ingr.qualityGrade) : null,
+    };
+  }), [proteinLabels, resolveProtein]);
 
   // 단백질 음료 — 3섹션 구성 (단백질 성분 / 단백질 원료 / 기타 영양소), 종합 평가 없음
   if (isProteinDrink) {
@@ -351,10 +369,7 @@ export function AnalysisReport({ nutrition, ingredients, category, categoryCode,
         <AnalysisSection title="단백질원 분석" icon={<IconInfo size={16} />}>
           <div className="d-analysis-ingredients">
             {proteinNotes.map((p) => (
-              <div key={p.name} className="d-analysis-ingr-card is-neutral">
-                <span className="d-analysis-ingr-name">{p.name}</span>
-                <p className="d-analysis-ingr-text">{p.text}</p>
-              </div>
+              <ProteinNoteCard key={p.name} note={p} />
             ))}
           </div>
         </AnalysisSection>

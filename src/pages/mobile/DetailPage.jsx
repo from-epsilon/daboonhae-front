@@ -5,11 +5,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
+import { getPrimaryMetricsByCode } from '../../data/categoryCardMetrics.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { Button } from '../../components/ds/Button.jsx';
 import { MacroRow } from '../../components/ds/MacroRow.jsx';
+import { TieredPrimaryTable } from '../../components/ds/FoodCard.jsx';
 import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
 import { NutritionTable } from '../../components/mobile/detail/NutritionTable.jsx';
 import { AnalysisCard } from '../../components/mobile/detail/AnalysisCard.jsx';
@@ -38,6 +40,19 @@ function MacroSection({ macros }) {
         fat={macros.fat}
         kcal={macros.kcal}
       />
+    </section>
+  );
+}
+
+// 핵심 지표 카드 — 리스트 카드와 동일한 단백질/EAA/BCAA × 총량·100kcal당·1,000원당
+function PrimaryMetricsSection({ food, metrics }) {
+  return (
+    <section className="m-detail-card m-detail-metrics">
+      <header className="m-detail-card-head">
+        <h2 className="m-detail-card-title">핵심 지표</h2>
+      </header>
+      <TieredPrimaryTable food={food} metrics={metrics} />
+      <p className="m-detail-metrics-note">1,000원당 값은 등록된 구매링크의 개당 최저가 기준이에요.</p>
     </section>
   );
 }
@@ -88,6 +103,8 @@ export default function DetailPageMobile() {
   }
 
   const inCart = has(product.id);
+  // 핵심 지표 표 — 1순위 지표가 있는 카테고리(단백질 음료 등)만 노출
+  const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
 
   // 비교함 토글 — 가득 차고 새로 담으려 하면 안내
   const handleToggleCompare = () => {
@@ -117,6 +134,9 @@ export default function DetailPageMobile() {
 
         {/* 3. 매크로 분포 */}
         <MacroSection macros={product.macros} />
+
+        {/* 3-1. 핵심 지표 표 (단백질/EAA/BCAA × 총량·100kcal당·1,000원당) */}
+        {primaryMetrics && <PrimaryMetricsSection food={product} metrics={primaryMetrics} />}
 
         {/* 4. 영양성분표 */}
         <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />

@@ -23,6 +23,7 @@ function OfferRow({ offer, isCheapest, onOpen }) {
           <span className="m-purchase-vendor">
             {offer.vendorName || '판매처'}
             {isCheapest && <span className="m-purchase-best">최저가</span>}
+            {offer.isFastDelivery && <span className="m-purchase-fast">빠른배송</span>}
           </span>
           <span className="m-purchase-qty">x {offer.quantity}</span>
         </span>

@@ -143,6 +143,7 @@ export default function PurchaseOffers({
               <span className="purchase-offer-main">
                 <span className="purchase-offer-vendor">
                   {offer.vendorName || '판매처'}
+                  {offer.isFastDelivery && <span className="purchase-offer-fast">빠른배송</span>}
                 </span>
                 <span className="purchase-offer-meta">
                   {offer.quantity ?? 1}개입

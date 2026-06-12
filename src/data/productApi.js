@@ -99,6 +99,7 @@ function parsePurchaseLinks(links) {
       url: l.url,
       quantity: l.quantity ?? 1,
       price: l.price ?? null,
+      isFastDelivery: l.is_fast_delivery === true,
       updatedAt: l.updated_at ?? null,
     }));
 }
@@ -224,7 +225,7 @@ const ALIAS_JOIN = `
   food_aliases ( alias, normalized_alias ),
 `;
 const PURCHASE_JOIN = `
-  food_purchase_links ( vendor_name, url, quantity, price, is_active, updated_at ),
+  food_purchase_links ( vendor_name, url, quantity, price, is_fast_delivery, is_active, updated_at ),
 `;
 
 // ── 목록 select 절 (목록/검색 공통). optional=true면 family/purpose 조인 포함
@@ -243,7 +244,7 @@ const LIST_SELECT_BASE = (optional) => `
   ${PURCHASE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
-    nutrients ( code, name_ko, default_unit, display_order )
+    nutrients ( code, name_ko, default_unit, group_name, display_order )
   )
 `;
 

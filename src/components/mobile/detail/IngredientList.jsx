@@ -7,6 +7,7 @@ import { Badge } from '../../ds/Badge.jsx';
 import { IconAlert, IconCheck } from '../../ds/Icons.jsx';
 import { ChevronDown } from 'lucide-react';
 import { buildIngredientSegments } from '../../../utils/ingredientHighlight.js';
+import { useProteinResolver, proteinGradeMeta, cleanProteinLabel } from '../../../data/proteinQuality.js';
 
 // 원재료명 구간 마킹 색상 클래스 (type → 클래스)
 const MARK_CLASS = {
@@ -97,6 +98,39 @@ function ChipRow({ label, items, emptyLabel = '없음', variant = 'outline' }) {
   );
 }
 
+// 단백질 원료 — 원문을 정규 원료로 해석해 약자·품질 등급 배지 표시
+function ProteinChipRow({ items, emptyLabel = '없음' }) {
+  // 라벨 정리(분말/숫자 suffix 제거) 후 중복 제거
+  const labels = [...new Set(
+    (Array.isArray(items) ? items : [])
+      .map((it) => cleanProteinLabel(typeof it === 'string' ? it : it.label))
+      .filter(Boolean),
+  )];
+  const resolve = useProteinResolver(labels);
+  return (
+    <div className="m-detail-ingr-row">
+      <span className="m-detail-ingr-label">단백질 원료</span>
+      <div className="m-detail-ingr-values">
+        {labels.length > 0 ? (
+          labels.map((label) => {
+            const ing = resolve(label);
+            const grade = ing ? proteinGradeMeta(ing.qualityGrade) : null;
+            return (
+              <span key={label} className="m-detail-protein-chip">
+                <span className="m-detail-protein-name">{label}</span>
+                {ing?.abbreviation && <span className="m-detail-protein-abbr">{ing.abbreviation}</span>}
+                {grade && <span className={`m-detail-protein-grade ${grade.cls}`}>{grade.label}</span>}
+              </span>
+            );
+          })
+        ) : (
+          <span className="m-detail-ingr-empty">{emptyLabel}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // 유당 free 여부 — 라벨 + Yes/No 칩
 function LactoseRow({ lactoseFree }) {
   const isFree = lactoseFree === true;
@@ -135,11 +169,7 @@ export function IngredientList({ ingredients, rawText, annotations }) {
         <h2 className="m-detail-card-title">원료 · 성분</h2>
       </header>
       <div className="m-detail-ingr-list">
-        <ChipRow
-          label="단백질 원료"
-          items={ing.proteinSources}
-          variant="outline"
-        />
+        <ProteinChipRow items={ing.proteinSources} />
         <ChipRow
           label="대체당"
           items={ing.sweeteners}

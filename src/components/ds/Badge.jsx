@@ -27,8 +27,8 @@ export function Badge({ variant = 'brand', children }) {
     cta: { background: 'var(--brand-cta)', color: 'white' },
     outline: {
       background: 'white',
-      color: 'var(--text-primary)',
-      border: '1px solid var(--gray-900)',
+      color: 'var(--text-secondary)',
+      border: '1px solid var(--gray-300)',
     },
   };
 
