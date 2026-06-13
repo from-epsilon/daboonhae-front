@@ -1119,6 +1119,13 @@ img.product-thumb { object-fit: cover; }
   color: var(--text-primary);
 }
 
+.purchase-offer-logo {
+  height: 15px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
 .purchase-offer-fast {
   flex-shrink: 0;
   padding: 1px 6px;

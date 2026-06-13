@@ -168,7 +168,7 @@ function ProteinContentSection({ nutrition }) {
       {/* EAA·BCAA — 행 리스트 */}
       <div className="d-analysis-rows">
         <MetricRow
-          label="필수아미노산(EAA)"
+          label="필수 아미노산(EAA)"
           value={formatMg(nutrition?.eaa) ?? null}
           note={withRatio('필수아미노산 9종 합계', aminoRatio(nutrition?.eaa, protein))}
         />
@@ -218,9 +218,15 @@ function ProteinSourceSection({ proteinNotes }) {
 const OTHER_NUTRIENT_EXCLUDE = new Set([
   'energy_kcal', 'protein_g', 'carbohydrate_g', 'sugars_g', 'fat_g', 'dietary_fiber',
   'sodium_mg', 'trans_fat_g', 'saturated_fat_g', 'cholesterol_mg', 'src_알룰로오스_g',
-  'src_bcaa_mg', 'leucine', 'isoleucine', 'valine', 'lysine', 'methionine',
+  'src_eaa_mg', 'src_bcaa_mg', 'leucine', 'isoleucine', 'valine', 'lysine', 'methionine',
   'phenylalanine', 'threonine', 'tryptophan', 'histidine',
 ]);
+
+// EAA/BCAA는 코드가 달라도(이름이 EAA·BCAA) 기타 영양소에서 제외
+function isAggAminoName(name) {
+  const up = (name || '').trim().toUpperCase();
+  return up === 'EAA' || up === 'BCAA';
+}
 
 // name_ko 부분일치 → 간단 설명
 function otherNutrientInfo(name) {
@@ -244,7 +250,7 @@ function formatNutrientAmount(fn) {
 
 function OtherNutrientsSection({ foodNutrients }) {
   const others = (foodNutrients ?? [])
-    .filter((fn) => !OTHER_NUTRIENT_EXCLUDE.has(fn.nutrient_code))
+    .filter((fn) => !OTHER_NUTRIENT_EXCLUDE.has(fn.nutrient_code) && !isAggAminoName(fn.nutrients?.name_ko))
     .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999));
 
   return (

@@ -3,6 +3,13 @@
 // - mockProducts.js는 수정하지 않고, 여기서만 매핑/파생 계산을 처리
 // - DS 컴포넌트(Score, FoodCard, Badge, MacroRow 등)는 이 어댑터의 출력 형태에 의존
 import { computeEaa, computeBcaa } from './aminoAcids.js';
+import { cleanProteinLabel } from './proteinQuality.js';
+
+// 단백질원 표시 정리 — '분말/숫자' suffix 제거 후 중복 제거 (리스트·상세 공통)
+function cleanProteinSources(sources) {
+  if (!Array.isArray(sources)) return sources;
+  return [...new Set(sources.map(cleanProteinLabel).filter(Boolean))];
+}
 
 // ============================================================ 점수 매핑
 
@@ -66,12 +73,6 @@ function tagNoSugarAdded(ing, n) {
   return { v: 'softGreen', label: '무가당' };
 }
 
-// 유당 free 태그
-function tagLactoseFree(ing) {
-  if (ing?.lactoseFree !== true) return null;
-  return { v: 'softGreen', label: '유당 free' };
-}
-
 // 당류 경고 태그 (≥10g)
 function tagSugarWarn(n) {
   if ((n.sugar ?? 0) < 10) return null;
@@ -97,7 +98,6 @@ export function getAutoTags(product) {
     tagLowCalorie(n),
     tagHighFiber(n),
     tagNoSugarAdded(ing, n),
-    tagLactoseFree(ing),
     tagSugarWarn(n),
     tagFatWarn(n),
   ];
@@ -174,7 +174,10 @@ export function getAdapted(product) {
     purposeCategories: product.purposeCategories ?? [],
     purchaseLinks: product.purchaseLinks ?? [],
     purposesFit: product.purposesFit,
-    ingredients: product.ingredients,
+    ingredients: {
+      ...product.ingredients,
+      proteinSources: cleanProteinSources(product.ingredients?.proteinSources),
+    },
     nutrition: { ...n, eaa, bcaa },
     sweeteners: product.ingredients?.sweeteners ?? [],
   };

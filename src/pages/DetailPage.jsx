@@ -56,34 +56,6 @@ function Breadcrumb({ category, categoryCode, productName, onBack }) {
   );
 }
 
-function formatNumber(value) {
-  if (value == null || Number.isNaN(Number(value))) return '-';
-  return Number.isInteger(Number(value)) ? String(value) : String(Math.round(Number(value) * 10) / 10);
-}
-
-function getOverviewMetrics(raw, nutrition) {
-  return [
-    { label: '칼로리', value: nutrition?.calories, unit: 'kcal' },
-    { label: '단백질', value: nutrition?.protein, unit: 'g' },
-  ];
-}
-
-function QuickGlance({ raw, nutrition }) {
-  const items = getOverviewMetrics(raw, nutrition);
-  return (
-    <div className="d-detail-quick">
-      {items.map((item) => (
-        <div key={item.label} className="d-detail-quick-item">
-          <span className="d-detail-quick-label">{item.label}</span>
-          <span className="d-detail-quick-value">
-            {formatNumber(item.value)}<span className="d-detail-quick-unit">{item.unit}</span>
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // 핵심 지표 표 — 리스트 카드와 동일한 단백질/EAA/BCAA × 총량·100kcal당·1,000원당
 function PrimaryMetricsSummary({ food, metrics }) {
   return (
@@ -110,11 +82,10 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
             <div className="d-detail-overview-title">
               <span className="d-detail-header-brand">{product.brand}</span>
               <h1 className="d-detail-header-name">{product.name}</h1>
-              <span className="d-detail-header-serving">{product.serving} 기준</span>
+              <span className="d-detail-header-serving">{product.serving}</span>
             </div>
             <CompareButton inCart={inCart} onClick={onToggleCompare} />
           </div>
-          <QuickGlance raw={raw} nutrition={nutrition} />
           {primaryMetrics && <PrimaryMetricsSummary food={product} metrics={primaryMetrics} />}
         </div>
       </div>
@@ -186,7 +157,9 @@ function useActiveSection(productId) {
     // (IntersectionObserver는 '변경된' 항목만 받아 중간/하단에서 강조가 끊김 → 스크롤 계산으로 대체)
     const onScroll = () => {
       const nav = document.querySelector('.d-detail-section-nav');
-      const line = (nav ? nav.getBoundingClientRect().bottom : 120) + 8;
+      // 판정선 여유(+16)는 클릭 스크롤 목적지(nav 아래 +12)보다 커야
+      // 도착 직후 해당 섹션이 바로 강조됨(작으면 조금 더 내려야 켜짐)
+      const line = (nav ? nav.getBoundingClientRect().bottom : 120) + 16;
       let current = SECTIONS[0].id;
       for (const s of SECTIONS) {
         const el = document.getElementById(s.id);

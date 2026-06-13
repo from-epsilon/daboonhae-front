@@ -739,6 +739,12 @@
   font-weight: 600;
   color: var(--text-primary);
 }
+.m-purchase-logo {
+  height: 16px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
 .m-purchase-best {
   font-family: var(--font-body);
   font-size: 10px;

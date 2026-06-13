@@ -60,7 +60,7 @@ export function HeroSection({ product }) {
         <div className="m-detail-hero-meta">
           <div className="m-detail-hero-brand">{brand}</div>
           <h1 className="m-detail-hero-name">{name}</h1>
-          {serving && <div className="m-detail-hero-serving">{serving} 기준</div>}
+          {serving && <div className="m-detail-hero-serving">{serving}</div>}
         </div>
         <TagsRow tags={product?.tags} />
         <TrustRow trustBadges={product?.trustBadges} />

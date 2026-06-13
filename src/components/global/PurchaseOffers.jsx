@@ -1,6 +1,17 @@
+import { getVendorLogo } from '../../utils/vendorLogo.js';
+
 function formatPurchasePrice(price) {
   if (typeof price !== 'number') return '가격 문의';
   return `${price.toLocaleString()}원`;
+}
+
+// 판매처 표시 — 로고가 있으면 이미지, 없으면 텍스트
+function VendorLabel({ vendorName }) {
+  const logo = getVendorLogo(vendorName);
+  if (logo) {
+    return <img className="purchase-offer-logo" src={logo.src} alt={logo.alt} />;
+  }
+  return <>{vendorName || '판매처'}</>;
 }
 
 // 유효 오퍼만 추려 총액 오름차순 정렬 (기본 정렬)
@@ -142,7 +153,7 @@ export default function PurchaseOffers({
             >
               <span className="purchase-offer-main">
                 <span className="purchase-offer-vendor">
-                  {offer.vendorName || '판매처'}
+                  <VendorLabel vendorName={offer.vendorName} />
                   {offer.isFastDelivery && <span className="purchase-offer-fast">빠른배송</span>}
                 </span>
                 <span className="purchase-offer-meta">

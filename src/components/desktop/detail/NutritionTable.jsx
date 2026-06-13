@@ -202,7 +202,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
   }, [foodNutrients, ratio]);
 
   // 아미노산 계층 트리 — EAA > (BCAA > 3종) + 비BCAA 필수아미노산 6종
-  // - 집계값(EAA/BCAA)은 DB 컬럼이 있으면 그 값, 없으면 개별값 합산
+  // - 집계값(EAA/BCAA)은 개별값이 전부 있으면 합산, 하나라도 비면 DB 집계 컬럼 폴백
   // - 개별 수치가 없으면 '-' 표시(muted)
   const aminoTree = useMemo(() => {
     const byCode = {};
@@ -223,9 +223,15 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
       const vals = keys.map((k) => amountOf(k.code)).filter((v) => v != null);
       return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) : null;
     };
+    // 개별값이 전부(모든 키) 0보다 큰 실측값이면 합산, 하나라도 비거나 0이면 집계값(폴백)
+    // (0은 '미측정'으로 간주 — computeEaa/computeBcaa의 n[k] > 0 기준과 동일하게 맞춤)
+    const totalOf = (keys, aggCodes) => {
+      const allHere = keys.every((k) => amountOf(k.code) > 0);
+      return allHere ? sumOf(keys) : aggOf(aggCodes);
+    };
 
-    const bcaaTotal = aggOf(BCAA_AGG_CODES) ?? sumOf(BCAA_KEYS);
-    const eaaTotal = aggOf(EAA_AGG_CODES) ?? sumOf(EAA_KEYS);
+    const bcaaTotal = totalOf(BCAA_KEYS, BCAA_AGG_CODES);
+    const eaaTotal = totalOf(EAA_KEYS, EAA_AGG_CODES);
 
     // 비필수 아미노산(아르기닌·글루타민 등) — 필수 9종/집계가 아닌 아미노산
     const essentialCodes = new Set([
@@ -258,7 +264,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
 
     const rows = [];
     // EAA (필수아미노산) — 최상위
-    rows.push(aminoRow('eaa', 'EAA(필수 아미노산)', eaaTotal, 0));
+    rows.push(aminoRow('eaa', '필수 아미노산(EAA)', eaaTotal, 0));
     // BCAA — EAA 하위
     rows.push(aminoRow('bcaa', 'BCAA', bcaaTotal, 1, '류신·이소류신·발린 3종 합계. 근육 합성에 핵심.'));
     // BCAA 3종 — BCAA 하위

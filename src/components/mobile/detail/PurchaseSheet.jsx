@@ -3,11 +3,21 @@
 // - 각 행: "판매처 · x수량 · 가격원" + 가장 싼 항목에 '최저가' 배지
 // - 행 클릭 → 해당 url 새 탭
 import { IconClose } from '../../ds/Icons.jsx';
+import { getVendorLogo } from '../../../utils/vendorLogo.js';
 
 // 가격 포맷 (없으면 '가격 문의')
 function formatPrice(price) {
   if (typeof price !== 'number') return '가격 문의';
   return `${price.toLocaleString()}원`;
+}
+
+// 판매처 표시 — 로고가 있으면 이미지, 없으면 텍스트
+function VendorLabel({ vendorName }) {
+  const logo = getVendorLogo(vendorName);
+  if (logo) {
+    return <img className="m-purchase-logo" src={logo.src} alt={logo.alt} />;
+  }
+  return <>{vendorName || '판매처'}</>;
 }
 
 // 단일 오퍼 행
@@ -21,7 +31,7 @@ function OfferRow({ offer, isCheapest, onOpen }) {
       >
         <span className="m-purchase-row-main">
           <span className="m-purchase-vendor">
-            {offer.vendorName || '판매처'}
+            <VendorLabel vendorName={offer.vendorName} />
             {isCheapest && <span className="m-purchase-best">최저가</span>}
             {offer.isFastDelivery && <span className="m-purchase-fast">빠른배송</span>}
           </span>

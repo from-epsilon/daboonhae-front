@@ -195,12 +195,11 @@ function TieredMetricsBlock({ food, config }) {
   const primary = config.primaryMetrics ?? [];
   const secondary = config.secondaryMetrics ?? [];
   const sources = config.showProteinSource ? (food.ingredients?.proteinSources ?? []) : [];
-  const lactoseFree = food.ingredients?.lactoseFree === true;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-      {/* 표 위 구조화 블록: 단백질원 · 영양성분 · 유당Free */}
-      <TieredMeta food={food} sources={sources} secondary={secondary} lactoseFree={lactoseFree} />
+      {/* 표 위 구조화 블록: 단백질원 · 영양성분 */}
+      <TieredMeta food={food} sources={sources} secondary={secondary} />
 
       {/* 핵심 단백질 지표 — 총량/100kcal당/1,000원당 열 정렬 표 */}
       <TieredPrimaryTable food={food} metrics={primary} />
@@ -208,8 +207,8 @@ function TieredMetricsBlock({ food, config }) {
   );
 }
 
-// 표 위 부가정보 — 단백질원 / 영양성분 / 유당Free를 라벨-값 행으로 구조화
-function TieredMeta({ food, sources, secondary, lactoseFree }) {
+// 표 위 부가정보 — 단백질원 / 영양성분을 라벨-값 행으로 구조화
+function TieredMeta({ food, sources, secondary }) {
   // 영양성분: 값 있는 항목만 "라벨 값" 형태로 묶음
   const nutri = secondary
     .map((m) => {
@@ -221,7 +220,7 @@ function TieredMeta({ food, sources, secondary, lactoseFree }) {
     .filter(Boolean);
 
   const hasSource = sources.length > 0;
-  if (!hasSource && nutri.length === 0 && !lactoseFree) return null;
+  if (!hasSource && nutri.length === 0) return null;
 
   return (
     <div className="fc-meta">
@@ -230,14 +229,7 @@ function TieredMeta({ food, sources, secondary, lactoseFree }) {
           <span className="fc-meta-label">단백질원</span>
           <span className="fc-meta-value">
             {sources.join(' · ')}
-            {lactoseFree && <span className="fc-meta-badge">유당 Free</span>}
           </span>
-        </div>
-      )}
-      {!hasSource && lactoseFree && (
-        <div className="fc-meta-row">
-          <span className="fc-meta-label">특징</span>
-          <span className="fc-meta-value"><span className="fc-meta-badge">유당 Free</span></span>
         </div>
       )}
       {nutri.length > 0 && (
@@ -382,7 +374,7 @@ function SubNutrients({ nutrition, category }) {
   );
 }
 
-// 원재료·성분 상세 (감미료, 단백질원, 알레르기, 유당)
+// 원재료·성분 상세 (감미료, 단백질원, 알레르기)
 // - hide: 숨길 섹션 키 배열 (예: ['sweeteners', 'allergens']) — 카테고리별 카드 구성용
 function IngredientDetails({ ingredients, hide = [] }) {
   if (!ingredients) return null;
@@ -396,7 +388,7 @@ function IngredientDetails({ ingredients, hide = [] }) {
   if (ingredients.allergens?.length > 0 && !hide.includes('allergens')) {
     sections.push({ label: '알레르기', items: ingredients.allergens });
   }
-  if (sections.length === 0 && !ingredients.lactoseFree) return null;
+  if (sections.length === 0) return null;
   return (
     <div
       style={{
@@ -415,9 +407,6 @@ function IngredientDetails({ ingredients, hide = [] }) {
           {s.items.join(' · ')}
         </span>
       ))}
-      {ingredients.lactoseFree && (
-        <span style={{ color: 'var(--green-700)', fontWeight: 500 }}>유당 Free</span>
-      )}
     </div>
   );
 }
