@@ -6,6 +6,7 @@ import { SubCategoryChips } from '../../components/mobile/list/SubCategoryChips.
 import { ActionBar } from '../../components/mobile/list/ActionBar.jsx';
 import { FilterSheet, countActiveFilters } from '../../components/mobile/list/FilterSheet.jsx';
 import { SortSheet, getSortShortLabel } from '../../components/mobile/list/SortSheet.jsx';
+import { ProteinSortLabel } from '../../components/list/ProteinSortLabel.jsx';
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
@@ -14,6 +15,7 @@ import { useProducts } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
 import { applySort } from '../../data/listSort.js';
+import { loadListViewState, saveListViewState } from '../../data/listViewState.js';
 import { ALL_FILTERS } from '../../data/purposes.jsx';
 import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeByCode } from '../../data/categoryTabs.js';
 import { useCompare } from '../../store/CompareContext.jsx';
@@ -95,15 +97,16 @@ export default function ListPageMobile() {
   const q = searchParams.get('q') ?? '';
   const subParam = searchParams.get('sub') ?? '';
 
-  const initSub = useMemo(() => {
-    if (!subParam) return 'all';
-    return subParam;
-  }, [subParam]);
-
-  const [activeSub, setActiveSub] = useState(initSub);
-  const [filterState, setFilterState] = useState({});
-  const [sortKey, setSortKey] = useState('default');
+  // 세션 보존 상태 복원 — URL의 sub 파라미터가 있으면 그것을 우선
+  const [activeSub, setActiveSub] = useState(() => subParam || loadListViewState().activeSub || 'all');
+  const [filterState, setFilterState] = useState(() => loadListViewState().filterState || {});
+  const [sortKey, setSortKey] = useState(() => loadListViewState().sortKey || 'default');
   const [page, setPage] = useState(1);
+
+  // 카테고리·필터·정렬 변경 시 세션에 저장 → 상세/비교함 다녀와도 유지
+  useEffect(() => {
+    saveListViewState({ activeSub, filterState, sortKey });
+  }, [activeSub, filterState, sortKey]);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -194,7 +197,7 @@ export default function ListPageMobile() {
           count={products.length}
           query={q}
           onClearQuery={clearSearch}
-          sortLabel={getSortShortLabel(activeSub, sortKey)}
+          sortLabel={<ProteinSortLabel sortKey={sortKey} fallback={getSortShortLabel(activeSub, sortKey)} />}
           onOpenSort={() => setSortOpen(true)}
           filterActiveCount={filterActiveCount}
           onOpenFilter={() => setFilterOpen(true)}
@@ -224,6 +227,7 @@ export default function ListPageMobile() {
                 layout="list"
                 tabId={ft?.tab}
                 subLabel={ft?.label}
+                sortKey={sortKey}
                 inCompare={hasCompare(p.id)}
                 onClick={() => navigate(`/product/${p.id}`)}
                 onCompare={(food) => toggleCompare(food.id)}

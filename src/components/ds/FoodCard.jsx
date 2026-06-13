@@ -11,6 +11,7 @@ import { useMetricColumn } from './MetricColumnContext.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
 import { getCategoryCardConfig, computeMetricValues, getHighlightValue } from '../../data/categoryCardMetrics.js';
+import { splitProteinSortKey } from '../../data/listSort.js';
 import PurchaseOffers from '../global/PurchaseOffers.jsx';
 
 // 썸네일 이미지 (URL → img, 빈값 → 회색 placeholder)
@@ -90,7 +91,7 @@ function ListStoreButton({ food, onCompare, inCompare }) {
 
 // list 레이아웃: 좌측 88px 컬럼(썸네일 + 담기 버튼) + 텍스트 영역
 // - 담긴 제품은 카드 좌측에 그린 강조선 + 버튼 '담김' 상태로 표시
-function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) {
+function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, sortKey }) {
   return (
     <div
       onClick={onClick}
@@ -136,18 +137,18 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
         {food.serving && (
           <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
         )}
-        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} />
+        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
         <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" className="fc-card-offers" />
       </div>
     </div>
   );
 }
 
-function CategoryMetricsBlock({ food, tabId, subLabel }) {
+function CategoryMetricsBlock({ food, tabId, subLabel, sortKey }) {
   const config = getCategoryCardConfig(tabId, subLabel);
   // 우선순위 기반(tiered) 카드 구성이 지정된 카테고리는 전용 렌더링
   if (config.primaryMetrics) {
-    return <TieredMetricsBlock food={food} config={config} />;
+    return <TieredMetricsBlock food={food} config={config} sortKey={sortKey} />;
   }
   const { metrics, showSweeteners } = config;
 
@@ -191,7 +192,7 @@ function CategoryMetricsBlock({ food, tabId, subLabel }) {
 // 우선순위 기반 카드 메트릭 (단백질 음료 등)
 // - 상단: 단백질원·영양성분·유당Free 등 부가정보를 라벨-값 구조로 정리
 // - 하단: 핵심 지표(총량 + 칼로리/가격 대비) 열 정렬 표
-function TieredMetricsBlock({ food, config }) {
+function TieredMetricsBlock({ food, config, sortKey }) {
   const primary = config.primaryMetrics ?? [];
   const secondary = config.secondaryMetrics ?? [];
   const sources = config.showProteinSource ? (food.ingredients?.proteinSources ?? []) : [];
@@ -202,7 +203,7 @@ function TieredMetricsBlock({ food, config }) {
       <TieredMeta food={food} sources={sources} secondary={secondary} />
 
       {/* 핵심 단백질 지표 — 총량/100kcal당/1,000원당 열 정렬 표 */}
-      <TieredPrimaryTable food={food} metrics={primary} />
+      <TieredPrimaryTable food={food} metrics={primary} sortKey={sortKey} />
     </div>
   );
 }
@@ -246,7 +247,7 @@ function TieredMeta({ food, sources, secondary }) {
 // - 세 지표를 같은 비중으로 두되 열로 정렬해 가독성 확보
 // - 100kcal당/1,000원당 열은 데이터(칼로리·구매가) 있을 때만 노출
 // - 리스트 카드 + 상세페이지(핵심 지표 섹션)에서 공용
-export function TieredPrimaryTable({ food, metrics }) {
+export function TieredPrimaryTable({ food, metrics, sortKey }) {
   // 강조 열 — 카드 간 공유(컨텍스트). 호버 시 모든 제품 같은 열 강조, 풀려도 유지
   const [hoverCol, setHoverCol] = useMetricColumn();
 
@@ -273,19 +274,30 @@ export function TieredPrimaryTable({ food, metrics }) {
 
   // 표시할 값 열 정의 (데이터 있을 때만)
   const cols = [
-    { key: 'total', head: '총량', variant: 'total', pick: (r) => r.total },
-    showKcal && { key: 'kcal', head: '100kcal당', variant: 'ratio', pick: (r) => r.perKcal },
-    showPrice && { key: 'price', head: '1,000원당', variant: 'ratio', pick: (r) => r.perPrice },
+    { key: 'total', head: '총량 기준', variant: 'total', pick: (r) => r.total },
+    showKcal && { key: 'kcal', head: '100kcal 기준', variant: 'ratio', pick: (r) => r.perKcal },
+    showPrice && { key: 'price', head: '1,000원 기준', variant: 'ratio', pick: (r) => r.perPrice },
   ].filter(Boolean);
 
-  // 열 호버 핸들러 (헤더·셀 공통) — 호버가 풀려도 마지막 열 유지(sticky)
-  const colHandlers = (key) => ({
-    onMouseEnter: () => setHoverCol(key),
-  });
+  // 정렬 조합(기준×성분)이면 sortMode — 해당 '셀'만 강조하고 호버 로직은 비활성
+  // 추천순/미지정이면 기존 호버 '열' 강조만 동작
+  const hl = typeof sortKey === 'string' && sortKey.includes('_')
+    ? splitProteinSortKey(sortKey)
+    : null;
+  const sortMode = !!hl;
+
+  const cellActive = (rKey, cKey) =>
+    (sortMode ? (hl.base === rKey && hl.mode === cKey) : (hoverCol === cKey));
+  const headActive = (cKey) =>
+    (sortMode ? (hl.mode === cKey) : (hoverCol === cKey));
+  const focused = sortMode || !!hoverCol;
+
+  // 호버 핸들러 — 조합 정렬 중엔 미부착(호버 강조 비활성), 추천순일 때만 동작
+  const colHandlers = (key) => (sortMode ? {} : { onMouseEnter: () => setHoverCol(key) });
 
   return (
     <div
-      className={`fc-ptable${hoverCol ? ' is-focused' : ''}`}
+      className={`fc-ptable${focused ? ' is-focused' : ''}`}
       style={{ gridTemplateColumns: `auto repeat(${cols.length}, auto)` }}
     >
       {/* 헤더 — 라인 없이 타이포(작고 연함)로 구분 */}
@@ -293,7 +305,7 @@ export function TieredPrimaryTable({ food, metrics }) {
       {cols.map((c) => (
         <span
           key={c.key}
-          className={`fc-ptable-head${hoverCol === c.key ? ' is-active' : ''}`}
+          className={`fc-ptable-head${headActive(c.key) ? ' is-active' : ''}`}
           {...colHandlers(c.key)}
         >
           {c.head}
@@ -308,7 +320,7 @@ export function TieredPrimaryTable({ food, metrics }) {
               key={c.key}
               value={c.pick(r)}
               variant={c.variant}
-              active={hoverCol === c.key}
+              active={cellActive(r.key, c.key)}
               {...colHandlers(c.key)}
             />
           ))}
@@ -320,7 +332,7 @@ export function TieredPrimaryTable({ food, metrics }) {
 
 // 표 셀 — 단위는 작게 연하게 (텍스트 위계로 가독성 확보)
 // - variant: 'total' 총량(진한 색) | 'ratio' 대비 수치(연한 색)
-// - active: 해당 열 호버 시 더 크고 볼드로 강조
+// - active: 호버 열 / 정렬 기준 셀 강조 (더 크고 볼드)
 function PTableCell({ value, variant, active, ...handlers }) {
   const cls = `fc-ptable-cell fc-ptable-cell--${variant}${active ? ' is-active' : ''}`;
   if (!value) return <span className={cls} {...handlers}>-</span>;
@@ -412,7 +424,7 @@ function IngredientDetails({ ingredients, hide = [] }) {
 }
 
 // wide 레이아웃: 가로형 (데스크톱 리스트 전용)
-function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel }) {
+function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, sortKey }) {
   // 카테고리별 카드 구성 (탄단지 비율바·원재료 섹션 노출 여부)
   const config = getCategoryCardConfig(tabId, subLabel);
   return (
@@ -485,7 +497,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel }) 
         )}
 
         {/* 카테고리별 강조 지표 — 모바일 리스트 카드와 동일(CategoryMetricsBlock) */}
-        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} />
+        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
 
         {/* 탄단지 비율 막대 — 카테고리 설정에서 끌 수 있음(showMacroBar=false) */}
         {config.showMacroBar !== false && <MacroRow {...food.macros} wide ratioOnly />}
@@ -667,10 +679,10 @@ function ReviewMeta({ reviewCount }) {
 export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, sortKey, tabId, subLabel, showPurchase = false, metrics }) {
   if (!food) return null;
   if (layout === 'list') {
-    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} />;
+    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;
   }
   if (layout === 'wide') {
-    return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} />;
+    return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;
   }
   return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} sortKey={sortKey} showPurchase={showPurchase} metrics={metrics} />;
 }

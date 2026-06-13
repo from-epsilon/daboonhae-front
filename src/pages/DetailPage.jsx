@@ -75,7 +75,10 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
       {/* 상단: 제품 이미지 + 제목·핵심지표 */}
       <div className="d-detail-overview-grid">
         <div className="d-detail-overview-media">
-          <ProductThumb product={product} size="card" />
+          <div className="d-detail-overview-thumb">
+            <ProductThumb product={product} size="card" />
+          </div>
+          <CompareButton inCart={inCart} onClick={onToggleCompare} />
         </div>
         <div className="d-detail-overview-body">
           <div className="d-detail-overview-titlebar">
@@ -84,7 +87,6 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
               <h1 className="d-detail-header-name">{product.name}</h1>
               <span className="d-detail-header-serving">{product.serving}</span>
             </div>
-            <CompareButton inCart={inCart} onClick={onToggleCompare} />
           </div>
           {primaryMetrics && <PrimaryMetricsSummary food={product} metrics={primaryMetrics} />}
         </div>

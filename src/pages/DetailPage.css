@@ -126,6 +126,12 @@
 }
 .d-detail-overview-media {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.d-detail-overview-thumb {
+  width: 100%;
   aspect-ratio: 1;
   background: var(--gray-50);
   border: 1px solid var(--border-tertiary);
@@ -226,6 +232,8 @@
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-md);
   background: var(--gray-50);
+  /* 본문 열 맨 아래로 붙여 비교함 버튼과 아랫변 정렬 */
+  margin-top: auto;
 }
 .d-detail-metrics-title {
   font-size: 12px;
@@ -253,6 +261,8 @@
   font-size: 13px; font-weight: 600; color: var(--text-primary);
   cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
+/* 이미지 아래 배치 — 폭을 이미지에 맞추고, 열 맨 아래로 붙여 핵심 지표와 아랫변 정렬 */
+.d-detail-overview-media .d-detail-compare-btn { width: 100%; margin-top: auto; }
 .d-detail-compare-btn:hover { border-color: var(--brand-green); color: var(--brand-green); }
 .d-detail-compare-btn.is-active {
   background: var(--green-50); border-color: var(--brand-green); color: var(--brand-green);
@@ -1065,9 +1075,6 @@
   .d-detail-overview-titlebar {
     flex-direction: column;
     gap: 14px;
-  }
-  .d-detail-overview-titlebar .d-detail-compare-btn {
-    align-self: flex-start;
   }
   .d-detail-quick {
     grid-template-columns: repeat(2, minmax(0, 1fr));

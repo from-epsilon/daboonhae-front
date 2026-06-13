@@ -3,7 +3,11 @@
 // - 정렬 옵션은 카테고리별로 다름(단백질 음료=단백질/EAA/BCAA 전용) → listSort에서 일괄 관리
 import { Sheet } from './Sheet.jsx';
 import { IconCheck } from '../../ds/Icons.jsx';
-import { getSortOptions, getSortLabel, getSortShortLabel } from '../../../data/listSort.js';
+import {
+  getSortOptions, getSortLabel, getSortShortLabel,
+  resolveSortKey, isProteinDrinkCategory,
+} from '../../../data/listSort.js';
+import { ProteinSortGrid } from '../../list/ProteinSortGrid.jsx';
 
 // 액션바 등에서 재사용하도록 라벨 헬퍼를 그대로 재노출
 export { getSortLabel, getSortShortLabel };
@@ -43,16 +47,26 @@ function SortOptionRow({ option, active, onPick }) {
 
 export function SortSheet({ open, value, onChange, onClose, category }) {
   const options = getSortOptions(category);
+  const isProtein = isProteinDrinkCategory(category);
   // 현재 선택값이 옵션에 없으면(카테고리 전환 직후) 첫 옵션을 활성으로 표시
   const activeKey = options.some((o) => o.key === value) ? value : options[0].key;
 
-  // 정렬 키 선택 → 변경 + 닫기
+  // 일반 카테고리: 선택 즉시 닫힘 / 단백질 음료: 2축 선택이라 열어둠
   const handlePick = (key) => {
     onChange(key);
     onClose();
   };
 
-  // 옵션이 많은 카테고리(단백질 음료 9종)는 시트를 더 높게
+  // 단백질 음료는 2열 그리드, 그 외는 라디오 리스트
+  if (isProtein) {
+    return (
+      <Sheet open={open} onClose={onClose} title="정렬" height="42vh">
+        <ProteinSortGrid value={resolveSortKey(category, value)} onChange={onChange} />
+      </Sheet>
+    );
+  }
+
+  // 옵션이 많은 카테고리는 시트를 더 높게
   const sheetHeight = options.length > 6 ? '72vh' : '45vh';
 
   return (

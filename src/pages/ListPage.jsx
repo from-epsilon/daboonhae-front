@@ -5,6 +5,7 @@ import { useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
 import { ALL_FILTERS } from '../data/purposes.jsx';
 import { applySort } from '../data/listSort.js';
+import { loadListViewState, saveListViewState } from '../data/listViewState.js';
 import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel } from '../data/categoryTabs.js';
 import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
@@ -25,11 +26,17 @@ export default function ListPage() {
   const q = searchParams.get('q') ?? '';
   const subParam = searchParams.get('sub') ?? '';
 
-  const [activeSub, setActiveSub] = useState(subParam || 'all');
-  const [filterState, setFilterState] = useState({});
+  // 세션 보존 상태 복원 — URL의 sub 파라미터가 있으면 그것을 우선
+  const [activeSub, setActiveSub] = useState(() => subParam || loadListViewState().activeSub || 'all');
+  const [filterState, setFilterState] = useState(() => loadListViewState().filterState || {});
   const [page, setPage] = useState(1);
 
-  const [sortKey, setSortKey] = useState('default');
+  const [sortKey, setSortKey] = useState(() => loadListViewState().sortKey || 'default');
+
+  // 카테고리·필터·정렬 변경 시 세션에 저장 → 상세/비교함 다녀와도 유지
+  useEffect(() => {
+    saveListViewState({ activeSub, filterState, sortKey });
+  }, [activeSub, filterState, sortKey]);
 
   // 식품유형 칩 라벨 → 식품유형 코드(food_type_category_code)
   const activeCode = useMemo(() => {

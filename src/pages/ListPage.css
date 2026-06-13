@@ -527,6 +527,12 @@
   z-index: 30;
 }
 
+/* 단백질 음료: 2열 그리드 메뉴 — 폭 확장 + 리스트 패딩 대신 그리드 패딩 */
+.d-list-sort-menu--grid {
+  min-width: 360px;
+  padding: 12px;
+}
+
 .d-list-sort-option {
   display: flex;
   align-items: center;

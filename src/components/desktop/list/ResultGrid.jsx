@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { FoodCard } from '../../ds/FoodCard.jsx';
 import { FoodCardWideSkeleton } from '../../ds/Skeleton.jsx';
-import { MetricColumnProvider } from '../../ds/MetricColumnContext.jsx';
+import { MetricColumnProvider, useMetricColumn } from '../../ds/MetricColumnContext.jsx';
 import { getAdapted } from '../../../data/adapters.js';
 import { getFoodTypeByCode } from '../../../data/categoryTabs.js';
 import { useCompare } from '../../../store/CompareContext.jsx';
@@ -26,6 +27,8 @@ export default function ResultGrid({
 
   return (
     <MetricColumnProvider>
+      {/* 정렬이 바뀌면 sticky 호버 강조를 해제 → 새 정렬 기준 셀이 기본 강조됨 */}
+      <HoverReset sortKey={sortKey} />
       <div className="d-list-wide">
         {products.map((p) => {
           const food = getAdapted(p);
@@ -49,4 +52,13 @@ export default function ResultGrid({
       </div>
     </MetricColumnProvider>
   );
+}
+
+// 정렬 키 변경 시 공유 호버 열을 초기화 (provider 내부에서만 컨텍스트 접근 가능)
+function HoverReset({ sortKey }) {
+  const [, setHoverCol] = useMetricColumn();
+  useEffect(() => {
+    setHoverCol(null);
+  }, [sortKey, setHoverCol]);
+  return null;
 }
