@@ -6,7 +6,7 @@ import { getProteinSortParts } from '../../data/listSort.js';
 export function ProteinSortLabel({ sortKey, fallback, withSuffix = false }) {
   const parts = getProteinSortParts(sortKey);
   if (!parts) return <>{fallback}</>;
-  // 기준 라벨에서 단위(1,000원/100kcal/총량)만 파랑, 뒤따르는 '기준'은 기본(검정)
+  // 단위(총량/100kcal/1,000원)만 색, 뒤따르는 '기준'은 기본 검정. 성분도 색으로 구분
   const m = parts.modeLabel.match(/^(.*?)\s*(기준)$/);
   const unit = m ? m[1] : parts.modeLabel;
   const gijun = m ? m[2] : '';

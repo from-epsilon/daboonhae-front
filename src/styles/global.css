@@ -1255,9 +1255,9 @@ img.product-thumb { object-fit: cover; }
   display: none;
 }
 
-/* 정렬 라벨 — 기준(파랑)/성분(초록) 색 구분 */
-.psort-label-mode { color: var(--blue-600); font-weight: 600; }
-.psort-label-base { color: var(--green-600); font-weight: 600; }
+/* 정렬 라벨 — 단위(파랑)/성분(초록) 차분한 진한 톤, '기준' 글자는 기본 검정 */
+.psort-label-mode { color: var(--blue-800); font-weight: 500; }
+.psort-label-base { color: var(--green-800); font-weight: 500; }
 
 /* ── 단백질 음료 정렬 — 추천순 + 기준 × 성분 2열 그리드 (데스크톱 드롭다운/모바일 시트 공용) */
 .psort {

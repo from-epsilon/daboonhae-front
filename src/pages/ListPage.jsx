@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCompare } from '../store/CompareContext.jsx';
 import { useProducts } from '../store/ProductsContext.jsx';
@@ -29,14 +29,14 @@ export default function ListPage() {
   // 세션 보존 상태 복원 — URL의 sub 파라미터가 있으면 그것을 우선
   const [activeSub, setActiveSub] = useState(() => subParam || loadListViewState().activeSub || 'all');
   const [filterState, setFilterState] = useState(() => loadListViewState().filterState || {});
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => loadListViewState().page || 1);
 
   const [sortKey, setSortKey] = useState(() => loadListViewState().sortKey || 'default');
 
-  // 카테고리·필터·정렬 변경 시 세션에 저장 → 상세/비교함 다녀와도 유지
+  // 카테고리·필터·정렬·페이지 변경 시 세션에 저장 → 상세/비교함 다녀와도 유지
   useEffect(() => {
-    saveListViewState({ activeSub, filterState, sortKey });
-  }, [activeSub, filterState, sortKey]);
+    saveListViewState({ activeSub, filterState, sortKey, page });
+  }, [activeSub, filterState, sortKey, page]);
 
   // 식품유형 칩 라벨 → 식품유형 코드(food_type_category_code)
   const activeCode = useMemo(() => {
@@ -67,7 +67,13 @@ export default function ListPage() {
   }, [q, PRODUCTS, activeCode, activeSub, filterState, sortKey]);
 
   // 검색·필터·정렬·카테고리 변경 시 1페이지로 초기화
+  // (단, 첫 렌더에서는 복원된 페이지를 유지 — 상세에서 뒤로 왔을 때 초기화 방지)
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     setPage(1);
   }, [q, activeCode, filterState, sortKey]);
 

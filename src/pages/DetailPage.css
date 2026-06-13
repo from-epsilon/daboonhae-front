@@ -15,16 +15,17 @@
   gap: 20px;
   min-width: 0; /* 그리드 자식 overflow 방지 */
 }
-/* 우측 가격 패널 — 헤더 높이만큼 띄워 sticky */
-.d-detail-aside-inner {
+/* 우측 가격 패널 — sticky로 스크롤 따라오되, top을 첫 위치(헤더+브레드크럼 아래)에
+   맞춰 위로 끌려 올라가지 않고 그 자리에서 본문 끝까지 머물도록 함 */
+.d-detail-aside {
   position: sticky;
-  top: 80px;
+  top: 110px;
+  align-self: start;
 }
 /* 좁은 데스크톱/태블릿: 단일 컬럼으로 스택, 가격 패널은 본문 위로 */
 @media (max-width: 960px) {
   .d-detail-layout { grid-template-columns: 1fr; gap: 20px; }
   .d-detail-aside { order: initial; }
-  .d-detail-aside-inner { position: static; }
 }
 
 /* 스켈레톤 로딩 */
