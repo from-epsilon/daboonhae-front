@@ -11,6 +11,7 @@ import { getPurposeHighlightMetrics } from '../data/categoryCardMetrics.js';
 
 import Seo from '../components/global/Seo.jsx';
 import { organizationLd, websiteLd } from '../data/jsonLd.js';
+import { productPath } from '../data/productUrl.js';
 import MainBanner from '../components/desktop/home/MainBanner.jsx';
 import CategoryTabsDesktop from '../components/desktop/home/CategoryTabs.jsx';
 import FoodGrid from '../components/desktop/home/FoodGrid.jsx';
@@ -93,7 +94,7 @@ export default function MainPage() {
   const recommended = usePurposeRecommended(PRODUCTS, recTabId);
   const recent = useRecent(adapted);
 
-  const handleFoodClick = (food) => navigate(`/product/${food.id}`);
+  const handleFoodClick = (food) => navigate(productPath(food));
   const handleToggleCompare = (food) => toggle(food.id);
   const handleMore = () => navigate('/list');
 

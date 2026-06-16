@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import ProductThumb from '../global/ProductThumb.jsx';
+import { productPath } from '../../data/productUrl.js';
 
 // 인기 랭킹 / 추천 카드 슬라이드
 // - 스크롤바 숨기고 좌/우 화살표 버튼으로만 넘기는 방식
@@ -44,7 +45,7 @@ export default function RankingSlider() {
       </button>
       <div className="ranking-slider" role="list" ref={trackRef}>
         {ranked.map((p, idx) => (
-          <Link key={p.id} to={`/product/${p.id}`} className="ranking-card" role="listitem">
+          <Link key={p.id} to={productPath(p)} className="ranking-card" role="listitem">
             <div className="ranking-rank">#{idx + 1}</div>
             <ProductThumb product={p} size="card" />
             <div className="ranking-brand">{p.brand}</div>

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
+import { categoryPath } from '../../../data/categoryTabs.js';
 
 // 데스크톱 홈 카테고리 아이콘 그리드
 // - label은 리스트 서브칩(categoryTabs.js tab.subs[].label) = DB name_ko 와 정확히 일치해야 함
@@ -26,7 +27,7 @@ export default function CategoryTabsDesktop({ products = [] }) {
   }, [products]);
 
   const handleItemClick = (item) => {
-    navigate(`/list?tab=${item.tab}&sub=${encodeURIComponent(item.label)}`);
+    navigate(categoryPath(item.code));
   };
 
   return (

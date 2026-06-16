@@ -57,16 +57,17 @@ export const CATEGORY_TABS = [
 // - tab: 리스트 카드 메트릭(categoryCardMetrics) 결정용 목적 키
 // - disabled: 분석 준비중(데이터 미제공) → 칩 비활성화
 // ※ 에너지바·기타 가공육은 노출 대상에서 제외
+// slug: 카테고리 경로형 URL(/category/:slug)용 — 한글 키워드 슬러그(안정성 위해 명시)
 export const FOOD_TYPES = [
-  { label: '닭가슴살', code: 'chicken_breast', tab: 'protein' },
-  { label: '단백질 음료', code: 'protein_drink', tab: 'protein' },
-  { label: '셰이크', code: 'shake', tab: 'meal' },
-  { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar' },
-  { label: '과자/초콜릿/젤리', code: 'snack_sweets', tab: 'low_sugar' },
-  { label: '제로 음료', code: 'zero_drink', tab: 'low_sugar', disabled: true },
-  { label: '밥', code: 'rice', tab: 'meal', disabled: true },
-  { label: '면', code: 'noodle', tab: 'meal', disabled: true },
-  { label: '시리얼/그래놀라/오트밀', code: 'cereal_granola_oat', tab: 'meal', disabled: true },
+  { label: '닭가슴살', code: 'chicken_breast', tab: 'protein', slug: '닭가슴살' },
+  { label: '단백질 음료', code: 'protein_drink', tab: 'protein', slug: '단백질-음료' },
+  { label: '셰이크', code: 'shake', tab: 'meal', slug: '셰이크' },
+  { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar', slug: '아이스크림' },
+  { label: '과자/초콜릿/젤리', code: 'snack_sweets', tab: 'low_sugar', slug: '과자-초콜릿-젤리' },
+  { label: '제로 음료', code: 'zero_drink', tab: 'low_sugar', slug: '제로-음료', disabled: true },
+  { label: '밥', code: 'rice', tab: 'meal', slug: '밥', disabled: true },
+  { label: '면', code: 'noodle', tab: 'meal', slug: '면', disabled: true },
+  { label: '시리얼/그래놀라/오트밀', code: 'cereal_granola_oat', tab: 'meal', slug: '시리얼-그래놀라-오트밀', disabled: true },
 ];
 
 // 분석 완료(활성) 식품유형만 — 리스트 칩 노출용 (준비중 제외)
@@ -84,13 +85,25 @@ export function getVisibleFoodTypes(products, foodTypes = ACTIVE_FOOD_TYPES) {
 
 const FOOD_TYPE_BY_CODE = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.code, ft]));
 const FOOD_TYPE_BY_LABEL = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.label, ft]));
+const FOOD_TYPE_BY_SLUG = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.slug, ft]));
 
-// 식품유형 코드/라벨 → FOOD_TYPES 항목 (없으면 null)
+// 식품유형 코드/라벨/슬러그 → FOOD_TYPES 항목 (없으면 null)
 export function getFoodTypeByCode(code) {
   return FOOD_TYPE_BY_CODE[code] ?? null;
 }
 export function getFoodTypeByLabel(label) {
   return FOOD_TYPE_BY_LABEL[label] ?? null;
+}
+export function getFoodTypeBySlug(slug) {
+  return FOOD_TYPE_BY_SLUG[slug] ?? null;
+}
+
+// 카테고리 경로형 URL — 라벨/코드/식품유형 객체 무엇이든 받아 /category/:slug 반환 (없으면 /list)
+export function categoryPath(input) {
+  const ft = typeof input === 'string'
+    ? (FOOD_TYPE_BY_LABEL[input] ?? FOOD_TYPE_BY_CODE[input] ?? null)
+    : input;
+  return ft?.slug ? `/category/${ft.slug}` : '/list';
 }
 
 // 탭의 모든 서브 카테고리(food_type) 코드 목록 (중복 제거)

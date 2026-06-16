@@ -2,7 +2,8 @@
 // 구조: AppBar(서브) → Hero → MacroRow → 자동 태그 → 영양표 → 분석 리포트 → 원료 → 후기 → sticky CTA bar
 // - 모바일 셸은 디테일에서 BottomNav 숨김 (App.jsx 처리). 본문 하단은 sticky CTA용 padding 확보
 // - AppBar/CTA는 페이지가 직접 렌더
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { productPath, parseProductId } from '../../data/productUrl.js';
 import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { getPrimaryMetricsByCode } from '../../data/categoryCardMetrics.js';
@@ -71,7 +72,8 @@ function EmptyState({ onHome }) {
 }
 
 export default function DetailPageMobile() {
-  const { id } = useParams();
+  const { id: routeParam } = useParams();
+  const id = parseProductId(routeParam); // 슬러그-ID 또는 순수 ID에서 ID만 추출
   const navigate = useNavigate();
   const { has, toggle, isFull, max, count } = useCompare();
   const { purpose, purposeId } = usePurpose();
@@ -106,6 +108,12 @@ export default function DetailPageMobile() {
     );
   }
 
+  // 슬러그-ID 정규 URL로 통일 — 순수 ID나 옛 슬러그로 들어오면 교정
+  const canonicalPath = productPath(product);
+  if (routeParam !== canonicalPath.slice('/product/'.length)) {
+    return <Navigate to={canonicalPath} replace />;
+  }
+
   const inCart = has(product.id);
   // 핵심 지표 표 — 1순위 지표가 있는 카테고리(단백질 음료 등)만 노출
   const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
@@ -129,7 +137,7 @@ export default function DetailPageMobile() {
       <Seo
         title={`${product.brand ? product.brand + ' ' : ''}${product.name} 영양성분·가격 비교`}
         description={seoDesc}
-        canonicalPath={`/product/${product.id}`}
+        canonicalPath={canonicalPath}
         ogImage={product.thumb || undefined}
         ogType="article"
         jsonLd={[

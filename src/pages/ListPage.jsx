@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useCompare } from '../store/CompareContext.jsx';
 import { useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
@@ -20,7 +20,8 @@ import {
   saveListViewState,
   setListPageSearchParam,
 } from '../data/listViewState.js';
-import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel, getVisibleFoodTypes } from '../data/categoryTabs.js';
+import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeBySlug, getVisibleFoodTypes, categoryPath } from '../data/categoryTabs.js';
+import NotFoundPage from './NotFoundPage.jsx';
 import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
 import ResultHeader from '../components/desktop/list/ResultHeader.jsx';
@@ -29,6 +30,7 @@ import EmptyResult from '../components/desktop/list/EmptyResult.jsx';
 import ActiveFilterChips from '../components/desktop/list/ActiveFilterChips.jsx';
 import { Pagination } from '../components/ds/Pagination.jsx';
 import Seo from '../components/global/Seo.jsx';
+import { productPath } from '../data/productUrl.js';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -38,6 +40,9 @@ export default function ListPage() {
   const { products: PRODUCTS, loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  // 카테고리 경로형 URL(/category/:slug) — 경로의 슬러그가 카테고리의 단일 출처
+  const { categorySlug } = useParams();
+  const routeFoodType = categorySlug ? getFoodTypeBySlug(categorySlug) : null;
   const q = searchParams.get('q') ?? '';
   const subParam = searchParams.get('sub') ?? '';
   const pageParam = getListPageFromSearchParams(searchParams);
@@ -47,8 +52,8 @@ export default function ListPage() {
   }
   const initialListState = initialListStateRef.current;
 
-  // 세션 보존 상태 복원 — URL의 sub 파라미터가 있으면 그것을 우선
-  const [activeSub, setActiveSub] = useState(() => subParam || initialListState.activeSub || 'all');
+  // 카테고리는 URL(경로) 우선 → sub 쿼리 → 세션 복원 순
+  const [activeSub, setActiveSub] = useState(() => routeFoodType?.label || subParam || initialListState.activeSub || 'all');
   const [filterState, setFilterState] = useState(() => initialListState.filterState || {});
   const [page, setPage] = useState(() => pageParam || initialListState.page || 1);
 
@@ -61,6 +66,12 @@ export default function ListPage() {
     setSearchParams((prev) => setListPageSearchParam(prev, normalized), { replace });
     if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [setSearchParams]);
+
+  // URL(경로 슬러그)을 카테고리의 단일 출처로 동기화 — /category/:slug → 라벨, /list → 전체
+  useEffect(() => {
+    const ft = categorySlug ? getFoodTypeBySlug(categorySlug) : null;
+    setActiveSub(ft ? ft.label : 'all');
+  }, [categorySlug]);
 
   // 카테고리·필터·정렬·페이지 변경 시 세션에 저장 → 상세/비교함 다녀와도 유지
   useEffect(() => {
@@ -177,11 +188,17 @@ export default function ListPage() {
     setListPage(next, { replace: false, scroll: true });
   };
 
-  // 페이지네이션 크롤용 href — 현재 필터/정렬 쿼리를 보존하며 page만 교체
+  // 페이지네이션 크롤용 href — 현재 경로(/list 또는 /category/:slug) 기준 + page만 교체
   const hrefForPage = useCallback((n) => {
     const qs = setListPageSearchParam(searchParams, n).toString();
-    return qs ? `/list?${qs}` : '/list';
-  }, [searchParams]);
+    const base = routeFoodType ? `/category/${routeFoodType.slug}` : '/list';
+    return qs ? `${base}?${qs}` : base;
+  }, [searchParams, routeFoodType]);
+
+  // 존재하지 않는 카테고리 슬러그 → 404(noindex)
+  if (categorySlug && !routeFoodType) {
+    return <NotFoundPage />;
+  }
 
   if (loading) {
     return (
@@ -208,16 +225,20 @@ export default function ListPage() {
     );
   }
 
-  // 검색어 > 카테고리 > 기본 순으로 제목 결정. canonical은 필터/정렬 쿼리 제거된 '/list'
+  // 검색어 > 카테고리 > 기본 순으로 제목 결정
   const seoTitle = q
     ? `'${q}' 검색 결과`
     : activeSub !== 'all'
       ? `${activeSub} 비교`
       : '다이어트 식품 목록';
 
+  // canonical — 카테고리 경로면 /category/:slug, 아니면 /list (둘 다 page만 보존, 필터/정렬 제외)
+  const basePath = routeFoodType ? `/category/${routeFoodType.slug}` : '/list';
+  const canonicalPath = page > 1 ? `${basePath}?page=${page}` : basePath;
+
   return (
     <div className="d-list-page">
-      <Seo title={seoTitle} canonicalPath={page > 1 ? `/list?page=${page}` : '/list'} />
+      <Seo title={seoTitle} canonicalPath={canonicalPath} />
       <h1 className="sr-only">{seoTitle}</h1>
       <div className="d-list-page-inner">
         {/* 식품유형 칩 — 목적 탭 없이 전 식품유형을 한 줄로, 준비중은 비활성 */}
@@ -225,7 +246,7 @@ export default function ListPage() {
           <button
             type="button"
             className={`d-list-sub-chip${activeSub === 'all' ? ' is-active' : ''}`}
-            onClick={() => setActiveSub('all')}
+            onClick={() => navigate('/list')}
           >
             전체
           </button>
@@ -234,7 +255,7 @@ export default function ListPage() {
               key={ft.label}
               type="button"
               className={`d-list-sub-chip${activeSub === ft.label ? ' is-active' : ''}`}
-              onClick={() => setActiveSub(ft.label)}
+              onClick={() => navigate(categoryPath(ft))}
             >
               {ft.label}
             </button>
@@ -277,7 +298,7 @@ export default function ListPage() {
               <>
                 <ResultGrid
                   products={pageProducts}
-                  onCardClick={(id) => navigate(`/product/${id}`)}
+                  onCardClick={(p) => navigate(productPath(p))}
                   onCompare={(id) => compare.toggle(id)}
                   sortKey={sortKey}
                 />

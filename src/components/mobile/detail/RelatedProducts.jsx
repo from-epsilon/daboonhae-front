@@ -4,6 +4,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FoodCard } from '../../ds/FoodCard.jsx';
 import { getAdapted } from '../../../data/adapters.js';
+import { productPath } from '../../../data/productUrl.js';
 
 export function RelatedProducts({ currentRaw, allProducts }) {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export function RelatedProducts({ currentRaw, allProducts }) {
             <FoodCard
               food={food}
               layout="grid"
-              onClick={() => navigate(`/product/${food.id}`)}
+              onClick={() => navigate(productPath(food))}
             />
           </div>
         ))}

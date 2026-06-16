@@ -3,6 +3,7 @@ import { Check, Plus } from 'lucide-react';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { formatMetric } from '../../utils/format.js';
 import ProductThumb from '../global/ProductThumb.jsx';
+import { productPath } from '../../data/productUrl.js';
 
 // 제품 카드
 // - 카드의 핵심 수치는 purpose.highlightMetrics에 따라 자동으로 다르게 표시
@@ -22,7 +23,7 @@ export default function ProductCard({ product, purpose }) {
 
   return (
     <article className="product-card">
-      <Link to={`/product/${product.id}`} className="product-card-link">
+      <Link to={productPath(product)} className="product-card-link">
         <ProductThumb product={product} size="card" />
         <div className="product-brand">{product.brand}</div>
         <div className="product-name">{product.name}</div>

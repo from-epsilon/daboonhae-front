@@ -50,6 +50,7 @@ function DesktopShell() {
                   <Routes>
                     <Route path="/" element={<MainPage />} />
                     <Route path="/list" element={<ListPage />} />
+                    <Route path="/category/:categorySlug" element={<ListPage />} />
                     <Route path="/product/:id" element={<DetailPage />} />
                     <Route path="/compare" element={<ComparePage />} />
                     <Route path="/about" element={<AboutPage />} />
@@ -86,6 +87,7 @@ function MobileShell() {
                   <Routes>
                     <Route path="/" element={<MainPageMobile />} />
                     <Route path="/list" element={<ListPageMobile />} />
+                    <Route path="/category/:categorySlug" element={<ListPageMobile />} />
                     <Route path="/product/:id" element={<DetailPageMobile />} />
                     <Route path="/compare" element={<ComparePageMobile />} />
                     <Route path="*" element={<NotFoundPage />} />

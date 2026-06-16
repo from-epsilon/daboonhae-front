@@ -21,6 +21,7 @@ import { CompareTable } from '../components/desktop/compare/CompareTable.jsx';
 import { CompareSummary } from '../components/desktop/compare/CompareSummary.jsx';
 import { EmptyCompare } from '../components/desktop/compare/EmptyCompare.jsx';
 import Seo from '../components/global/Seo.jsx';
+import { productPath } from '../data/productUrl.js';
 import {
   COMPARE_METRICS,
   getBestIndices,
@@ -89,7 +90,10 @@ export default function ComparePage() {
   // ───────── 핸들러 (SRP)
   const handleRemove = (id) => remove(id);
   const handleClear = () => clear();
-  const handleOpenDetail = (id) => navigate(`/product/${id}`);
+  const handleOpenDetail = (id) => {
+    const p = products.find((x) => String(x.id) === String(id));
+    navigate(p ? productPath(p) : `/product/${id}`);
+  };
   const handleAdd = () => navigate('/list');
   const handleBrowse = () => navigate('/list');
 

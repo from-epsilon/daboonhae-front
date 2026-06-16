@@ -21,6 +21,7 @@ import { AddSlot } from '../../components/mobile/compare/AddSlot.jsx';
 import { EmptyCompare } from '../../components/mobile/compare/EmptyCompare.jsx';
 import { CompareSummary } from '../../components/mobile/compare/CompareSummary.jsx';
 import Seo from '../../components/global/Seo.jsx';
+import { productPath } from '../../data/productUrl.js';
 import {
   COMPARE_METRICS,
   getBestIndices,
@@ -102,7 +103,10 @@ export default function ComparePageMobile() {
   const handleBack = () => navigate('/');
   const handleRemove = (id) => remove(id);
   const handleClear = () => clear();
-  const handleOpenDetail = (id) => navigate(`/product/${id}`);
+  const handleOpenDetail = (id) => {
+    const p = products.find((x) => String(x.id) === String(id));
+    navigate(p ? productPath(p) : `/product/${id}`);
+  };
   const handleAdd = () => navigate('/list');
 
   const isEmpty = products.length === 0;

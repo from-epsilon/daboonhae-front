@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { FoodCard } from '../../ds/FoodCard.jsx';
 import { getAdapted } from '../../../data/adapters.js';
 import { useProducts } from '../../../store/ProductsContext.jsx';
+import { categoryPath } from '../../../data/categoryTabs.js';
 
 export function RelatedProducts({ currentProduct, onNavigate, limit = 3 }) {
   const { products: PRODUCTS } = useProducts();
@@ -23,7 +24,7 @@ export function RelatedProducts({ currentProduct, onNavigate, limit = 3 }) {
       <div className="d-detail-related-header">
         <h2 className="d-detail-related-title">같은 카테고리 제품</h2>
         <Link
-          to={`/list?category=${encodeURIComponent(currentProduct.category)}`}
+          to={categoryPath(currentProduct.categoryCode)}
           className="d-detail-related-more"
         >
           {currentProduct.category} 전체보기 <ArrowRight size={14} />
@@ -37,7 +38,7 @@ export function RelatedProducts({ currentProduct, onNavigate, limit = 3 }) {
               key={food.id}
               food={food}
               layout="grid"
-              onClick={() => onNavigate(food.id)}
+              onClick={() => onNavigate(food)}
             />
           );
         })}

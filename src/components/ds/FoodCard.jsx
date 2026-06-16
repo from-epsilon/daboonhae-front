@@ -20,10 +20,11 @@ import {
   splitProteinSortKey,
 } from '../../data/listSort.js';
 import PurchaseOffers from '../global/PurchaseOffers.jsx';
+import { productPath } from '../../data/productUrl.js';
 
-// 제품 상세 경로 — 크롤러가 따라갈 실제 href (사이트맵 없이도 발견 가능하게)
+// 제품 상세 경로 — 크롤러가 따라갈 실제 href (슬러그+ID 하이브리드, 사이트맵 없이도 발견 가능)
 function productHref(food) {
-  return food?.id != null ? `/product/${food.id}` : undefined;
+  return food?.id != null ? productPath(food) : undefined;
 }
 
 // 제품명 링크 클릭 — 새 탭(메타/Ctrl/휠클릭)은 기본 동작 유지,

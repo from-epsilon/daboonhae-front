@@ -12,6 +12,7 @@ import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import Footer from '../../components/desktop/home/Footer.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { organizationLd, websiteLd } from '../../data/jsonLd.js';
+import { productPath } from '../../data/productUrl.js';
 import { CATEGORY_TABS } from '../../data/categoryTabs.js';
 import { getPurposeRecommendedProducts } from '../../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../../data/categoryCardMetrics.js';
@@ -109,7 +110,7 @@ export default function MainPageMobile() {
     navigate(q ? `/list?q=${encodeURIComponent(q)}` : '/list');
   };
   const handleCompare = () => navigate('/compare');
-  const handleFoodClick = (food) => navigate(`/product/${food.id}`);
+  const handleFoodClick = (food) => navigate(productPath(food));
   const handleToggleCompare = (food) => toggle(food.id);
 
   const handleLogo = () => navigate('/');

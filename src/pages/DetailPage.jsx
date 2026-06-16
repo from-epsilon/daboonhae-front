@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
+import { productPath, parseProductId } from '../data/productUrl.js';
 import { useProductById, useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
-import { CATEGORY_TABS } from '../data/categoryTabs.js';
+import { categoryPath } from '../data/categoryTabs.js';
 import { getPrimaryMetricsByCode } from '../data/categoryCardMetrics.js';
 import { useCompare } from '../store/CompareContext.jsx';
 
@@ -32,12 +33,9 @@ function EmptyState() {
   );
 }
 
-// #9 풀 breadcrumb
-function getCategoryListHref(categoryCode, category) {
-  const tab = CATEGORY_TABS.find((t) => t.subs.some((s) => s.code === categoryCode));
-  const sub = tab?.subs.find((s) => s.code === categoryCode);
-  if (tab && sub) return `/list?tab=${tab.id}&sub=${encodeURIComponent(sub.label)}`;
-  return category ? `/list?q=${encodeURIComponent(category)}` : '/list';
+// #9 풀 breadcrumb — 카테고리 경로형 URL(/category/:slug)
+function getCategoryListHref(categoryCode) {
+  return categoryPath(categoryCode);
 }
 
 function Breadcrumb({ category, categoryCode, productName, onBack }) {
@@ -235,7 +233,8 @@ function CompareButton({ inCart, onClick }) {
 }
 
 export default function DetailPage() {
-  const { id } = useParams();
+  const { id: routeParam } = useParams();
+  const id = parseProductId(routeParam); // 슬러그-ID 또는 순수 ID에서 ID만 추출
   const navigate = useNavigate();
   const { has, toggle, isFull, max } = useCompare();
   const { products, loading } = useProducts();
@@ -269,6 +268,12 @@ export default function DetailPage() {
   );
   if (!product) return <EmptyState />;
 
+  // 슬러그-ID 정규 URL로 통일 — 순수 ID(/product/5)나 옛 슬러그로 들어오면 교정
+  const canonicalPath = productPath(product);
+  if (routeParam !== canonicalPath.slice('/product/'.length)) {
+    return <Navigate to={canonicalPath} replace />;
+  }
+
   const inCart = has(product.id);
   const n = product.nutrition ?? {};
 
@@ -290,7 +295,7 @@ export default function DetailPage() {
       <Seo
         title={`${product.brand ? product.brand + ' ' : ''}${product.name} 영양성분·가격 비교`}
         description={seoDesc}
-        canonicalPath={`/product/${product.id}`}
+        canonicalPath={canonicalPath}
         ogImage={product.thumb || undefined}
         ogType="article"
         jsonLd={[
@@ -339,7 +344,7 @@ export default function DetailPage() {
             </div>
             <RelatedProducts
               currentProduct={raw}
-              onNavigate={(nextId) => navigate(`/product/${nextId}`)}
+              onNavigate={(food) => navigate(productPath(food))}
               limit={4}
             />
           </div>

@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { FoodCard } from '../../components/ds/FoodCard.jsx';
 import { SubCategoryChips } from '../../components/mobile/list/SubCategoryChips.jsx';
@@ -31,9 +31,11 @@ import {
   saveListViewState,
   setListPageSearchParam,
 } from '../../data/listViewState.js';
-import { getFoodTypeByLabel, getFoodTypeByCode, getVisibleFoodTypes } from '../../data/categoryTabs.js';
+import { getFoodTypeByLabel, getFoodTypeByCode, getFoodTypeBySlug, getVisibleFoodTypes, categoryPath } from '../../data/categoryTabs.js';
+import NotFoundPage from '../NotFoundPage.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
 import Seo from '../../components/global/Seo.jsx';
+import { productPath } from '../../data/productUrl.js';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -65,6 +67,9 @@ export default function ListPageMobile() {
   const { products: PRODUCTS, loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  // 카테고리 경로형 URL(/category/:slug) — 경로의 슬러그가 카테고리의 단일 출처
+  const { categorySlug } = useParams();
+  const routeFoodType = categorySlug ? getFoodTypeBySlug(categorySlug) : null;
   const q = searchParams.get('q') ?? '';
   const subParam = searchParams.get('sub') ?? '';
   const pageParam = getListPageFromSearchParams(searchParams);
@@ -74,8 +79,8 @@ export default function ListPageMobile() {
   }
   const initialListState = initialListStateRef.current;
 
-  // 세션 보존 상태 복원 — URL의 sub 파라미터가 있으면 그것을 우선
-  const [activeSub, setActiveSub] = useState(() => subParam || initialListState.activeSub || 'all');
+  // 카테고리는 URL(경로) 우선 → sub 쿼리 → 세션 복원 순
+  const [activeSub, setActiveSub] = useState(() => routeFoodType?.label || subParam || initialListState.activeSub || 'all');
   const [filterState, setFilterState] = useState(() => initialListState.filterState || {});
   const [sortKey, setSortKey] = useState(() => initialListState.sortKey || 'default');
   const [page, setPage] = useState(() => pageParam || initialListState.page || 1);
@@ -87,6 +92,12 @@ export default function ListPageMobile() {
     setSearchParams((prev) => setListPageSearchParam(prev, normalized), { replace });
     if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [setSearchParams]);
+
+  // URL(경로 슬러그)을 카테고리의 단일 출처로 동기화 — /category/:slug → 라벨, /list → 전체
+  useEffect(() => {
+    const ft = categorySlug ? getFoodTypeBySlug(categorySlug) : null;
+    setActiveSub(ft ? ft.label : 'all');
+  }, [categorySlug]);
 
   // 카테고리·필터·정렬·페이지 변경 시 세션에 저장 → 상세/비교함 다녀와도 유지
   useEffect(() => {
@@ -116,9 +127,10 @@ export default function ListPageMobile() {
     return getFoodTypeByLabel(activeSub)?.code ?? null;
   }, [activeSub]);
 
+  // 칩 선택 → 카테고리 경로형 URL로 이동 (URL이 카테고리의 단일 출처)
   const handleSubSelect = useCallback((label) => {
-    setActiveSub(label === 'all' ? 'all' : label);
-  }, []);
+    navigate(label === 'all' ? '/list' : categoryPath(label));
+  }, [navigate]);
 
   const handleSearchSubmit = (next) => {
     const trimmed = (next ?? '').trim();
@@ -221,11 +233,17 @@ export default function ListPageMobile() {
     setListPage(next, { replace: false, scroll: true });
   };
 
-  // 페이지네이션 크롤용 href — 현재 필터/정렬 쿼리를 보존하며 page만 교체
+  // 페이지네이션 크롤용 href — 현재 경로(/list 또는 /category/:slug) 기준 + page만 교체
   const hrefForPage = useCallback((n) => {
     const qs = setListPageSearchParam(searchParams, n).toString();
-    return qs ? `/list?${qs}` : '/list';
-  }, [searchParams]);
+    const base = routeFoodType ? `/category/${routeFoodType.slug}` : '/list';
+    return qs ? `${base}?${qs}` : base;
+  }, [searchParams, routeFoodType]);
+
+  // 존재하지 않는 카테고리 슬러그 → 404(noindex)
+  if (categorySlug && !routeFoodType) {
+    return <NotFoundPage />;
+  }
 
   const seoTitle = q
     ? `'${q}' 검색 결과`
@@ -233,9 +251,13 @@ export default function ListPageMobile() {
       ? `${activeSub} 비교`
       : '다이어트 식품 목록';
 
+  // canonical — 카테고리 경로면 /category/:slug, 아니면 /list (둘 다 page만 보존)
+  const basePath = routeFoodType ? `/category/${routeFoodType.slug}` : '/list';
+  const canonicalPath = page > 1 ? `${basePath}?page=${page}` : basePath;
+
   return (
     <div className="m-list-root">
-      <Seo title={seoTitle} canonicalPath={page > 1 ? `/list?page=${page}` : '/list'} />
+      <Seo title={seoTitle} canonicalPath={canonicalPath} />
       <h1 className="sr-only">{seoTitle}</h1>
       <AppBar
         onSearch={() => setSearchOpen(true)}
@@ -286,7 +308,7 @@ export default function ListPageMobile() {
                 subLabel={ft?.label}
                 sortKey={sortKey}
                 inCompare={hasCompare(p.id)}
-                onClick={() => navigate(`/product/${p.id}`)}
+                onClick={() => navigate(productPath(p))}
                 onCompare={(food) => toggleCompare(food.id)}
               />
             );

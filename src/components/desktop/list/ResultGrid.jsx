@@ -39,7 +39,7 @@ export default function ResultGrid({
               <FoodCard
                 food={food}
                 layout="wide"
-                onClick={() => onCardClick(p.id)}
+                onClick={() => onCardClick(p)}
                 onCompare={() => onCompare(p.id)}
                 inCompare={has(p.id)}
                 sortKey={sortKey}

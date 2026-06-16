@@ -1,6 +1,7 @@
 // Schema.org JSON-LD 빌더 — 순수 함수 모음
 // Phase 1의 <Seo jsonLd={...} />로 주입한다 (페이지에서 직접 <script> 삽입 금지)
 import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION, absUrl } from '../config/site.js';
+import { productPath } from './productUrl.js';
 
 // undefined 필드 제거 (JSON-LD에 빈 키 노출 방지)
 function clean(obj) {
@@ -55,7 +56,7 @@ export function productLd(product) {
     description:
       `${product.name} 영양성분: 칼로리 ${n.calories ?? '-'}kcal, ` +
       `단백질 ${n.protein ?? '-'}g, 당류 ${n.sugar ?? '-'}g.`,
-    url: absUrl(`/product/${product.id}`),
+    url: absUrl(productPath(product)),
   };
 
   // 가격 있는 판매처가 있을 때만 offers (가짜 가격 금지)
