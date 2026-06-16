@@ -285,15 +285,19 @@ export default function DetailPage() {
     toggle(product.id);
   };
 
+  // 표시명 — 제품명에 브랜드가 이미 들어있으면 중복 제거 (예: '하림' + '하림 닭가슴살')
+  const titleName =
+    product.brand && !product.name.includes(product.brand)
+      ? `${product.brand} ${product.name}`
+      : product.name;
   // 영양 핵심 수치로 메타 설명 구성 (값 없으면 '-')
   const seoDesc =
-    `${product.brand ? product.brand + ' ' : ''}${product.name} · ` +
-    `칼로리 ${n.calories ?? '-'}kcal, 단백질 ${n.protein ?? '-'}g, 당류 ${n.sugar ?? '-'}g. 판매처별 최저가 비교.`;
+    `${titleName} · 칼로리 ${n.calories ?? '-'}kcal, 단백질 ${n.protein ?? '-'}g, 당류 ${n.sugar ?? '-'}g. 판매처별 최저가 비교.`;
 
   return (
     <div className="page d-detail">
       <Seo
-        title={`${product.brand ? product.brand + ' ' : ''}${product.name} 영양성분·가격 비교`}
+        title={`${titleName} 영양성분·가격 비교`}
         description={seoDesc}
         canonicalPath={canonicalPath}
         ogImage={product.thumb || undefined}
