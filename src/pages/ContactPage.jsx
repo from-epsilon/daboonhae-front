@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Send } from 'lucide-react';
+import Seo from '../components/global/Seo.jsx';
 import './ContactPage.css';
 
 export default function ContactPage() {
@@ -29,6 +30,11 @@ export default function ContactPage() {
 
   return (
     <div className="page d-contact">
+      <Seo
+        title="문의하기"
+        description="제품 추가 요청, 데이터 오류 제보, 서비스 피드백을 보내주세요."
+        canonicalPath="/contact"
+      />
       <header className="d-contact-header">
         <h1 className="d-contact-title">문의하기</h1>
         <p className="d-contact-sub">

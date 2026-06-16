@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { BarChart3, Scale, ShieldCheck, Users } from 'lucide-react';
 import { useProducts } from '../store/ProductsContext.jsx';
+import Seo from '../components/global/Seo.jsx';
 import './AboutPage.css';
 
 const FEATURES = [
@@ -32,6 +33,11 @@ export default function AboutPage() {
 
   return (
     <div className="page d-about">
+      <Seo
+        title="서비스 소개"
+        description="다분해는 다이어트 식품의 영양성분을 분해하고 비교하는 서비스입니다. 광고가 아닌 식약처 공시 영양정보 기반."
+        canonicalPath="/about"
+      />
       <section className="d-about-hero">
         <h1 className="d-about-hero-title">
           광고 말고, <span className="d-about-hero-accent">숫자</span>로 고르세요

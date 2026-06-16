@@ -28,6 +28,7 @@ import ResultGrid from '../components/desktop/list/ResultGrid.jsx';
 import EmptyResult from '../components/desktop/list/EmptyResult.jsx';
 import ActiveFilterChips from '../components/desktop/list/ActiveFilterChips.jsx';
 import { Pagination } from '../components/ds/Pagination.jsx';
+import Seo from '../components/global/Seo.jsx';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -201,8 +202,16 @@ export default function ListPage() {
     );
   }
 
+  // 검색어 > 카테고리 > 기본 순으로 제목 결정. canonical은 필터/정렬 쿼리 제거된 '/list'
+  const seoTitle = q
+    ? `'${q}' 검색 결과`
+    : activeSub !== 'all'
+      ? `${activeSub} 비교`
+      : '다이어트 식품 목록';
+
   return (
     <div className="d-list-page">
+      <Seo title={seoTitle} canonicalPath="/list" />
       <div className="d-list-page-inner">
         {/* 식품유형 칩 — 목적 탭 없이 전 식품유형을 한 줄로, 준비중은 비활성 */}
         <div className="d-list-sub-chips">

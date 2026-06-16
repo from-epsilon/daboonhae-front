@@ -17,11 +17,15 @@ import { CategoryGuide } from '../components/desktop/detail/CategoryGuide.jsx';
 import { ReviewSection } from '../components/desktop/detail/ReviewSection.jsx';
 import { RelatedProducts } from '../components/desktop/detail/RelatedProducts.jsx';
 import PurchaseOffers from '../components/global/PurchaseOffers.jsx';
+import Seo from '../components/global/Seo.jsx';
+import { productLd, breadcrumbLd } from '../data/jsonLd.js';
+import { buildProductBreadcrumb } from '../data/breadcrumb.js';
 import './DetailPage.css';
 
 function EmptyState() {
   return (
     <div className="page d-detail-empty">
+      <Seo title="존재하지 않는 제품" noindex />
       <p className="d-detail-empty-msg">존재하지 않는 제품이에요.</p>
       <Link className="d-detail-empty-link" to="/">메인으로 가기</Link>
     </div>
@@ -90,7 +94,12 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
       <div className="d-detail-overview-grid">
         <div className="d-detail-overview-media">
           <div className="d-detail-overview-thumb">
-            <ProductThumb product={product} size="card" />
+            <ProductThumb
+              product={product}
+              size="card"
+              priority
+              alt={`${product.brand ? product.brand + ' ' : ''}${product.name}`}
+            />
           </div>
           <CompareButton inCart={inCart} onClick={onToggleCompare} />
         </div>
@@ -271,8 +280,30 @@ export default function DetailPage() {
     toggle(product.id);
   };
 
+  // 영양 핵심 수치로 메타 설명 구성 (값 없으면 '-')
+  const seoDesc =
+    `${product.brand ? product.brand + ' ' : ''}${product.name} · ` +
+    `칼로리 ${n.calories ?? '-'}kcal, 단백질 ${n.protein ?? '-'}g, 당류 ${n.sugar ?? '-'}g. 판매처별 최저가 비교.`;
+
   return (
     <div className="page d-detail">
+      <Seo
+        title={`${product.brand ? product.brand + ' ' : ''}${product.name} 영양성분·가격 비교`}
+        description={seoDesc}
+        canonicalPath={`/product/${product.id}`}
+        ogImage={product.thumb || undefined}
+        ogType="article"
+        jsonLd={[
+          productLd(product),
+          breadcrumbLd(
+            buildProductBreadcrumb({
+              category: raw?.category,
+              categoryCode: raw?.categoryCode,
+              productName: product.name,
+            }),
+          ),
+        ]}
+      />
       <Breadcrumb category={raw?.category} categoryCode={raw?.categoryCode} productName={product.name} />
 
       {/* 2단 레이아웃 — 좌: 본문 / 우: 가격 비교 sticky 패널 */}

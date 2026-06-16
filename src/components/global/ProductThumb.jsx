@@ -3,7 +3,9 @@
 // - 컨테이너 쿼리(cqi)로 폰트 크기가 컨테이너 폭에 비례 (모든 사이즈에서 일관된 비율)
 // - aria-hidden 기본: 시각 장식이며, 옆의 브랜드·제품명 텍스트가 의미를 전달
 
-export default function ProductThumb({ product, size = 'card', className = '' }) {
+// priority: 폴드 위 LCP 이미지(상세 메인 등)면 true → eager + fetchpriority high
+// alt: 의미 있는 대체텍스트를 주면 그것을 쓰고 aria-hidden 해제 (미지정 시 장식 처리)
+export default function ProductThumb({ product, size = 'card', className = '', priority = false, alt }) {
   const label = product?.brand || product?.name || '';
   const seed = product?.id || product?.brand || product?.name || 'unknown';
   const initials = getInitials(label);
@@ -11,13 +13,15 @@ export default function ProductThumb({ product, size = 'card', className = '' })
 
   const imgSrc = product?.thumbnail || product?.thumb;
   if (imgSrc) {
+    const hasAlt = typeof alt === 'string' && alt.length > 0;
     return (
       <img
         className={`product-thumb product-thumb-${size} ${className}`}
         src={imgSrc}
-        alt=""
-        aria-hidden
-        loading="lazy"
+        alt={hasAlt ? alt : ''}
+        aria-hidden={hasAlt ? undefined : true}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : undefined}
       />
     );
   }

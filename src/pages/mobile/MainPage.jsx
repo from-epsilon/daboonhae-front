@@ -10,6 +10,8 @@ import { RecentList } from '../../components/mobile/main/RecentList.jsx';
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import Footer from '../../components/desktop/home/Footer.jsx';
+import Seo from '../../components/global/Seo.jsx';
+import { organizationLd, websiteLd } from '../../data/jsonLd.js';
 import { CATEGORY_TABS } from '../../data/categoryTabs.js';
 import { getPurposeRecommendedProducts } from '../../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../../data/categoryCardMetrics.js';
@@ -126,6 +128,7 @@ export default function MainPageMobile() {
 
   return (
     <>
+      <Seo canonicalPath="/" jsonLd={[organizationLd(), websiteLd()]} />
       <AppBar
         onSearch={handleSearch}
         onCompare={handleCompare}

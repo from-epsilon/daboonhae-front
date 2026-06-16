@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Seo from '../components/global/Seo.jsx';
 import '../styles/redirect.css';
 
 // 다분해 텍스트 로고 — 헤더와 동일한 표기('분'만 브랜드 그린)
@@ -69,6 +70,7 @@ export default function RedirectPage() {
   if (!targetUrl) {
     return (
       <div className="redirect-page">
+        <Seo title="이동 중" noindex />
         <div className="redirect-card">
           <DabunhaeLogo />
           <div className="redirect-error-icon">⚠️</div>
@@ -86,6 +88,7 @@ export default function RedirectPage() {
 
   return (
     <div className="redirect-page">
+      <Seo title={`${vendorName} 이동 중`} noindex />
       <div className="redirect-card">
         <DabunhaeLogo />
 

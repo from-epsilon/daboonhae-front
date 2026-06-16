@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import Seo from '../components/global/Seo.jsx';
+import { faqLd } from '../data/jsonLd.js';
 import './FaqPage.css';
 
 const FAQ_ITEMS = [
@@ -54,6 +56,12 @@ function FaqItem({ q, a }) {
 export default function FaqPage() {
   return (
     <div className="page d-faq">
+      <Seo
+        title="자주 묻는 질문"
+        description="다분해 서비스, 데이터 출처, 비교함 사용법 등 자주 묻는 질문 모음."
+        canonicalPath="/faq"
+        jsonLd={faqLd(FAQ_ITEMS)}
+      />
       <header className="d-faq-header">
         <h1 className="d-faq-title">자주 묻는 질문</h1>
         <p className="d-faq-sub">궁금한 점이 해결되지 않으면 문의하기를 이용해주세요.</p>

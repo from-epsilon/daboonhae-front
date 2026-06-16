@@ -10,7 +10,8 @@ function HeroImage({ src, alt }) {
   return (
     <div className="m-detail-hero-img">
       {src ? (
-        <img src={src} alt={alt} loading="lazy" />
+        // 폴드 위 LCP 이미지 — eager + fetchpriority로 우선 로드
+        <img src={src} alt={alt} loading="eager" fetchpriority="high" />
       ) : (
         <div className="m-detail-hero-img-placeholder" aria-hidden="true">
           이미지 없음

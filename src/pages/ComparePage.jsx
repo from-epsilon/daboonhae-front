@@ -20,6 +20,7 @@ import { useCompare } from '../store/CompareContext.jsx';
 import { CompareTable } from '../components/desktop/compare/CompareTable.jsx';
 import { CompareSummary } from '../components/desktop/compare/CompareSummary.jsx';
 import { EmptyCompare } from '../components/desktop/compare/EmptyCompare.jsx';
+import Seo from '../components/global/Seo.jsx';
 import {
   COMPARE_METRICS,
   getBestIndices,
@@ -98,6 +99,7 @@ export default function ComparePage() {
 
   return (
     <div className="page d-compare">
+      <Seo title="제품 비교" noindex />
       <PageHeader count={products.length} max={max} onClear={handleClear} />
 
       {isEmpty ? (

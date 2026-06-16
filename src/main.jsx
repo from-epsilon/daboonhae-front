@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App.jsx';
 import { CompareProvider } from './store/CompareContext.jsx';
 import { ProductsProvider } from './store/ProductsContext.jsx';
@@ -11,14 +12,16 @@ import './styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ProductsProvider>
-        <PurposeProvider>
-          <CompareProvider>
-            <App />
-          </CompareProvider>
-        </PurposeProvider>
-      </ProductsProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <ProductsProvider>
+          <PurposeProvider>
+            <CompareProvider>
+              <App />
+            </CompareProvider>
+          </PurposeProvider>
+        </ProductsProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   </React.StrictMode>,
 );

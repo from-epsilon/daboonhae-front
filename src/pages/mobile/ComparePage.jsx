@@ -20,6 +20,7 @@ import { CompareTagsCell } from '../../components/mobile/compare/CompareTagsCell
 import { AddSlot } from '../../components/mobile/compare/AddSlot.jsx';
 import { EmptyCompare } from '../../components/mobile/compare/EmptyCompare.jsx';
 import { CompareSummary } from '../../components/mobile/compare/CompareSummary.jsx';
+import Seo from '../../components/global/Seo.jsx';
 import {
   COMPARE_METRICS,
   getBestIndices,
@@ -113,6 +114,7 @@ export default function ComparePageMobile() {
 
   return (
     <>
+      <Seo title="제품 비교" noindex />
       <AppBar
         title={titleText}
         onBack={handleBack}

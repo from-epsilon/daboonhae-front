@@ -33,6 +33,7 @@ import {
 } from '../../data/listViewState.js';
 import { getFoodTypeByLabel, getFoodTypeByCode, getVisibleFoodTypes } from '../../data/categoryTabs.js';
 import { useCompare } from '../../store/CompareContext.jsx';
+import Seo from '../../components/global/Seo.jsx';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -220,8 +221,15 @@ export default function ListPageMobile() {
     setListPage(next, { replace: false, scroll: true });
   };
 
+  const seoTitle = q
+    ? `'${q}' 검색 결과`
+    : activeSub !== 'all'
+      ? `${activeSub} 비교`
+      : '다이어트 식품 목록';
+
   return (
     <div className="m-list-root">
+      <Seo title={seoTitle} canonicalPath="/list" />
       <AppBar
         onSearch={() => setSearchOpen(true)}
         onCompare={goCompare}

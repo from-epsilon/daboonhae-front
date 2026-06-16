@@ -9,6 +9,8 @@ import { CATEGORY_TABS } from '../data/categoryTabs.js';
 import { getPurposeRecommendedProducts } from '../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../data/categoryCardMetrics.js';
 
+import Seo from '../components/global/Seo.jsx';
+import { organizationLd, websiteLd } from '../data/jsonLd.js';
 import MainBanner from '../components/desktop/home/MainBanner.jsx';
 import CategoryTabsDesktop from '../components/desktop/home/CategoryTabs.jsx';
 import FoodGrid from '../components/desktop/home/FoodGrid.jsx';
@@ -99,6 +101,7 @@ export default function MainPage() {
 
   return (
     <div className="d-home">
+      <Seo canonicalPath="/" jsonLd={[organizationLd(), websiteLd()]} />
       <MainBanner
         ctaHref="/list"
         onCtaClick={(e) => { e.preventDefault(); navigate('/list'); }}

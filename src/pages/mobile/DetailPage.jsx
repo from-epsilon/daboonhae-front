@@ -22,6 +22,9 @@ import { CategoryGuideCard } from '../../components/mobile/detail/CategoryGuideC
 import { RelatedProducts } from '../../components/mobile/detail/RelatedProducts.jsx';
 import { StickyCTA } from '../../components/mobile/detail/StickyCTA.jsx';
 import PurchaseOffers from '../../components/global/PurchaseOffers.jsx';
+import Seo from '../../components/global/Seo.jsx';
+import { productLd, breadcrumbLd } from '../../data/jsonLd.js';
+import { buildProductBreadcrumb } from '../../data/breadcrumb.js';
 import './DetailPage.css';
 
 // 매크로 분포 카드 — 풀 MacroRow + kcal 별도 노출
@@ -96,6 +99,7 @@ export default function DetailPageMobile() {
   if (!product) {
     return (
       <>
+        <Seo title="존재하지 않는 제품" noindex />
         <AppBar onBack={() => navigate('/')} title="제품 정보" />
         <EmptyState onHome={() => navigate('/')} />
       </>
@@ -115,8 +119,30 @@ export default function DetailPageMobile() {
     toggle(product.id);
   };
 
+  const n = product.nutrition ?? {};
+  const seoDesc =
+    `${product.brand ? product.brand + ' ' : ''}${product.name} · ` +
+    `칼로리 ${n.calories ?? '-'}kcal, 단백질 ${n.protein ?? '-'}g, 당류 ${n.sugar ?? '-'}g. 판매처별 최저가 비교.`;
+
   return (
     <>
+      <Seo
+        title={`${product.brand ? product.brand + ' ' : ''}${product.name} 영양성분·가격 비교`}
+        description={seoDesc}
+        canonicalPath={`/product/${product.id}`}
+        ogImage={product.thumb || undefined}
+        ogType="article"
+        jsonLd={[
+          productLd(product),
+          breadcrumbLd(
+            buildProductBreadcrumb({
+              category: raw?.category,
+              categoryCode: raw?.categoryCode,
+              productName: product.name,
+            }),
+          ),
+        ]}
+      />
       <AppBar
         onBack={() => navigate(-1)}
         title={product.name}
