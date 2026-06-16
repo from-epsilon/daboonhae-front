@@ -12,8 +12,8 @@ const IMG = '/images/categories';
 const ITEMS = [
   { label: '단백질 음료', code: 'protein_drink', img: `${IMG}/protein-drink.jpg`, tab: 'protein', imgScale: 1.12 },
   { label: '셰이크', code: 'shake', img: `${IMG}/shake.jpg`, tab: 'protein' },
-  { label: '닭가슴살', code: 'chicken_breast', img: `${IMG}/chicken-breast.png`, tab: 'protein' },
-  { label: '아이스크림', code: 'ice_cream', img: `${IMG}/ice-cream.png`, tab: 'low_sugar' },
+  { label: '닭가슴살', code: 'chicken_breast', img: `${IMG}/chicken-breast.jpg`, tab: 'protein' },
+  { label: '아이스크림', code: 'ice_cream', img: `${IMG}/ice-cream.jpg`, tab: 'low_sugar' },
   { label: '과자/초콜릿/젤리', code: 'snack_sweets', img: `${IMG}/snack-sweets.jpg`, tab: 'low_sugar', imgScale: 0.9 },
 ];
 
