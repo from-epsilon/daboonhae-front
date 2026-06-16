@@ -177,6 +177,12 @@ export default function ListPage() {
     setListPage(next, { replace: false, scroll: true });
   };
 
+  // 페이지네이션 크롤용 href — 현재 필터/정렬 쿼리를 보존하며 page만 교체
+  const hrefForPage = useCallback((n) => {
+    const qs = setListPageSearchParam(searchParams, n).toString();
+    return qs ? `/list?${qs}` : '/list';
+  }, [searchParams]);
+
   if (loading) {
     return (
       <div className="d-list-page">
@@ -211,7 +217,7 @@ export default function ListPage() {
 
   return (
     <div className="d-list-page">
-      <Seo title={seoTitle} canonicalPath="/list" />
+      <Seo title={seoTitle} canonicalPath={page > 1 ? `/list?page=${page}` : '/list'} />
       <h1 className="sr-only">{seoTitle}</h1>
       <div className="d-list-page-inner">
         {/* 식품유형 칩 — 목적 탭 없이 전 식품유형을 한 줄로, 준비중은 비활성 */}
@@ -275,7 +281,7 @@ export default function ListPage() {
                   onCompare={(id) => compare.toggle(id)}
                   sortKey={sortKey}
                 />
-                <Pagination page={page} pageCount={pageCount} onChange={goPage} />
+                <Pagination page={page} pageCount={pageCount} onChange={goPage} hrefForPage={hrefForPage} />
               </>
             )}
           </section>

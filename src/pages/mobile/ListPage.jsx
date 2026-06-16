@@ -221,6 +221,12 @@ export default function ListPageMobile() {
     setListPage(next, { replace: false, scroll: true });
   };
 
+  // 페이지네이션 크롤용 href — 현재 필터/정렬 쿼리를 보존하며 page만 교체
+  const hrefForPage = useCallback((n) => {
+    const qs = setListPageSearchParam(searchParams, n).toString();
+    return qs ? `/list?${qs}` : '/list';
+  }, [searchParams]);
+
   const seoTitle = q
     ? `'${q}' 검색 결과`
     : activeSub !== 'all'
@@ -229,7 +235,7 @@ export default function ListPageMobile() {
 
   return (
     <div className="m-list-root">
-      <Seo title={seoTitle} canonicalPath="/list" />
+      <Seo title={seoTitle} canonicalPath={page > 1 ? `/list?page=${page}` : '/list'} />
       <h1 className="sr-only">{seoTitle}</h1>
       <AppBar
         onSearch={() => setSearchOpen(true)}
@@ -285,7 +291,7 @@ export default function ListPageMobile() {
               />
             );
           })}
-          <Pagination page={page} pageCount={pageCount} onChange={goPage} />
+          <Pagination page={page} pageCount={pageCount} onChange={goPage} hrefForPage={hrefForPage} />
         </div>
       )}
 
