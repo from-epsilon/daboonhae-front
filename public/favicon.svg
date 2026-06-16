@@ -1,6 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <rect width="64" height="64" rx="14" fill="#16a34a"/>
-  <text x="50%" y="50%" dy="0.02em" text-anchor="middle" dominant-baseline="central"
-        font-family="'Apple SD Gothic Neo','Malgun Gothic',sans-serif"
-        font-size="38" font-weight="700" fill="#ffffff">분</text>
+  <!-- 다분해 심볼 마크(헤더 BrandMark) — 그린 배경 위 흰색 -->
+  <g transform="translate(32 32) scale(0.62) translate(-32 -32)">
+    <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="#ffffff" stroke-width="7.5" stroke-linecap="round"/>
+    <circle cx="49.5" cy="14.5" r="3.6" fill="#ffffff"/>
+    <circle cx="41" cy="6.5" r="2.4" fill="#ffffff" opacity="0.75"/>
+    <circle cx="57" cy="22" r="2" fill="#ffffff" opacity="0.5"/>
+  </g>
 </svg>
