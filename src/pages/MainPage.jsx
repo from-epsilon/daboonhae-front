@@ -145,6 +145,7 @@ export default function MainPage() {
           onItemClick={handleFoodClick}
           onCompare={handleToggleCompare}
           variant="recent"
+          showPurchase
         />
       </section>
 

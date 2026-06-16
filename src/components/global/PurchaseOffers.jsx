@@ -177,7 +177,7 @@ export default function PurchaseOffers({
               className={`purchase-offer${isBest ? ' is-best' : ''}`}
               href={getRedirectUrl(offer, redirectDelay)}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow sponsored"
               onClick={handlePurchaseClick}
             >
               <span className="purchase-offer-main">

@@ -86,7 +86,7 @@ function CTAGroup({ inCart, isFull, max, onToggleCompare, purchaseUrl }) {
         className="d-detail-info-buy"
         href={purchaseUrl || '#'}
         target="_blank"
-        rel="noreferrer"
+        rel="noreferrer nofollow sponsored"
         title={!purchaseUrl || purchaseUrl === '#' ? '구매 링크 준비 중' : undefined}
       >
         구매하러 가기
