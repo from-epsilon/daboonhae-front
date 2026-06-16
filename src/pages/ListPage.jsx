@@ -173,10 +173,13 @@ export default function ListPage() {
 
   const pageCount = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
   useEffect(() => {
+    // 로딩 중엔 products가 비어 pageCount=1이 되므로 clamp 금지
+    // (직접 /list?page=2 진입 시 1로 리셋되어 딥 페이지가 크롤/표시 안 되는 버그 방지)
+    if (loading) return;
     if (page > pageCount) {
       setListPage(pageCount, { replace: true });
     }
-  }, [page, pageCount, setListPage]);
+  }, [loading, page, pageCount, setListPage]);
 
   const pageProducts = useMemo(
     () => products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
