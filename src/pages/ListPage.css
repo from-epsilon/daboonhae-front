@@ -407,7 +407,7 @@
 .d-list-result-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   padding-bottom: var(--space-4);
   margin-bottom: var(--space-5);
   border-bottom: 1px solid var(--border-tertiary);
@@ -477,6 +477,9 @@
   position: relative;
   flex-shrink: 0;
 }
+.d-list-sort--protein {
+  max-width: 100%;
+}
 
 .d-list-sort-trigger {
   display: inline-flex;
@@ -525,12 +528,6 @@
   margin: 0;
   padding: 4px;
   z-index: 30;
-}
-
-/* 단백질 음료: 2열 그리드 메뉴 — 폭 확장 + 리스트 패딩 대신 그리드 패딩 */
-.d-list-sort-menu--grid {
-  min-width: 360px;
-  padding: 12px;
 }
 
 .d-list-sort-option {

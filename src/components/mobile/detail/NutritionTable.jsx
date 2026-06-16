@@ -64,7 +64,7 @@ function NutritionRow({ label, display, emphasis }) {
   );
 }
 
-export function NutritionTable({ nutrition, serving, foodNutrients }) {
+export function NutritionTable({ nutrition, serving, foodNutrients, children }) {
   // 필수 영양소(탄단지당나트륨 등)와 그 외 미량성분(아미노산 등)을 분리
   // - 미량성분은 기본 접힘 → 핵심 지표가 묻히지 않도록
   const { mainRows, extraRows } = useMemo(() => {
@@ -104,6 +104,8 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
 
   const [showExtras, setShowExtras] = useState(false);
   const hasExtras = extraRows.length > 0;
+  const hasExpandedContent = Boolean(children);
+  const hasMoreContent = hasExtras || hasExpandedContent;
 
   return (
     <section className="m-detail-card m-detail-nutri">
@@ -129,7 +131,12 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
           />
         ))}
       </ul>
-      {hasExtras && (
+      {showExtras && hasExpandedContent && (
+        <div className="m-detail-nutri-expanded">
+          {children}
+        </div>
+      )}
+      {hasMoreContent && (
         <button
           type="button"
           className="m-detail-nutri-more"
@@ -138,7 +145,9 @@ export function NutritionTable({ nutrition, serving, foodNutrients }) {
         >
           {showExtras
             ? '접기'
-            : `아미노산 등 ${extraRows.length}개 더보기`}
+            : hasExpandedContent
+              ? '전체 정보 더보기'
+              : `아미노산 등 ${extraRows.length}개 더보기`}
           <Caret open={showExtras} />
         </button>
       )}

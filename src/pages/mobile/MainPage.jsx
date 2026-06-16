@@ -10,7 +10,8 @@ import { RecentList } from '../../components/mobile/main/RecentList.jsx';
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import Footer from '../../components/desktop/home/Footer.jsx';
-import { CATEGORY_TABS, productMatchesTab } from '../../data/categoryTabs.js';
+import { CATEGORY_TABS } from '../../data/categoryTabs.js';
+import { getPurposeRecommendedProducts } from '../../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../../data/categoryCardMetrics.js';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import './MainPage.css';
@@ -32,14 +33,11 @@ function SectionHeader({ title, subtitle, moreLabel, onMore }) {
   );
 }
 
-// 목적별 추천 — 선택한 목적에 속한 제품을 다분해 점수순 상위 8개로
-function usePurposeRecommended(adapted, tabId) {
+// 목적별 추천 — 선택한 목적에 속한 제품을 목적별 추천 점수순 상위 8개로
+function usePurposeRecommended(products, tabId) {
   return useMemo(() => {
-    return adapted
-      .filter((p) => productMatchesTab(p, tabId))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8);
-  }, [adapted, tabId]);
+    return getPurposeRecommendedProducts(products, tabId, 8);
+  }, [products, tabId]);
 }
 
 // 추천 섹션 목적 선택 — 세그먼트 컨트롤 (회색 트랙 + 활성 흰 카드)
@@ -100,7 +98,7 @@ export default function MainPageMobile() {
 
   const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
   const [recTabId, setRecTabId] = useState(CATEGORY_TABS[0].id);
-  const recommended = usePurposeRecommended(adapted, recTabId);
+  const recommended = usePurposeRecommended(PRODUCTS, recTabId);
   const recent = useRecent(adapted);
 
   const handleSearch = () => setSearchOpen(true);
@@ -154,7 +152,7 @@ export default function MainPageMobile() {
 
         {/* 1. 카테고리 탭 — 히어로와 딱 붙임 */}
         <section className="m-home-section m-home-section--cattabs">
-          <CategoryTabs />
+          <CategoryTabs products={PRODUCTS} />
         </section>
 
         <div className="m-home-divider" aria-hidden="true" />

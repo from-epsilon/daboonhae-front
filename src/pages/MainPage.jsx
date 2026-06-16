@@ -5,7 +5,8 @@ import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { IconChevron } from '../components/ds/Icons.jsx';
 import { FoodCardSkeleton } from '../components/ds/Skeleton.jsx';
-import { CATEGORY_TABS, productMatchesTab } from '../data/categoryTabs.js';
+import { CATEGORY_TABS } from '../data/categoryTabs.js';
+import { getPurposeRecommendedProducts } from '../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../data/categoryCardMetrics.js';
 
 import MainBanner from '../components/desktop/home/MainBanner.jsx';
@@ -32,14 +33,11 @@ function SectionHeader({ title, subtitle, moreLabel, onMore }) {
   );
 }
 
-// 목적별 추천 — 선택한 목적에 속한 제품을 다분해 점수순 상위 10개로 (5열 × 2행)
-function usePurposeRecommended(adapted, tabId) {
+// 목적별 추천 — 선택한 목적에 속한 제품을 목적별 추천 점수순 상위 10개로 (5열 × 2행)
+function usePurposeRecommended(products, tabId) {
   return useMemo(
-    () => adapted
-      .filter((p) => productMatchesTab(p, tabId))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10),
-    [adapted, tabId],
+    () => getPurposeRecommendedProducts(products, tabId, 10),
+    [products, tabId],
   );
 }
 
@@ -90,7 +88,7 @@ export default function MainPage() {
 
   const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
   const [recTabId, setRecTabId] = useState(CATEGORY_TABS[0].id);
-  const recommended = usePurposeRecommended(adapted, recTabId);
+  const recommended = usePurposeRecommended(PRODUCTS, recTabId);
   const recent = useRecent(adapted);
 
   const handleFoodClick = (food) => navigate(`/product/${food.id}`);
@@ -106,7 +104,7 @@ export default function MainPage() {
         onCtaClick={(e) => { e.preventDefault(); navigate('/list'); }}
       />
 
-      <CategoryTabsDesktop />
+      <CategoryTabsDesktop products={PRODUCTS} />
 
       {/* 목적별 추천 식품 — 제목·세그먼트·전체보기 한 행 + 점수 순위 그리드 */}
       <section className="d-home-section">

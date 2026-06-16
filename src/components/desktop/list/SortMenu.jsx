@@ -13,6 +13,14 @@ export default function SortMenu({ value, onChange, category }) {
 
   useOutsideClose(rootRef, () => setOpen(false), open);
 
+  if (isProtein) {
+    return (
+      <div className="d-list-sort d-list-sort--protein">
+        <ProteinSortGrid value={resolveSortKey(category, value)} onChange={onChange} />
+      </div>
+    );
+  }
+
   // 일반 카테고리: 한 번 선택하면 닫힘 / 단백질 음료: 2축 선택이라 열어둠
   const handleSelect = (key) => {
     onChange(key);
@@ -34,26 +42,20 @@ export default function SortMenu({ value, onChange, category }) {
         <ChevronDown size={14} aria-hidden className={`d-list-sort-chevron ${open ? 'is-open' : ''}`} />
       </button>
       {open && (
-        isProtein ? (
-          <div className="d-list-sort-menu d-list-sort-menu--grid" role="listbox">
-            <ProteinSortGrid value={resolveSortKey(category, value)} onChange={onChange} />
-          </div>
-        ) : (
-          <ul className="d-list-sort-menu" role="listbox">
-            {options.map((o) => (
-              <li key={o.key} role="option" aria-selected={o.key === value}>
-                <button
-                  type="button"
-                  className={`d-list-sort-option ${o.key === value ? 'is-active' : ''}`}
-                  onClick={() => handleSelect(o.key)}
-                >
-                  <span>{o.label}</span>
-                  {o.key === value && <Check size={14} aria-hidden />}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )
+        <ul className="d-list-sort-menu" role="listbox">
+          {options.map((o) => (
+            <li key={o.key} role="option" aria-selected={o.key === value}>
+              <button
+                type="button"
+                className={`d-list-sort-option ${o.key === value ? 'is-active' : ''}`}
+                onClick={() => handleSelect(o.key)}
+              >
+                <span>{o.label}</span>
+                {o.key === value && <Check size={14} aria-hidden />}
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

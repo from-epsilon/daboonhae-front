@@ -96,10 +96,11 @@
 
 /* 타이머 */
 .redirect-timer {
-  font-size: 40px;
-  font-weight: 700;
-  color: var(--c-primary);
-  margin: 0 0 28px 0;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--c-text-sub);
+  margin: 0 0 24px 0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -219,7 +220,7 @@
   }
 
   .redirect-timer {
-    font-size: 36px;
+    font-size: 18px;
   }
 
   .redirect-btn {

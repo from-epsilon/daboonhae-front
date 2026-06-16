@@ -21,19 +21,29 @@ export function CategoryGuide({ category }) {
         </button>
       </header>
 
-      {!collapsed && (
-        <ol className="d-detail-guide-list">
-          {guide.considerations.map((c, i) => (
-            <li key={i} className="d-detail-guide-item">
-              <div className="d-detail-guide-item-num">{i + 1}</div>
-              <div className="d-detail-guide-item-body">
-                <h3 className="d-detail-guide-item-title">{c.title}</h3>
-                <p className="d-detail-guide-item-text">{c.text}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
+      <div className={`d-detail-guide-collapse${collapsed ? '' : ' is-open'}`}>
+        <div className="d-detail-guide-collapse-inner">
+          <ol className="d-detail-guide-list">
+            {guide.considerations.map((c, i) => (
+              <li key={i} className="d-detail-guide-item">
+                <div className="d-detail-guide-item-num">{String(i + 1).padStart(2, '0')}</div>
+                <div className="d-detail-guide-item-body">
+                  <h3 className="d-detail-guide-item-title">{c.title}</h3>
+                  {Array.isArray(c.points) && c.points.length > 0 ? (
+                    <ul className="d-detail-guide-points">
+                      {c.points.map((point, j) => (
+                        <li key={j}>{point}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="d-detail-guide-item-text">{c.text}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { useProducts } from './ProductsContext.jsx';
 
 // 비교함(compare cart) 전역 상태
 // - 어디서든 제품을 담거나 빼기 가능
@@ -33,14 +34,26 @@ function saveToStorage(ids) {
 
 export function CompareProvider({ children }) {
   const [ids, setIds] = useState(() => loadFromStorage());
+  const { products, loading } = useProducts();
+  const validIds = useMemo(
+    () => new Set(products.map((p) => String(p.id))),
+    [products],
+  );
 
   // 상태 변경 시 localStorage 동기화
   useEffect(() => {
     saveToStorage(ids);
   }, [ids]);
 
+  // 제품 풀에서 제외된 항목(비활성 제품/비활성 카테고리 등)은 비교함에서도 제거
+  useEffect(() => {
+    if (loading) return;
+    setIds((prev) => prev.filter((id) => validIds.has(String(id))));
+  }, [loading, validIds]);
+
   // 추가 시 최대치 초과면 false 반환 → 호출부에서 알림 처리
   const add = useCallback((productId) => {
+    if (!validIds.has(String(productId))) return false;
     let added = false;
     setIds((prev) => {
       if (prev.includes(productId)) return prev;
@@ -49,7 +62,7 @@ export function CompareProvider({ children }) {
       return [...prev, productId];
     });
     return added;
-  }, []);
+  }, [validIds]);
 
   const remove = useCallback((productId) => {
     setIds((prev) => prev.filter((id) => id !== productId));
@@ -57,6 +70,7 @@ export function CompareProvider({ children }) {
 
   // 토글: 이미 담겨있으면 빼기, 아니면 추가 (최대치 초과면 false 반환)
   const toggle = useCallback((productId) => {
+    if (!validIds.has(String(productId))) return false;
     let result = true;
     setIds((prev) => {
       if (prev.includes(productId)) return prev.filter((id) => id !== productId);
@@ -67,7 +81,7 @@ export function CompareProvider({ children }) {
       return [...prev, productId];
     });
     return result;
-  }, []);
+  }, [validIds]);
 
   const clear = useCallback(() => {
     setIds([]);

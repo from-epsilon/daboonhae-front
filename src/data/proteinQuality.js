@@ -31,6 +31,30 @@ export function cleanProteinLabel(text) {
   return cleaned || original;
 }
 
+// 원문 정규화 — DB normalize_alternative_sweetener_alias() 근사(폴백용)
+// (소문자화 → 한글·영문 외 문자 제거 → 숫자/형태 표기 제거)
+export function normalizeSweetenerAlias(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/알룰로오스/g, '알룰로스')
+    .replace(/[^가-힣a-z]/g, '')
+    .replace(/(시럽|액|분말|결정|추출물)/g, '')
+    .replace(/[ivx]+$/g, '');
+}
+
+// 표시용 라벨 정리 — 말티톨시럽64%, 결정알룰로스 같은 형태 표기를 대표명에 가깝게 축약
+export function cleanSweetenerLabel(text) {
+  const original = String(text || '').trim();
+  const cleaned = original
+    .replace(/알룰로오스/g, '알룰로스')
+    .replace(/\s*\d+(\.\d+)?\s*%?\s*$/, '')
+    .replace(/^\s*결정\s*/, '')
+    .replace(/\s*(시럽|액|분말|추출물)\s*$/, '')
+    .replace(/\s*[ivx]+\s*$/i, '')
+    .trim();
+  return cleaned || original;
+}
+
 // 품질 등급 표시 메타 (unknown은 배지 없음)
 const GRADE_META = {
   excellent: { label: '최상', cls: 'is-excellent' },
@@ -58,6 +82,7 @@ function buildDictionary(ingredients, aliases) {
       ingredientType: g.ingredient_type || null,
       qualityGrade: g.quality_grade || 'unknown',
       qualityBasis: g.quality_basis || null,
+      displayDescription: g.display_description || null,
     };
     byCode.set(g.code, ing);
     addNorm(g.name_ko, ing);
@@ -84,7 +109,7 @@ async function loadDictionary() {
       const [ingRes, aliasRes] = await Promise.all([
         supabase
           .from('protein_ingredients')
-          .select('code, name_ko, abbreviation, ingredient_type, quality_grade, quality_basis')
+          .select('code, name_ko, abbreviation, ingredient_type, quality_grade, quality_basis, display_description')
           .eq('is_active', true),
         supabase
           .from('protein_ingredient_aliases')
@@ -150,6 +175,120 @@ export function useProteinResolver(texts) {
       const unique = [...new Set(list)];
       const entries = await Promise.all(
         unique.map(async (text) => [text, await resolveOne(dict, text)]),
+      );
+      if (alive) setMap(new Map(entries));
+    })();
+    return () => { alive = false; };
+    // key로 내용 변화만 감지 (배열 신원 변화 무시)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  return useCallback((text) => map.get(text) ?? null, [map]);
+}
+
+// ── 대체당 사전/해석
+const SWEETENER_RESOLVE_FN = 'resolve_alternative_sweetener_code';
+const SWEETENER_RESOLVE_ARG = 'text';
+
+function buildSweetenerDictionary(sweeteners, aliases) {
+  const byCode = new Map();
+  const byNorm = new Map();
+  const addNorm = (text, sweetener) => {
+    const k = normalizeSweetenerAlias(text);
+    if (k) byNorm.set(k, sweetener);
+  };
+  for (const row of sweeteners) {
+    const sweetener = {
+      code: row.code,
+      nameKo: row.name_ko ?? '',
+      sweetenerType: row.sweetener_type || null,
+    };
+    byCode.set(row.code, sweetener);
+    addNorm(row.name_ko, sweetener);
+  }
+  for (const alias of aliases) {
+    const sweetener = byCode.get(alias.alternative_sweetener_code);
+    if (!sweetener) continue;
+    if (alias.alias) addNorm(alias.alias, sweetener);
+  }
+  return { byCode, byNorm };
+}
+
+const EMPTY_SWEETENER_DICT = { byCode: new Map(), byNorm: new Map() };
+
+let sweetenerDictCache = null;
+let sweetenerDictInflight = null;
+
+async function loadSweetenerDictionary() {
+  if (sweetenerDictCache) return sweetenerDictCache;
+  if (sweetenerDictInflight) return sweetenerDictInflight;
+  sweetenerDictInflight = (async () => {
+    try {
+      const [sweetenerRes, aliasRes] = await Promise.all([
+        supabase
+          .from('alternative_sweeteners')
+          .select('code, name_ko, sweetener_type')
+          .eq('is_active', true),
+        supabase
+          .from('alternative_sweetener_aliases')
+          .select('alternative_sweetener_code, alias'),
+      ]);
+      sweetenerDictCache = sweetenerRes.error
+        ? EMPTY_SWEETENER_DICT
+        : buildSweetenerDictionary(
+          sweetenerRes.data ?? [],
+          aliasRes.error ? [] : (aliasRes.data ?? []),
+        );
+    } catch {
+      sweetenerDictCache = EMPTY_SWEETENER_DICT;
+    }
+    return sweetenerDictCache;
+  })();
+  return sweetenerDictInflight;
+}
+
+const sweetenerCodeCache = new Map();
+let sweetenerRpcDisabled = false;
+
+async function rpcResolveSweetenerCode(text) {
+  if (sweetenerRpcDisabled) return undefined;
+  try {
+    const { data, error } = await supabase.rpc(SWEETENER_RESOLVE_FN, { [SWEETENER_RESOLVE_ARG]: text });
+    if (error) {
+      if (['PGRST202', '42883', '42501'].includes(error.code)) sweetenerRpcDisabled = true;
+      return undefined;
+    }
+    return typeof data === 'string' && data ? data : null;
+  } catch {
+    return undefined;
+  }
+}
+
+async function resolveSweetenerOne(dict, text) {
+  if (!text) return null;
+  if (!sweetenerCodeCache.has(text)) {
+    sweetenerCodeCache.set(text, await rpcResolveSweetenerCode(text));
+  }
+  const code = sweetenerCodeCache.get(text);
+  if (code) {
+    const sweetener = dict.byCode.get(code);
+    if (sweetener) return sweetener;
+  }
+  return dict.byNorm.get(normalizeSweetenerAlias(text)) ?? null;
+}
+
+export function useSweetenerResolver(texts) {
+  const list = Array.isArray(texts) ? texts.filter(Boolean) : [];
+  const key = list.join('');
+  const [map, setMap] = useState(() => new Map());
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const dict = await loadSweetenerDictionary();
+      const unique = [...new Set(list)];
+      const entries = await Promise.all(
+        unique.map(async (text) => [text, await resolveSweetenerOne(dict, text)]),
       );
       if (alive) setMap(new Map(entries));
     })();

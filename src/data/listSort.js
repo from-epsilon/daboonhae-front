@@ -35,7 +35,7 @@ export const PROTEIN_SORT_MODES = [
 ];
 export const PROTEIN_SORT_BASES = [
   { key: 'protein', label: '단백질' },
-  { key: 'eaa', label: '필수 아미노산(EAA)' },
+  { key: 'eaa', label: '필수아미노산' },
   { key: 'bcaa', label: 'BCAA' },
 ];
 
@@ -134,14 +134,39 @@ function proteinDrinkValue(food, sortKey) {
   return -Infinity;
 }
 
+export function getProteinDrinkRecommendScore(food) {
+  const score = food?.recommendationScores?.proteinDrinkDefault?.score;
+  return Number.isFinite(score) ? score : null;
+}
+
+export function getProteinDrinkRecommendConfidence(food) {
+  const confidence = food?.recommendationScores?.proteinDrinkDefault?.confidence;
+  return Number.isFinite(confidence) ? confidence : 0;
+}
+
+function compareProteinRecommend(a, b) {
+  const scoreA = getProteinDrinkRecommendScore(a);
+  const scoreB = getProteinDrinkRecommendScore(b);
+  const scoreDiff = (scoreB ?? -Infinity) - (scoreA ?? -Infinity);
+  if (scoreDiff !== 0) return scoreDiff;
+
+  const confidenceDiff = getProteinDrinkRecommendConfidence(b) - getProteinDrinkRecommendConfidence(a);
+  if (confidenceDiff !== 0) return confidenceDiff;
+
+  const idDiff = Number(a?.id) - Number(b?.id);
+  if (Number.isFinite(idDiff) && idDiff !== 0) return idDiff;
+
+  return String(a?.name ?? '').localeCompare(String(b?.name ?? ''), 'ko');
+}
+
 // 정렬 적용 — 카테고리별 기준 분기 (raw 제품 배열 입력)
 export function applySort(products, category, sortKey) {
   const key = resolveSortKey(category, sortKey);
   const arr = [...products];
 
-  // 단백질 음료 — 추천순은 기본(원본) 순서 유지, 그 외는 단백질/EAA/BCAA 기준 내림차순
+  // 단백질 음료 — 추천순은 단백질 음료 전용 종합 점수, 그 외는 단백질/EAA/BCAA 기준 내림차순
   if (category === PROTEIN_DRINK_CATEGORY) {
-    if (key === PROTEIN_SORT_RECOMMEND) return arr;
+    if (key === PROTEIN_SORT_RECOMMEND) return arr.sort(compareProteinRecommend);
     return arr.sort((a, b) => proteinDrinkValue(b, key) - proteinDrinkValue(a, key));
   }
 

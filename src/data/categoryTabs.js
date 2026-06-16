@@ -72,6 +72,16 @@ export const FOOD_TYPES = [
 // 분석 완료(활성) 식품유형만 — 리스트 칩 노출용 (준비중 제외)
 export const ACTIVE_FOOD_TYPES = FOOD_TYPES.filter((ft) => !ft.disabled);
 
+export function getVisibleFoodTypes(products, foodTypes = ACTIVE_FOOD_TYPES) {
+  const visibleCodes = new Set(
+    (products ?? [])
+      .map((p) => p?.categoryCode)
+      .filter(Boolean),
+  );
+  if (visibleCodes.size === 0) return [];
+  return foodTypes.filter((ft) => visibleCodes.has(ft.code));
+}
+
 const FOOD_TYPE_BY_CODE = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.code, ft]));
 const FOOD_TYPE_BY_LABEL = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.label, ft]));
 

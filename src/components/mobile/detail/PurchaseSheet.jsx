@@ -1,14 +1,60 @@
 // 모바일 디테일 — 구매 오퍼 바텀시트
 // - food_purchase_links(판매처별 구매 링크)를 최저가순으로 노출
-// - 각 행: "판매처 · x수량 · 가격원" + 가장 싼 항목에 '최저가' 배지
+// - 각 행: "판매처 · x수량 · 개당 가격원" + 개당가가 가장 싼 항목에 '최저가' 배지
 // - 행 클릭 → 해당 url 새 탭
-import { IconClose } from '../../ds/Icons.jsx';
+import { IconClose, IconRocket } from '../../ds/Icons.jsx';
 import { getVendorLogo } from '../../../utils/vendorLogo.js';
+
+const FREE_SHIPPING_TARGET_TOTAL = 19800;
+const UNIT_PRICE_EPSILON = 0.0001;
 
 // 가격 포맷 (없으면 '가격 문의')
 function formatPrice(price) {
   if (typeof price !== 'number') return '가격 문의';
   return `${price.toLocaleString()}원`;
+}
+
+function unitPriceOf(offer) {
+  if (typeof offer?.price !== 'number') return null;
+  const quantity = Number(offer.quantity ?? 1);
+  if (!Number.isFinite(quantity) || quantity <= 0) return offer.price;
+  return offer.price / quantity;
+}
+
+function formatUnitPrice(unitPrice) {
+  if (typeof unitPrice !== 'number') return '가격 문의';
+  return `개당 ${Math.round(unitPrice).toLocaleString()}원`;
+}
+
+function totalPriceOf(offer) {
+  return typeof offer?.price === 'number' ? offer.price : Infinity;
+}
+
+function sameUnitPrice(a, b) {
+  return Math.abs(a - b) < UNIT_PRICE_EPSILON;
+}
+
+function compareByFreeShippingTotal(a, b) {
+  const aTotal = totalPriceOf(a);
+  const bTotal = totalPriceOf(b);
+  const aMeetsTarget = aTotal >= FREE_SHIPPING_TARGET_TOTAL;
+  const bMeetsTarget = bTotal >= FREE_SHIPPING_TARGET_TOTAL;
+
+  if (aMeetsTarget !== bMeetsTarget) return aMeetsTarget ? -1 : 1;
+  return aTotal - bTotal;
+}
+
+function getBestUnitOffer(offers) {
+  const candidates = (offers ?? [])
+    .map((offer) => ({ offer, unitPrice: unitPriceOf(offer) }))
+    .filter(({ unitPrice }) => typeof unitPrice === 'number');
+  if (candidates.length === 0) return null;
+
+  const cheapestUnitPrice = Math.min(...candidates.map(({ unitPrice }) => unitPrice));
+  return candidates
+    .filter(({ unitPrice }) => sameUnitPrice(unitPrice, cheapestUnitPrice))
+    .map(({ offer }) => offer)
+    .sort(compareByFreeShippingTotal)[0] ?? null;
 }
 
 // 판매처 표시 — 로고가 있으면 이미지, 없으면 텍스트
@@ -22,6 +68,8 @@ function VendorLabel({ vendorName }) {
 
 // 단일 오퍼 행
 function OfferRow({ offer, isCheapest, onOpen }) {
+  const unitPrice = unitPriceOf(offer);
+
   return (
     <li>
       <button
@@ -33,11 +81,21 @@ function OfferRow({ offer, isCheapest, onOpen }) {
           <span className="m-purchase-vendor">
             <VendorLabel vendorName={offer.vendorName} />
             {isCheapest && <span className="m-purchase-best">최저가</span>}
-            {offer.isFastDelivery && <span className="m-purchase-fast">빠른배송</span>}
+            {offer.isFastDelivery && (
+              <span className="m-purchase-fast">
+                <IconRocket size={11} stroke={1.8} />
+                빠른배송
+              </span>
+            )}
           </span>
-          <span className="m-purchase-qty">x {offer.quantity}</span>
+          <span className="m-purchase-qty">
+            {offer.quantity ?? 1}개입
+            {typeof offer.price === 'number' && ` · 총 ${formatPrice(offer.price)}`}
+          </span>
         </span>
-        <span className="m-purchase-price">{formatPrice(offer.price)}</span>
+        <span className="m-purchase-price-block">
+          <span className="m-purchase-price">{formatUnitPrice(unitPrice)}</span>
+        </span>
       </button>
     </li>
   );
@@ -46,8 +104,7 @@ function OfferRow({ offer, isCheapest, onOpen }) {
 export function PurchaseSheet({ open, offers = [], onClose }) {
   if (!open) return null;
 
-  // 유효 가격 중 최저가 1건만 배지 (이미 가격 오름차순 정렬되어 전달됨)
-  const cheapestPrice = offers.find((o) => typeof o.price === 'number')?.price;
+  const bestUnitOffer = getBestUnitOffer(offers);
 
   const handleOpen = (url) => {
     if (!url) return;
@@ -68,7 +125,7 @@ export function PurchaseSheet({ open, offers = [], onClose }) {
             <OfferRow
               key={`${offer.vendorName}-${i}`}
               offer={offer}
-              isCheapest={typeof offer.price === 'number' && offer.price === cheapestPrice}
+              isCheapest={offer === bestUnitOffer}
               onOpen={handleOpen}
             />
           ))}

@@ -17,7 +17,7 @@ export function countActiveFilters(specs, state) {
     if (spec.type === 'range') {
       // min 또는 max 가 지정되어 있어야 활성
       if (v.min !== undefined || v.max !== undefined) n += 1;
-    } else if (spec.type === 'tristate') {
+    } else if (spec.type === 'tristate' || spec.type === 'exclude_only') {
       // include/exclude 가 하나라도 있어야 활성
       const has = Object.values(v).some((s) => s === 'include' || s === 'exclude');
       if (has) n += 1;
@@ -231,6 +231,40 @@ function TristateChip({ label, state, onClick }) {
   );
 }
 
+// ============================================================ Exclude-only 필터
+function FilterExcludeOnly({ spec, value, onChange }) {
+  const handleClick = (option) => {
+    const next = { ...(value ?? {}) };
+    if (next[option] === 'exclude') delete next[option];
+    else next[option] = 'exclude';
+    onChange(Object.keys(next).length === 0 ? undefined : next);
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: 11,
+          color: 'var(--text-tertiary)',
+          marginBottom: 8,
+        }}
+      >
+        탭하면 제외
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {spec.options.map((opt) => (
+          <TristateChip
+            key={opt}
+            label={opt}
+            state={value?.[opt]}
+            onClick={() => handleClick(opt)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ============================================================ Bool 필터
 function FilterBool({ spec, value, onChange }) {
   const active = value === true;
@@ -280,6 +314,7 @@ function FilterGroup({ spec, value, onChange }) {
       )}
       {spec.type === 'range' && <FilterRange spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'tristate' && <FilterTristate spec={spec} value={value} onChange={onChange} />}
+      {spec.type === 'exclude_only' && <FilterExcludeOnly spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'bool' && <FilterBool spec={spec} value={value} onChange={onChange} />}
     </div>
   );

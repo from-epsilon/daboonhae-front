@@ -18,3 +18,16 @@ export function saveListViewState(state) {
     // 저장 불가(프라이빗 모드·용량 초과 등) 시 무시
   }
 }
+
+export function getListPageFromSearchParams(searchParams) {
+  const raw = searchParams?.get?.('page');
+  const page = Number.parseInt(raw ?? '', 10);
+  return Number.isFinite(page) && page > 0 ? page : null;
+}
+
+export function setListPageSearchParam(searchParams, page) {
+  const next = new URLSearchParams(searchParams);
+  if (page > 1) next.set('page', String(page));
+  else next.delete('page');
+  return next;
+}

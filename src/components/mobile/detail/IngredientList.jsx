@@ -161,10 +161,10 @@ function SweetenerNotice({ sweeteners }) {
   );
 }
 
-export function IngredientList({ ingredients, rawText, annotations }) {
+export function IngredientList({ ingredients, rawText, annotations, embedded = false }) {
   const ing = ingredients ?? {};
   return (
-    <section className="m-detail-card m-detail-ingr">
+    <section className={`${embedded ? 'm-detail-embedded-section ' : 'm-detail-card '}m-detail-ingr`}>
       <header className="m-detail-card-head">
         <h2 className="m-detail-card-title">원료 · 성분</h2>
       </header>

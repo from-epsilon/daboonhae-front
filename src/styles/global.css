@@ -111,32 +111,29 @@ select:focus-visible {
   color: var(--c-text); outline: none;
 }
 
-/* 헤더 메뉴 */
-.header-menu { position: relative; margin-left: auto; flex-shrink: 0; }
-.header-menu-btn {
-  width: 40px; height: 40px; border-radius: var(--radius-md);
-  display: inline-flex; align-items: center; justify-content: center;
-  color: var(--c-text); transition: background-color 0.15s;
+/* 헤더 내비게이션 */
+.header-nav {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
-.header-menu-btn:hover,
-.header-menu-btn.is-open { background: var(--c-bg); }
-.header-menu-dropdown {
-  position: absolute; top: calc(100% + 8px); right: 0;
-  min-width: 180px; padding: 6px;
-  background: var(--c-surface); border: 1px solid var(--c-border);
-  border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
-  z-index: var(--z-dropdown);
+.header-about-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--c-text-sub);
+  transition: color 0.15s, background-color 0.15s;
 }
-.header-menu-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: var(--radius-sm);
-  font-size: 14px; color: var(--c-text);
-  transition: background-color 0.15s;
+.header-about-link:hover,
+.header-about-link.is-active {
+  color: var(--green-700);
+  background: var(--c-bg);
 }
-.header-menu-item:hover,
-.header-menu-item.is-active { background: var(--c-bg); color: var(--green-700); }
-.header-menu-item svg { color: var(--c-text-sub); flex-shrink: 0; }
-.header-menu-item.is-active svg { color: var(--green-700); }
 .purpose-toggle { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
 .purpose-chip {
   display: inline-flex; align-items: center; gap: 4px;
@@ -453,11 +450,10 @@ select:focus-visible {
 /* 우선순위 카드 — 1순위 핵심 지표 표 (총량/100kcal당/1,000원당 열 정렬) */
 .fc-ptable {
   display: grid;
-  /* 값 열은 내용 너비(auto) — 1fr 신축 대신 모아 붙여 열 간 간격 살짝 확보 */
-  gap: 3px 22px;
+  grid-template-columns: 74px 58px 76px 76px;
+  gap: 3px 12px;
   align-items: baseline;
   margin-top: 2px;
-  /* 표가 카드 폭을 다 쓰지 않고 좌측으로 모이게 */
   justify-content: start;
 }
 .fc-ptable-head {
@@ -514,6 +510,9 @@ select:focus-visible {
   /* 자릿수 고정 정렬 — 열 간 숫자 비교 가독성 */
   font-variant-numeric: tabular-nums;
 }
+.fc-ptable-cell.is-empty {
+  visibility: hidden;
+}
 /* 강조 중엔 비활성 열 값을 연하게 → 활성 열에 시선 집중 */
 .fc-ptable.is-focused .fc-ptable-cell:not(.is-active) {
   color: var(--text-tertiary);
@@ -538,7 +537,8 @@ select:focus-visible {
 /* 모바일: 카드 폭이 좁아 표 간격·폰트 압축 (가로 오버플로 방지) */
 @media (max-width: 800px) {
   .fc-ptable {
-    gap: 3px 16px;
+    grid-template-columns: 66px 52px 70px 70px;
+    gap: 3px 8px;
   }
   .fc-ptable-cell {
     font-size: 14px;
@@ -550,14 +550,11 @@ select:focus-visible {
     font-size: 10px;
   }
 }
-/* 우선순위 카드 — 표 위 구조화 블록 (단백질원 / 영양성분 / 유당Free) */
+/* 우선순위 카드 — 표 위 구조화 블록 (단백질원) */
 .fc-meta {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  /* 아래 핵심 지표 표와 구분 */
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-tertiary);
 }
 .fc-meta-row {
   display: flex;
@@ -585,6 +582,152 @@ select:focus-visible {
   font-size: 10px;
   font-weight: 500;
   vertical-align: middle;
+}
+
+.fc-serving-meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.35;
+}
+
+.fc-selected-metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 1px;
+  font-family: var(--font-body);
+  line-height: 1.25;
+}
+.fc-selected-metric-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.fc-selected-metric-value {
+  flex-shrink: 0;
+  font-family: var(--font-numeric);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.fc-selected-metric-unit {
+  margin-left: 1px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.fc-selected-metric-sep,
+.fc-selected-metric-basis {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+/* 홈 그리드 카드 — 제품명 길이에 상관없이 내부 기준선을 맞춤 */
+.fc-grid-card {
+  background: white;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.fc-grid-thumb {
+  aspect-ratio: 1 / 1;
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fff;
+}
+.fc-grid-body {
+  padding: 10px 6px;
+  display: grid;
+  grid-template-rows: 16px 40px auto;
+  gap: 4px;
+  align-content: start;
+}
+.fc-grid-body.has-purchase {
+  grid-template-rows: 16px 40px auto minmax(74px, auto);
+}
+.fc-grid-brand {
+  min-width: 0;
+  font-size: var(--font-size-xxs);
+  line-height: 16px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-grid-name {
+  min-height: 40px;
+  max-height: 40px;
+  font-size: var(--font-size-s);
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fc-grid-serving {
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+.fc-grid-stats {
+  display: grid;
+  grid-template-columns: repeat(var(--fc-stat-count), minmax(0, 1fr));
+  gap: 4px;
+  min-height: 32px;
+  align-items: start;
+}
+.fc-grid-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.fc-grid-stat-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-grid-stat-label.is-primary {
+  color: var(--green-700);
+}
+.fc-grid-stat-value {
+  font-family: var(--font-numeric);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.fc-grid-stat-value.is-primary {
+  font-size: 15px;
+}
+.fc-grid-stat-unit {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 1px;
+}
+.fc-grid-offers {
+  min-height: 74px;
+  align-self: stretch;
+}
+.fc-grid-offers.purchase-offers--compact.purchase-offers--empty {
+  display: flex;
+  justify-content: center;
 }
 
 /* 카드 가격 비교 블록 — 위 콘텐츠(표/성분)와 구분 */
@@ -986,6 +1129,26 @@ img.product-thumb { object-fit: cover; }
   font-size: 12px;
 }
 
+.d-foodcard-wide-media {
+  width: 140px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.d-foodcard-wide-thumb {
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fff;
+}
+
+.d-foodcard-wide-media .d-foodcard-wide-compare {
+  width: 100%;
+}
+
 .d-foodcard-wide-compare:hover {
   border-color: var(--brand-green);
   color: var(--green-700);
@@ -1127,15 +1290,14 @@ img.product-thumb { object-fit: cover; }
 }
 
 .purchase-offer-fast {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   flex-shrink: 0;
-  padding: 1px 6px;
-  border-radius: var(--radius-pill, 999px);
-  background: var(--blue-50);
   color: var(--blue-700);
   font-family: var(--font-body);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
 .purchase-offer-meta {
@@ -1154,11 +1316,24 @@ img.product-thumb { object-fit: cover; }
   font-size: 14px;
 }
 
+.purchase-offer-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
 .purchase-offer-price {
   font-family: var(--font-numeric);
   font-size: 21px;
   font-weight: 700;
   color: var(--text-primary);
+}
+
+.purchase-offer-total {
+  font-weight: 500;
+  color: var(--text-tertiary);
 }
 
 .purchase-offer.is-best .purchase-offer-price {
@@ -1210,6 +1385,10 @@ img.product-thumb { object-fit: cover; }
   align-items: center;
   justify-content: space-between;
 }
+.purchase-offers--stacked .purchase-offer-price-block {
+  align-items: flex-end;
+  text-align: right;
+}
 
 .purchase-offers-compact-title {
   font-size: 11px;
@@ -1259,17 +1438,18 @@ img.product-thumb { object-fit: cover; }
 .psort-label-mode { color: var(--blue-800); font-weight: 500; }
 .psort-label-base { color: var(--green-800); font-weight: 500; }
 
-/* ── 단백질 음료 정렬 — 추천순 + 기준 × 성분 2열 그리드 (데스크톱 드롭다운/모바일 시트 공용) */
+/* ── 단백질 음료 정렬 — 추천순 + 기준/성분 분리 토글 */
 .psort {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-/* 추천순 — 그리드 위 전체 폭, 아래 구분선 */
 .psort-recommend {
-  width: 100%;
-  padding: 10px 12px;
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 12px;
   border: 1px solid var(--border-tertiary);
   background: var(--bg-white);
   border-radius: var(--radius-sm);
@@ -1289,37 +1469,51 @@ img.product-thumb { object-fit: cover; }
 .psort-recommend.is-active {
   border-color: var(--green-500);
   color: var(--green-700);
+  background: var(--green-50);
 }
 
-.psort-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.psort-axes {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.psort-col {
+.psort-axis {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-.psort-col-head {
+.psort-axis-head {
   font-size: 11px;
   font-weight: 500;
   color: var(--text-tertiary);
-  padding: 0 2px 2px;
+  padding-left: 2px;
+}
+
+.psort-axis.is-disabled .psort-axis-head {
+  color: var(--gray-400);
+}
+
+.psort-segment {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
 }
 
 .psort-opt {
   display: flex;
   align-items: center;
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-tertiary);
-  background: var(--bg-white);
-  border-radius: var(--radius-sm);
+  min-height: 32px;
+  padding: 0 10px;
+  border: none;
+  border-right: 1px solid var(--border-tertiary);
+  background: transparent;
   font-family: var(--font-body);
-  font-size: var(--font-size-s);
+  font-size: 12px;
   /* 선택 시에도 굵기를 바꾸지 않음 → 폭 변화로 인한 줄바꿈 방지 */
   font-weight: 500;
   color: var(--text-secondary);
@@ -1329,6 +1523,7 @@ img.product-thumb { object-fit: cover; }
   white-space: nowrap;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
+.psort-opt:last-child { border-right: none; }
 
 .psort-opt:hover {
   background: var(--gray-100);
@@ -1336,6 +1531,28 @@ img.product-thumb { object-fit: cover; }
 
 /* 선택 표시 — 초록 배경 없이 테두리 + 글자색으로만 강조 */
 .psort-opt.is-active {
-  border-color: var(--green-500);
+  background: var(--green-50);
   color: var(--green-700);
+}
+.psort-axis.is-disabled .psort-opt {
+  color: var(--gray-400);
+}
+
+@media (max-width: 800px) {
+  .psort {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .psort-axes {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .psort-segment {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .psort-opt {
+    justify-content: center;
+    padding: 10px 6px;
+  }
 }

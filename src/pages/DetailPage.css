@@ -22,6 +22,15 @@
   top: 110px;
   align-self: start;
 }
+.d-detail-aside-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.d-detail-aside .purchase-offer-price {
+  font-size: 18px;
+  line-height: 1.25;
+}
 /* 좁은 데스크톱/태블릿: 단일 컬럼으로 스택, 가격 패널은 본문 위로 */
 @media (max-width: 960px) {
   .d-detail-layout { grid-template-columns: 1fr; gap: 20px; }
@@ -283,7 +292,7 @@
   border-bottom: 1px solid var(--border-tertiary);
   padding: 0;
 }
-#nutrition, #analysis, #ingredients, #guide, #reviews {
+#nutrition, #analysis, #ingredients, #reviews {
   scroll-margin-top: 190px;
 }
 .d-detail-section-nav-item {
@@ -343,9 +352,34 @@
 .d-detail-guide-toggle svg.is-open {
   transform: rotate(180deg);
 }
-/* 펼침 시 토글 헤더와 고려항목 목록 사이 간격 */
-.d-detail-guide-head + .d-detail-guide-list {
-  margin-top: 16px;
+.d-detail-aside .d-detail-guide {
+  padding: 16px 18px;
+}
+.d-detail-aside .d-detail-guide-item {
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px 0;
+}
+.d-detail-aside .d-detail-guide-item-num {
+  width: 26px;
+  font-size: 10px;
+}
+.d-detail-aside .d-detail-guide-item-title {
+  font-size: 13px;
+}
+.d-detail-aside .d-detail-guide-item-text {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.d-detail-aside .d-detail-guide-points {
+  gap: 7px;
+}
+.d-detail-aside .d-detail-guide-points li {
+  font-size: 12px;
+  line-height: 1.55;
+}
+.d-detail-aside .d-detail-guide-collapse.is-open .d-detail-guide-collapse-inner {
+  padding-top: 12px;
 }
 
 /* ───────── 영양성분 리스트 ───────── */
@@ -562,6 +596,371 @@
 .d-analysis-summary-col.is-caution svg { color: var(--orange-600); }
 .d-analysis-empty { font-size: 14px; color: var(--text-tertiary); margin: 0; }
 
+/* 단백질 음료 리포트 — 기준 판정 + 상대 순위 */
+.d-analysis-section.is-compact {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+.d-analysis-quality-panel {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 18px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+.d-analysis-quality-chart {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  justify-self: center;
+}
+.d-analysis-quality-chart svg {
+  display: block;
+  width: 128px;
+  height: 128px;
+}
+.d-analysis-quality-slice {
+  stroke: #ffffff;
+  stroke-width: 2;
+  fill-rule: evenodd;
+}
+.d-analysis-quality-center {
+  position: absolute;
+  inset: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--gray-200);
+  pointer-events: none;
+}
+.d-analysis-quality-center span {
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-tertiary);
+}
+.d-analysis-quality-center strong {
+  margin-top: 2px;
+  font-family: var(--font-numeric);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.d-analysis-quality-list {
+  display: grid;
+  gap: 10px;
+}
+.d-analysis-quality-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 2px;
+}
+.d-analysis-quality-title strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.d-analysis-quality-title span {
+  font-family: var(--font-numeric);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.d-analysis-quality-item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.d-analysis-quality-item.is-child {
+  margin-left: 18px;
+}
+.d-analysis-quality-item.is-child .d-analysis-quality-row strong::before {
+  content: '└ ';
+  color: var(--text-tertiary);
+  font-weight: 700;
+}
+.d-analysis-quality-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 999px;
+}
+.d-analysis-quality-copy {
+  min-width: 0;
+}
+.d-analysis-quality-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 13px;
+}
+.d-analysis-quality-row strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.d-analysis-quality-row span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.d-analysis-quality-copy p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.d-analysis-quality-help {
+  width: 16px;
+  height: 16px;
+  flex-basis: 16px;
+  font-size: 10px;
+  vertical-align: middle;
+}
+.d-analysis-judgment-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.d-analysis-judgment-card {
+  position: relative;
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  border: 1px solid var(--border-tertiary);
+}
+.d-analysis-judgment-card.is-poor,
+.d-analysis-judgment-card.is-light {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+.d-analysis-judgment-card.is-near {
+  background: #fffbea;
+  border-color: #fde68a;
+}
+.d-analysis-judgment-card.is-solid {
+  background: var(--green-50);
+  border-color: var(--green-100);
+}
+.d-analysis-judgment-card.is-strong {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+.d-analysis-judgment-card.is-high {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+.d-analysis-judgment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.d-analysis-judgment-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.d-analysis-judgment-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+.d-analysis-judgment-value {
+  display: block;
+  margin-bottom: 7px;
+  font-family: var(--font-numeric);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.d-analysis-judgment-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  word-break: keep-all;
+}
+.d-analysis-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: help;
+  outline: none;
+}
+.d-analysis-help:hover,
+.d-analysis-help:focus-visible {
+  color: var(--text-primary);
+  border-color: var(--border-secondary);
+}
+.d-analysis-help-bubble {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: block;
+  width: min(280px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-900);
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.55;
+  word-break: keep-all;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.14s ease, transform 0.14s ease, visibility 0.14s ease;
+}
+.d-analysis-help:hover .d-analysis-help-bubble,
+.d-analysis-help:focus-visible .d-analysis-help-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.d-analysis-rank-table {
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-white);
+}
+.d-analysis-rank-row {
+  display: grid;
+  grid-template-columns: 120px repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--border-tertiary);
+}
+.d-analysis-rank-row:first-child { border-top: none; }
+.d-analysis-rank-row.is-head {
+  background: var(--gray-50);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.d-analysis-rank-row > span,
+.d-analysis-rank-cell {
+  min-width: 0;
+  padding: 12px 14px;
+  border-left: 1px solid var(--border-tertiary);
+}
+.d-analysis-rank-row > span:first-child {
+  border-left: none;
+}
+.d-analysis-rank-label {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.d-analysis-rank-cell {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 4px;
+  align-items: baseline;
+}
+.d-analysis-rank-main {
+  font-family: var(--font-numeric);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.d-analysis-rank-total {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.d-analysis-rank-value {
+  justify-self: end;
+  font-family: var(--font-numeric);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.d-analysis-rank-cell.is-empty {
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+.d-analysis-rank-note {
+  margin: 9px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-tertiary);
+}
+.d-analysis-data-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.d-analysis-data-card {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  border: 1px solid var(--border-tertiary);
+}
+.d-analysis-data-card.is-good {
+  background: var(--green-50);
+  border-color: var(--green-100);
+}
+.d-analysis-data-card.is-caution {
+  background: var(--orange-50);
+  border-color: var(--orange-100);
+}
+.d-analysis-data-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.d-analysis-data-head span {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.d-analysis-data-head strong {
+  font-family: var(--font-numeric);
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.d-analysis-data-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 /* 단백질 총량 — 결이 다른 강조 스트립 */
 .d-analysis-total {
   padding: 16px 18px;
@@ -660,10 +1059,22 @@
 .d-analysis-row-tag {
   font-size: 12px;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.04);
 }
-.d-analysis-row-tag.is-good { color: var(--green-600); }
-.d-analysis-row-tag.is-caution { color: var(--orange-600); }
-.d-analysis-row-tag.is-neutral { color: var(--text-tertiary); }
+.d-analysis-row-tag.is-good { color: var(--green-600); background: var(--green-50); }
+.d-analysis-row-tag.is-caution { color: var(--orange-600); background: var(--orange-50); }
+.d-analysis-row-tag.is-neutral { color: var(--text-tertiary); background: var(--gray-100); }
+.d-analysis-row-tag.is-poor { color: #c2410c; background: #ffedd5; }
+.d-analysis-row-tag.is-light { color: #ea580c; background: #fff7ed; }
+.d-analysis-row-tag.is-near { color: #a16207; background: #fef3c7; }
+.d-analysis-row-tag.is-solid { color: var(--green-600); background: var(--green-50); }
+.d-analysis-row-tag.is-strong { color: #047857; background: #d1fae5; }
+.d-analysis-row-tag.is-high { color: #1d4ed8; background: #dbeafe; }
 .d-analysis-row-note {
   margin: 5px 0 0;
   font-size: 13px;
@@ -683,6 +1094,9 @@
 .d-analysis-ingredients {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px;
 }
+.d-analysis-ingredients.is-subtle .d-analysis-ingr-card {
+  background: var(--gray-50);
+}
 .d-analysis-ingr-card {
   padding: 13px 15px; border-radius: var(--radius-md);
   background: var(--bg-card-ui);
@@ -692,6 +1106,13 @@
 .d-analysis-ingr-card.is-good { border-left: 3px solid var(--green-400); }
 .d-analysis-ingr-card.is-caution { border-left: 3px solid var(--orange-400); }
 .d-analysis-ingr-card.is-neutral { border-left: 3px solid var(--blue-300); }
+.d-analysis-protein-card.is-primary-source {
+  position: relative;
+  background: #eff6ff;
+  border-left-color: #2563eb;
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+  padding-top: 16px;
+}
 .d-analysis-ingr-head {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
@@ -700,6 +1121,20 @@
 }
 /* 단백질 원료 카드 헤더 — 원료명 + 약자 + 등급 좌측 정렬 */
 .d-analysis-protein-head { justify-content: flex-start; flex-wrap: wrap; }
+.d-analysis-source-main {
+  position: absolute;
+  top: -9px;
+  right: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  color: #1d4ed8;
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+}
 .d-analysis-ingr-abbr {
   font-family: var(--font-numeric); font-size: 11px; font-weight: 700;
   color: var(--text-secondary); background: var(--gray-100);
@@ -729,6 +1164,31 @@
   .d-analysis-summary-grid { grid-template-columns: 1fr; }
   .d-analysis-amino-grid { grid-template-columns: 1fr; }
   .d-analysis-ingredients { grid-template-columns: 1fr; }
+  .d-analysis-quality-panel {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .d-analysis-judgment-grid {
+    grid-template-columns: 1fr;
+  }
+  .d-analysis-data-grid {
+    grid-template-columns: 1fr;
+  }
+  .d-analysis-rank-row {
+    grid-template-columns: 88px repeat(3, minmax(0, 1fr));
+  }
+  .d-analysis-rank-row > span,
+  .d-analysis-rank-cell {
+    padding: 10px 9px;
+  }
+  .d-analysis-rank-cell {
+    grid-template-columns: auto;
+    gap: 3px;
+  }
+  .d-analysis-rank-total,
+  .d-analysis-rank-value {
+    justify-self: start;
+  }
 }
 
 /* ───────── 선택 가이드 ───────── */
@@ -754,18 +1214,43 @@
   list-style: none; margin: 0; padding: 0;
   display: flex; flex-direction: column; gap: 0;
 }
+.d-detail-guide-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.24s ease, opacity 0.18s ease;
+}
+.d-detail-guide-collapse.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.d-detail-guide-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+  padding-top: 0;
+  transition: padding-top 0.24s ease;
+}
+.d-detail-guide-collapse.is-open .d-detail-guide-collapse-inner {
+  padding-top: 16px;
+}
 .d-detail-guide-item {
-  display: flex; gap: 14px; align-items: flex-start;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  align-items: flex-start;
   padding: 16px 0;
   border-bottom: 1px solid var(--border-tertiary);
 }
 .d-detail-guide-item:last-child { border-bottom: none; }
 .d-detail-guide-item-num {
-  width: 28px; height: 28px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--gray-900); color: white;
-  border-radius: 50%;
-  font-family: var(--font-numeric); font-size: 13px; font-weight: 700;
+  width: 32px;
+  padding-top: 2px;
+  border-top: 2px solid var(--gray-900);
+  font-family: var(--font-numeric);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-tertiary);
 }
 .d-detail-guide-item-body { flex: 1; min-width: 0; }
 .d-detail-guide-item-title {
@@ -776,6 +1261,32 @@
   font-size: 13px; line-height: 1.65; color: var(--text-secondary);
   margin: 0; word-break: keep-all;
 }
+.d-detail-guide-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.d-detail-guide-points li {
+  position: relative;
+  padding-left: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  word-break: keep-all;
+}
+.d-detail-guide-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gray-400);
+}
 .d-detail-guide-summary {
   margin-top: 16px; padding: 13px 16px;
   background: var(--gray-50); border-radius: var(--radius-md);
@@ -784,6 +1295,13 @@
 .d-detail-guide-summary-text {
   font-size: 13px; line-height: 1.65; color: var(--text-secondary);
   margin: 0; font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .d-detail-guide-collapse,
+  .d-detail-guide-collapse-inner {
+    transition: none;
+  }
 }
 
 /* 원료/성분 */

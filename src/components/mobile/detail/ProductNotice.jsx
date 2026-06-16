@@ -27,7 +27,7 @@ function CautionBlock({ label, text }) {
   );
 }
 
-export function ProductNotice({ additionalContent, cautionNotes, crossContamination }) {
+export function ProductNotice({ additionalContent, cautionNotes, crossContamination, embedded = false }) {
   const items = (Array.isArray(additionalContent) ? additionalContent : []).filter(
     (it) => it && (it.title || it.body),
   );
@@ -36,7 +36,7 @@ export function ProductNotice({ additionalContent, cautionNotes, crossContaminat
   if (items.length === 0 && !hasCaution) return null;
 
   return (
-    <section className="m-detail-card m-detail-notice">
+    <section className={`${embedded ? 'm-detail-embedded-section ' : 'm-detail-card '}m-detail-notice`}>
       <header className="m-detail-card-head">
         <h2 className="m-detail-card-title">추가 안내</h2>
       </header>

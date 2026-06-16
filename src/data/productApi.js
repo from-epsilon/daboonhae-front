@@ -7,6 +7,8 @@
 
 import { supabase } from '../lib/supabase.js';
 
+export const PROTEIN_DRINK_SCORE_PROFILE = 'protein_drink_default_v1';
+
 // ── 영양성분 코드 → mock nutrition 키 매핑
 const NUTRIENT_KEY = {
   energy_kcal: 'calories',
@@ -105,6 +107,25 @@ function parsePurchaseLinks(links) {
     }));
 }
 
+function parseScoreSnapshots(snapshots) {
+  if (!Array.isArray(snapshots)) return [];
+  return snapshots
+    .filter((snapshot) => snapshot?.profile_code)
+    .map((snapshot) => ({
+      profileCode: snapshot.profile_code,
+      profileVersion: snapshot.profile_version ?? null,
+      score: typeof snapshot.score === 'number' ? snapshot.score : Number(snapshot.score ?? 0),
+      confidence: typeof snapshot.confidence === 'number' ? snapshot.confidence : Number(snapshot.confidence ?? 0),
+      components: snapshot.components ?? null,
+      reasons: Array.isArray(snapshot.reasons) ? snapshot.reasons : [],
+      computedAt: snapshot.computed_at ?? null,
+    }));
+}
+
+function pickScoreSnapshot(snapshots, profileCode) {
+  return snapshots.find((snapshot) => snapshot.profileCode === profileCode) ?? null;
+}
+
 // ── 영양값 기반 목적 자동 태깅 (DB 링크가 비었을 때 폴백)
 function derivePurposesFit(n) {
   const fits = [];
@@ -131,17 +152,29 @@ function deriveRankingScore(n) {
 // ── 알레르기 텍스트 → 배열
 function parseAllergens(text) {
   if (!text) return [];
-  return text.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
+  return text
+    .split(/[,，、\s]+/)
+    .map(s => s.trim())
+    .filter((s) => s && s !== '함유');
 }
 
 // ── ingredient_annotations → 단백질원료/대체당 배열
 // - type별로 원문 구간 text를 추출 (없으면 label 폴백), 중복 제거
 function parseIngredientAnnotations(anns) {
   const list = Array.isArray(anns) ? anns : [];
+  const bySourceOrder = (a, b) => {
+    const ax = Number.isFinite(a?.start) ? a.start : Infinity;
+    const bx = Number.isFinite(b?.start) ? b.start : Infinity;
+    if (ax !== bx) return ax - bx;
+    const ay = Number.isFinite(a?.end) ? a.end : Infinity;
+    const by = Number.isFinite(b?.end) ? b.end : Infinity;
+    return ay - by;
+  };
   const pick = (type) =>
     [...new Set(
       list
         .filter((a) => a && a.type === type)
+        .sort(bySourceOrder)
         .map((a) => (a.text ?? a.label ?? '').trim())
         .filter(Boolean),
     )];
@@ -160,6 +193,8 @@ function transformProduct(food) {
   const basis = nutritionBasisOf(food);
   const family = parseFamily(food.food_families);
   const purchaseLinks = parsePurchaseLinks(food.food_purchase_links);
+  const scoreSnapshots = parseScoreSnapshots(food.food_score_snapshots);
+  const proteinDrinkScore = pickScoreSnapshot(scoreSnapshots, PROTEIN_DRINK_SCORE_PROFILE);
   // 원재료 구간 마킹 → 단백질원료/대체당 추출
   const { proteinSources, sweeteners } = parseIngredientAnnotations(food.ingredient_annotations);
 
@@ -175,6 +210,7 @@ function transformProduct(food) {
     // 표시용 식품유형 라벨(name_ko 우선) + 매칭용 코드 분리 보존
     category: food.food_type_categories?.name_ko ?? food.food_type_category_code ?? '',
     categoryCode: food.food_type_category_code ?? '',
+    categoryIsActive: food.food_type_categories?.is_active === true,
     family,
     purposeCategories,
     purposesFit: derivePurposesFit(nutrition),
@@ -188,6 +224,10 @@ function transformProduct(food) {
     description: '',
     purchaseUrl: food.source_url ?? '#',
     purchaseLinks,
+    scoreSnapshots,
+    recommendationScores: {
+      proteinDrinkDefault: proteinDrinkScore,
+    },
     rankingScore: deriveRankingScore(nutrition),
     _raw: {
       ingredientsText: food.ingredients_text ?? '',
@@ -212,6 +252,10 @@ function transformProduct(food) {
   };
 }
 
+function onlyActiveCategoryRows(rows) {
+  return (rows ?? []).filter((food) => food?.food_type_categories?.is_active === true);
+}
+
 // ── 선택 조인 절 (RLS 허용 시에만 포함)
 const FAMILY_JOIN = `
   food_families ( id, name, brand, food_type_category_code ),
@@ -228,6 +272,11 @@ const ALIAS_JOIN = `
 const PURCHASE_JOIN = `
   food_purchase_links ( vendor_name, url, quantity, price, is_fast_delivery, is_active, updated_at ),
 `;
+const SCORE_JOIN = `
+  food_score_snapshots (
+    profile_code, profile_version, score, confidence, components, reasons, computed_at
+  ),
+`;
 
 // ── 목록 select 절 (목록/검색 공통). optional=true면 family/purpose 조인 포함
 const LIST_SELECT_BASE = (optional) => `
@@ -239,10 +288,11 @@ const LIST_SELECT_BASE = (optional) => `
   ingredients_text, allergens_text, cross_contamination_text,
   caution_notes, additional_content, ingredient_annotations,
   food_type_category_code, family_id, size_variant_label, updated_at,
-  food_type_categories ( code, name_ko ),
+  food_type_categories!inner ( code, name_ko, is_active ),
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
   ${PURCHASE_JOIN}
+  ${SCORE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
     nutrients ( code, name_ko, default_unit, group_name, display_order )
@@ -259,10 +309,11 @@ const DETAIL_SELECT_BASE = (optional) => `
   ingredients_text, allergens_text, cross_contamination_text,
   caution_notes, additional_content, ingredient_annotations,
   food_type_category_code, family_id, size_variant_label, updated_at,
-  food_type_categories ( code, name_ko ),
+  food_type_categories!inner ( code, name_ko, is_active ),
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
   ${PURCHASE_JOIN}
+  ${SCORE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
     nutrients ( code, name_ko, name_en, default_unit, group_name, display_order )
@@ -286,6 +337,11 @@ function isOptionalJoinError(error) {
   );
 }
 
+function isNoRowsError(error) {
+  if (!error) return false;
+  return error.code === 'PGRST116' || (error.message ?? '').toLowerCase().includes('no rows');
+}
+
 // ── 제품 목록 전체 조회
 export async function fetchProducts() {
   if (optionalJoinsAvailable) {
@@ -293,9 +349,10 @@ export async function fetchProducts() {
       .from('foods')
       .select(LIST_SELECT_BASE(true))
       .eq('is_active', true)
+      .eq('food_type_categories.is_active', true)
       .order('updated_at', { ascending: false });
 
-    if (!error) return (data ?? []).map(transformProduct);
+    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
     if (!isOptionalJoinError(error)) throw error;
     optionalJoinsAvailable = false;
     console.warn('[productApi] 선택 조인(food_families/purpose/aliases) 불가, 기본 조인으로 폴백');
@@ -305,10 +362,11 @@ export async function fetchProducts() {
     .from('foods')
     .select(LIST_SELECT_BASE(false))
     .eq('is_active', true)
+    .eq('food_type_categories.is_active', true)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return (data ?? []).map(transformProduct);
+  return onlyActiveCategoryRows(data).map(transformProduct);
 }
 
 // ── 단건 상세 조회
@@ -319,9 +377,11 @@ export async function fetchProductById(id) {
       .select(DETAIL_SELECT_BASE(true))
       .eq('id', id)
       .eq('is_active', true)
+      .eq('food_type_categories.is_active', true)
       .single();
 
-    if (!error) return transformProduct(data);
+    if (!error) return data?.food_type_categories?.is_active === true ? transformProduct(data) : null;
+    if (isNoRowsError(error)) return null;
     if (!isOptionalJoinError(error)) throw error;
     optionalJoinsAvailable = false;
   }
@@ -331,10 +391,12 @@ export async function fetchProductById(id) {
     .select(DETAIL_SELECT_BASE(false))
     .eq('id', id)
     .eq('is_active', true)
+    .eq('food_type_categories.is_active', true)
     .single();
 
+  if (isNoRowsError(error)) return null;
   if (error) throw error;
-  return transformProduct(data);
+  return data?.food_type_categories?.is_active === true ? transformProduct(data) : null;
 }
 
 // ── 텍스트 검색 (이름/브랜드/식품유형코드/바코드/원천코드)
@@ -347,11 +409,12 @@ export async function searchProductsRemote(query) {
       .from('foods')
       .select(LIST_SELECT_BASE(true))
       .eq('is_active', true)
+      .eq('food_type_categories.is_active', true)
       .or(orFilter)
       .order('updated_at', { ascending: false })
       .limit(50);
 
-    if (!error) return (data ?? []).map(transformProduct);
+    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
     if (!isOptionalJoinError(error)) throw error;
     optionalJoinsAvailable = false;
   }
@@ -360,10 +423,11 @@ export async function searchProductsRemote(query) {
     .from('foods')
     .select(LIST_SELECT_BASE(false))
     .eq('is_active', true)
+    .eq('food_type_categories.is_active', true)
     .or(orFilter)
     .order('updated_at', { ascending: false })
     .limit(50);
 
   if (error) throw error;
-  return (data ?? []).map(transformProduct);
+  return onlyActiveCategoryRows(data).map(transformProduct);
 }

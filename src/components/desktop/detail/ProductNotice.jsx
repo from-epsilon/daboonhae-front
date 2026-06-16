@@ -28,8 +28,8 @@ function CautionBlock({ label, text }) {
 
 // 추가 안내 카드 — additional_content + caution_notes + 교차오염
 // 표시할 내용이 하나도 없으면 렌더하지 않음
-export function ProductNotice({ additionalContent, cautionNotes, crossContamination }) {
-  const [open, setOpen] = useState(false);
+export function ProductNotice({ additionalContent, cautionNotes, crossContamination, embedded = false, collapsible = true }) {
+  const [open, setOpen] = useState(!collapsible);
   const items = (Array.isArray(additionalContent) ? additionalContent : []).filter(
     (it) => it && (it.title || it.body),
   );
@@ -38,17 +38,21 @@ export function ProductNotice({ additionalContent, cautionNotes, crossContaminat
   if (items.length === 0 && !hasCaution) return null;
 
   return (
-    <section className="d-detail-card d-detail-notice">
+    <section className={`d-detail-card d-detail-notice${embedded ? ' is-embedded' : ''}`}>
       <header className="d-detail-card-head d-detail-notice-head">
-        <button
-          type="button"
-          className="d-detail-notice-toggle"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-        >
-          <span className="d-detail-card-title">추가 안내</span>
-          <ChevronDown size={18} className={open ? 'is-open' : ''} />
-        </button>
+        {collapsible ? (
+          <button
+            type="button"
+            className="d-detail-notice-toggle"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+          >
+            <span className="d-detail-card-title">추가 안내</span>
+            <ChevronDown size={18} className={open ? 'is-open' : ''} />
+          </button>
+        ) : (
+          <h2 className="d-detail-card-title">추가 안내</h2>
+        )}
       </header>
 
       {open && (

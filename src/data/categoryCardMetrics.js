@@ -5,7 +5,7 @@ import { getFoodTypeByCode } from './categoryTabs.js';
 const PROTEIN_COMMON = [
   { key: 'calories', label: '칼로리', unit: 'kcal', perVol: true },
   { key: 'protein', label: '단백질', unit: 'g', perVol: true, perKcal: true },
-  { key: 'eaa', label: '필수 아미노산(EAA)', unit: 'mg', perVol: true, perKcal: true },
+  { key: 'eaa', label: '필수아미노산', unit: 'mg', perVol: true, perKcal: true },
   { key: 'bcaa', label: 'BCAA', unit: 'mg', perVol: true, perKcal: true },
 ];
 
@@ -14,7 +14,7 @@ const PROTEIN_COMMON = [
 // - unitInRatio: 비율값에도 단위 표기 → 총량/칼로리대비/가격대비 형식 통일
 const PROTEIN_DRINK_PRIMARY = [
   { key: 'protein', label: '단백질', unit: 'g', perKcal: true, perPrice: true, unitInRatio: true },
-  { key: 'eaa', label: '필수 아미노산(EAA)', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
+  { key: 'eaa', label: '필수아미노산', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
   { key: 'bcaa', label: 'BCAA', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
 ];
 // 3순위: 보조 영양 (작게, 총량만)

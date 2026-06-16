@@ -67,6 +67,20 @@ function PrimaryMetricsSummary({ food, metrics }) {
   );
 }
 
+function formatHeaderNumber(value) {
+  if (value === undefined || value === null || Number.isNaN(value)) return null;
+  return value >= 100 ? Math.round(value).toLocaleString() : (Math.round(value * 10) / 10).toLocaleString();
+}
+
+function ProductServingMeta({ product }) {
+  const parts = [];
+  if (product.serving) parts.push(product.serving);
+  const calories = formatHeaderNumber(product.nutrition?.calories);
+  if (calories !== null) parts.push(`${calories}kcal`);
+  if (parts.length === 0) return null;
+  return <span className="d-detail-header-serving">{parts.join(' · ')}</span>;
+}
+
 function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, detailOpen, onToggleDetail }) {
   const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
 
@@ -85,7 +99,7 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
             <div className="d-detail-overview-title">
               <span className="d-detail-header-brand">{product.brand}</span>
               <h1 className="d-detail-header-name">{product.name}</h1>
-              <span className="d-detail-header-serving">{product.serving}</span>
+              <ProductServingMeta product={product} />
             </div>
           </div>
           {primaryMetrics && <PrimaryMetricsSummary food={product} metrics={primaryMetrics} />}
@@ -104,11 +118,20 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
           onToggleExpand={onToggleDetail}
         />
         {detailOpen && (
-          <IngredientList
-            ingredients={product.ingredients}
-            rawText={raw?._raw?.ingredientsText}
-            annotations={raw?._raw?.ingredientAnnotations}
-          />
+          <>
+            <IngredientList
+              ingredients={product.ingredients}
+              rawText={raw?._raw?.ingredientsText}
+              annotations={raw?._raw?.ingredientAnnotations}
+            />
+            <ProductNotice
+              additionalContent={raw?._raw?.additionalContent}
+              cautionNotes={raw?._raw?.cautionNotes}
+              crossContamination={raw?._raw?.crossContaminationText}
+              embedded
+              collapsible={false}
+            />
+          </>
         )}
       </div>
     </section>
@@ -117,7 +140,6 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
 
 // #3 섹션 앵커 탭
 const SECTIONS = [
-  { id: 'guide', label: '선택 가이드' },
   { id: 'analysis', label: '분석 리포트' },
   { id: 'reviews', label: '후기' },
 ];
@@ -207,7 +229,7 @@ export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { has, toggle, isFull, max } = useCompare();
-  const { loading } = useProducts();
+  const { products, loading } = useProducts();
   const activeSection = useActiveSection(id);
   const navRef = useRef(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -270,11 +292,10 @@ export default function DetailPage() {
           <SectionNav activeId={activeSection} navRef={navRef} />
 
           <div className="d-detail-sections">
-            <div id="guide">
-              <CategoryGuide category={raw?.category} />
-            </div>
             <div id="analysis">
               <AnalysisReport
+                product={product}
+                products={products}
                 nutrition={n}
                 ingredients={product.ingredients}
                 category={raw?.category}
@@ -282,11 +303,6 @@ export default function DetailPage() {
                 foodNutrients={raw?._raw?.foodNutrients}
               />
             </div>
-            <ProductNotice
-              additionalContent={raw?._raw?.additionalContent}
-              cautionNotes={raw?._raw?.cautionNotes}
-              crossContamination={raw?._raw?.crossContaminationText}
-            />
             <div id="reviews">
               <ReviewSection productId={product.id} />
             </div>
@@ -302,6 +318,7 @@ export default function DetailPage() {
         <aside className="d-detail-aside">
           <div className="d-detail-aside-inner">
             <PurchaseOffers offers={product.purchaseLinks} title="가격 비교" showUpdatedAt stacked />
+            <CategoryGuide category={raw?.category} />
           </div>
         </aside>
       </div>

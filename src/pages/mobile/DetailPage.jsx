@@ -138,30 +138,29 @@ export default function DetailPageMobile() {
         {/* 3-1. 핵심 지표 표 (단백질/EAA/BCAA × 총량·100kcal당·1,000원당) */}
         {primaryMetrics && <PrimaryMetricsSection food={product} metrics={primaryMetrics} />}
 
-        {/* 4. 영양성분표 */}
-        <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients} />
+        {/* 4. 영양성분표 + 펼침 안 원료·추가 안내 */}
+        <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients}>
+          <IngredientList
+            ingredients={product.ingredients}
+            rawText={raw?._raw?.ingredientsText}
+            annotations={raw?._raw?.ingredientAnnotations}
+            embedded
+          />
+          <ProductNotice
+            additionalContent={raw?._raw?.additionalContent}
+            cautionNotes={raw?._raw?.cautionNotes}
+            crossContamination={raw?._raw?.crossContaminationText}
+            embedded
+          />
+        </NutritionTable>
 
-        {/* 5. 원료 · 성분 */}
-        <IngredientList
-          ingredients={product.ingredients}
-          rawText={raw?._raw?.ingredientsText}
-          annotations={raw?._raw?.ingredientAnnotations}
-        />
-
-        {/* 5-1. 추가 안내 (additional_content / 주의사항 / 교차오염) */}
-        <ProductNotice
-          additionalContent={raw?._raw?.additionalContent}
-          cautionNotes={raw?._raw?.cautionNotes}
-          crossContamination={raw?._raw?.crossContaminationText}
-        />
-
-        {/* 6. 분석 리포트 (목적별 룰 기반) */}
+        {/* 5. 분석 리포트 (목적별 룰 기반) */}
         <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} />
 
-        {/* 7. 후기 */}
+        {/* 6. 후기 */}
         <ReviewSection productId={product.id} />
 
-        {/* 8. 같은 카테고리 다른 제품 (가장 아래) */}
+        {/* 7. 같은 카테고리 다른 제품 (가장 아래) */}
         <RelatedProducts currentRaw={raw} allProducts={allProducts} />
       </div>
 
@@ -173,4 +172,3 @@ export default function DetailPageMobile() {
     </>
   );
 }
-

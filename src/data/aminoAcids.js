@@ -2,11 +2,11 @@
 // 표시값·정렬값이 항상 같은 기준을 쓰도록 한 곳에서만 계산한다.
 // 기준: 개별 아미노산이 전부 있으면 합산값을 우선 사용, 하나라도 비면 DB 집계값(src_eaa_mg / src_bcaa_mg)으로 폴백.
 
-const EAA_KEYS = [
+export const EAA_KEYS = [
   'leucine', 'isoleucine', 'valine', 'lysine', 'methionine',
   'phenylalanine', 'threonine', 'tryptophan', 'histidine',
 ];
-const BCAA_KEYS = ['leucine', 'isoleucine', 'valine'];
+export const BCAA_KEYS = ['leucine', 'isoleucine', 'valine'];
 
 // 키 목록이 모두 0보다 큰 값으로 채워져 있는지
 function allPresent(n, keys) {

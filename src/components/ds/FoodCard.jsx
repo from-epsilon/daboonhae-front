@@ -11,7 +11,14 @@ import { useMetricColumn } from './MetricColumnContext.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
 import { getCategoryCardConfig, computeMetricValues, getHighlightValue } from '../../data/categoryCardMetrics.js';
-import { splitProteinSortKey } from '../../data/listSort.js';
+import { formatProteinSourceLabel } from '../../data/listFilters.js';
+import { useProteinResolver } from '../../data/proteinQuality.js';
+import {
+  PROTEIN_SORT_BASES,
+  PROTEIN_SORT_MODES,
+  PROTEIN_SORT_RECOMMEND,
+  splitProteinSortKey,
+} from '../../data/listSort.js';
 import PurchaseOffers from '../global/PurchaseOffers.jsx';
 
 // 썸네일 이미지 (URL → img, 빈값 → 회색 placeholder)
@@ -89,9 +96,26 @@ function ListStoreButton({ food, onCompare, inCompare }) {
   );
 }
 
+function formatInlineNumber(value) {
+  if (value === undefined || value === null || isNaN(value)) return null;
+  return value >= 100 ? Math.round(value) : Math.round(value * 10) / 10;
+}
+
+function ServingMeta({ food, showCalories = false }) {
+  const parts = [];
+  if (food.serving) parts.push(food.serving);
+  if (showCalories) {
+    const calories = formatInlineNumber(food.nutrition?.calories);
+    if (calories !== null) parts.push(`${calories}kcal`);
+  }
+  if (parts.length === 0) return null;
+  return <div className="fc-serving-meta">{parts.join(' · ')}</div>;
+}
+
 // list 레이아웃: 좌측 88px 컬럼(썸네일 + 담기 버튼) + 텍스트 영역
 // - 담긴 제품은 카드 좌측에 그린 강조선 + 버튼 '담김' 상태로 표시
 function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, sortKey }) {
+  const config = getCategoryCardConfig(tabId, subLabel);
   return (
     <div
       onClick={onClick}
@@ -134,9 +158,7 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, so
         >
           {food.name}
         </div>
-        {food.serving && (
-          <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
-        )}
+        <ServingMeta food={food} showCalories={Boolean(config.primaryMetrics)} />
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
         <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" className="fc-card-offers" />
       </div>
@@ -190,55 +212,76 @@ function CategoryMetricsBlock({ food, tabId, subLabel, sortKey }) {
 }
 
 // 우선순위 기반 카드 메트릭 (단백질 음료 등)
-// - 상단: 단백질원·영양성분·유당Free 등 부가정보를 라벨-값 구조로 정리
+// - 상단: 단백질원, 용량 라인: 용량·열량, 하단: 정렬 기준별 핵심 지표
 // - 하단: 핵심 지표(총량 + 칼로리/가격 대비) 열 정렬 표
 function TieredMetricsBlock({ food, config, sortKey }) {
   const primary = config.primaryMetrics ?? [];
-  const secondary = config.secondaryMetrics ?? [];
   const sources = config.showProteinSource ? (food.ingredients?.proteinSources ?? []) : [];
+  const isRecommend = !sortKey || sortKey === PROTEIN_SORT_RECOMMEND;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-      {/* 표 위 구조화 블록: 단백질원 · 영양성분 */}
-      <TieredMeta food={food} sources={sources} secondary={secondary} />
+      {isRecommend ? (
+        <TieredPrimaryTable food={food} metrics={primary} sortKey={sortKey} />
+      ) : (
+        <SelectedProteinMetric food={food} metrics={primary} sortKey={sortKey} />
+      )}
 
-      {/* 핵심 단백질 지표 — 총량/100kcal당/1,000원당 열 정렬 표 */}
-      <TieredPrimaryTable food={food} metrics={primary} sortKey={sortKey} />
+      <TieredMeta sources={sources} />
     </div>
   );
 }
 
-// 표 위 부가정보 — 단백질원 / 영양성분을 라벨-값 행으로 구조화
-function TieredMeta({ food, sources, secondary }) {
-  // 영양성분: 값 있는 항목만 "라벨 값" 형태로 묶음
-  const nutri = secondary
-    .map((m) => {
-      const v = food.nutrition?.[m.key];
-      if (v === undefined || v === null || isNaN(v)) return null;
-      const r = v >= 100 ? Math.round(v) : Math.round(v * 10) / 10;
-      return `${m.label} ${r}${m.unit}`;
-    })
-    .filter(Boolean);
-
+// 표 위 부가정보 — 단백질원만 간결하게 표시
+function TieredMeta({ sources }) {
+  const resolveProtein = useProteinResolver(sources);
   const hasSource = sources.length > 0;
-  if (!hasSource && nutri.length === 0) return null;
+  if (!hasSource) return null;
+
+  const sourceLabels = sources.map((source) => {
+    return formatProteinSourceLabel(source, resolveProtein);
+  });
 
   return (
     <div className="fc-meta">
-      {hasSource && (
-        <div className="fc-meta-row">
-          <span className="fc-meta-label">단백질원</span>
-          <span className="fc-meta-value">
-            {sources.join(' · ')}
-          </span>
-        </div>
-      )}
-      {nutri.length > 0 && (
-        <div className="fc-meta-row">
-          <span className="fc-meta-label">영양성분</span>
-          <span className="fc-meta-value">{nutri.join(' · ')}</span>
-        </div>
-      )}
+      <div className="fc-meta-row">
+        <span className="fc-meta-label">단백질원</span>
+        <span className="fc-meta-value">
+          {sourceLabels.join(' · ')}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function SelectedProteinMetric({ food, metrics, sortKey }) {
+  const { base, mode } = splitProteinSortKey(sortKey);
+  const metric = metrics.find((m) => m.key === base);
+  if (!metric) return null;
+  const values = computeMetricValues(food, metric);
+  if (!values) return null;
+
+  const modeDef = PROTEIN_SORT_MODES.find((m) => m.key === mode);
+  const baseDef = PROTEIN_SORT_BASES.find((b) => b.key === base);
+  const ratioByLabel = {};
+  values.ratios.forEach((r) => { ratioByLabel[r.label] = r; });
+  const selected = mode === 'kcal'
+    ? ratioByLabel['/100kcal']
+    : mode === 'price'
+      ? ratioByLabel['/1,000원']
+      : null;
+  const value = selected
+    ? { num: selected.num, unit: selected.unit, label: selected.label }
+    : { num: values.total, unit: values.unit, label: '' };
+
+  return (
+    <div className="fc-selected-metric">
+      <span className="fc-selected-metric-name">{baseDef?.label ?? metric.label}</span>
+      <span className="fc-selected-metric-value">
+        {value.num}<span className="fc-selected-metric-unit">{value.unit}</span>
+      </span>
+      <span className="fc-selected-metric-sep">/</span>
+      <span className="fc-selected-metric-basis">{modeDef?.label ?? '총량 기준'}</span>
     </div>
   );
 }
@@ -269,15 +312,12 @@ export function TieredPrimaryTable({ food, metrics, sortKey }) {
     .filter(Boolean);
   if (rows.length === 0) return null;
 
-  const showKcal = rows.some((r) => r.perKcal);
-  const showPrice = rows.some((r) => r.perPrice);
-
-  // 표시할 값 열 정의 (데이터 있을 때만)
+  // 값 열은 항상 고정. 행은 숨기더라도 카드 간 열 위치가 흔들리지 않게 한다.
   const cols = [
     { key: 'total', head: '총량 기준', variant: 'total', pick: (r) => r.total },
-    showKcal && { key: 'kcal', head: '100kcal 기준', variant: 'ratio', pick: (r) => r.perKcal },
-    showPrice && { key: 'price', head: '1,000원 기준', variant: 'ratio', pick: (r) => r.perPrice },
-  ].filter(Boolean);
+    { key: 'kcal', head: '100kcal 기준', variant: 'ratio', pick: (r) => r.perKcal },
+    { key: 'price', head: '1,000원 기준', variant: 'ratio', pick: (r) => r.perPrice },
+  ];
 
   // 정렬 조합(기준×성분)이면 sortMode — 해당 '셀'만 강조하고 호버 로직은 비활성
   // 추천순/미지정이면 기존 호버 '열' 강조만 동작
@@ -298,7 +338,6 @@ export function TieredPrimaryTable({ food, metrics, sortKey }) {
   return (
     <div
       className={`fc-ptable${focused ? ' is-focused' : ''}`}
-      style={{ gridTemplateColumns: `auto repeat(${cols.length}, auto)` }}
     >
       {/* 헤더 — 라인 없이 타이포(작고 연함)로 구분 */}
       <span className="fc-ptable-corner" />
@@ -335,7 +374,9 @@ export function TieredPrimaryTable({ food, metrics, sortKey }) {
 // - active: 호버 열 / 정렬 기준 셀 강조 (더 크고 볼드)
 function PTableCell({ value, variant, active, ...handlers }) {
   const cls = `fc-ptable-cell fc-ptable-cell--${variant}${active ? ' is-active' : ''}`;
-  if (!value) return <span className={cls} {...handlers}>-</span>;
+  if (!value) {
+    return <span className={`${cls} is-empty`} aria-hidden="true" {...handlers}>-</span>;
+  }
   return (
     <span className={cls} {...handlers}>
       {value.num}<span className="fc-ptable-unit">{value.unit}</span>
@@ -439,41 +480,31 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, so
         alignItems: 'flex-start',
       }}
     >
-      {/* 썸네일 */}
-      <div
-        style={{
-          width: 140,
-          height: 140,
-          borderRadius: 'var(--radius-md)',
-          flexShrink: 0,
-          overflow: 'hidden',
-          background: '#fff',
-        }}
-      >
-        <ThumbImage src={food.thumb} alt={food.name} />
+      {/* 썸네일 + 비교함 */}
+      <div className="d-foodcard-wide-media">
+        <div className="d-foodcard-wide-thumb">
+          <ThumbImage src={food.thumb} alt={food.name} />
+        </div>
+        {onCompare && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCompare(food);
+            }}
+            aria-pressed={inCompare}
+            aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
+            className={`d-foodcard-wide-compare${inCompare ? ' is-in' : ''}`}
+          >
+            {inCompare ? <IconCheck size={12} stroke={2} /> : <IconPlus size={12} stroke={2} />}
+            <span>비교함</span>
+          </button>
+        )}
       </div>
 
       {/* 상세 정보 */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-        {/* 브랜드 + 비교 버튼 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
-          {onCompare && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCompare(food);
-              }}
-              aria-pressed={inCompare}
-              aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
-              className={`d-foodcard-wide-compare${inCompare ? ' is-in' : ''}`}
-            >
-              {inCompare ? <IconCheck size={12} stroke={2} /> : <IconPlus size={12} stroke={2} />}
-              <span>비교함</span>
-            </button>
-          )}
-        </div>
+        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
 
         {/* 상품명 */}
         <div
@@ -491,10 +522,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, so
           {food.name}
         </div>
 
-        {/* 용량 */}
-        {food.serving && (
-          <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{food.serving}</div>
-        )}
+        <ServingMeta food={food} showCalories={Boolean(config.primaryMetrics)} />
 
         {/* 카테고리별 강조 지표 — 모바일 리스트 카드와 동일(CategoryMetricsBlock) */}
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
@@ -524,36 +552,17 @@ function StatGrid({ stats }) {
   if (!stats || stats.length === 0) return null;
   return (
     <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
-        gap: 4,
-      }}
+      className="fc-grid-stats"
+      style={{ '--fc-stat-count': stats.length }}
     >
       {stats.map((s) => (
-        <div key={s.label} style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          <span
-            style={{
-              fontSize: 10,
-              color: s.primary ? 'var(--green-700)' : 'var(--text-tertiary)',
-              lineHeight: 1.2,
-              whiteSpace: 'nowrap',
-            }}
-          >
+        <div key={s.label} className="fc-grid-stat">
+          <span className={`fc-grid-stat-label${s.primary ? ' is-primary' : ''}`}>
             {s.label}
           </span>
-          <span
-            style={{
-              fontFamily: 'var(--font-numeric)',
-              fontSize: s.primary ? 15 : 13,
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              lineHeight: 1.2,
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <span className={`fc-grid-stat-value${s.primary ? ' is-primary' : ''}`}>
             {s.num}
-            <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-tertiary)', marginLeft: 1 }}>
+            <span className="fc-grid-stat-unit">
               {s.unit}
             </span>
           </span>
@@ -593,46 +602,22 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
   const stats = metrics ? getPurposeStats(food, metrics) : getDefaultStats(food);
   return (
     <div
+      className="fc-grid-card"
       onClick={onClick}
-      style={{
-        background: 'white',
-        borderRadius: 'var(--radius-md)',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
     >
-      <div
-        style={{
-          aspectRatio: '1/1',
-          position: 'relative',
-          borderRadius: 'var(--radius-md)',
-          overflow: 'hidden',
-          background: '#fff',
-        }}
-      >
+      <div className="fc-grid-thumb">
         <ThumbImage src={food.thumb} alt={food.name} />
         <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
-      <div style={{ padding: '10px 6px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <div style={{ fontSize: 'var(--font-size-xxs)', color: 'var(--text-secondary)' }}>{food.brand}</div>
+      <div className={`fc-grid-body${showPurchase ? ' has-purchase' : ''}`}>
+        <div className="fc-grid-brand">{food.brand}</div>
         <div
-          style={{
-            fontSize: 'var(--font-size-s)',
-            color: 'var(--text-primary)',
-            fontWeight: 500,
-            lineHeight: 1.4,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
+          className="fc-grid-name"
         >
           {food.name}
           {/* 용량 — 제품명 옆 인라인 */}
           {food.serving && (
-            <span style={{ fontSize: 'var(--font-size-xxs)', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+            <span className="fc-grid-serving">
               {' '}{food.serving}
             </span>
           )}
@@ -647,6 +632,8 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
             maxItems={1}
             pricePer="unit"
             title="개당 최저가"
+            className="fc-grid-offers"
+            emptyLabel="가격 정보 없음"
           />
         )}
         {/* 후기 N건 — 카드 trust 신호 */}

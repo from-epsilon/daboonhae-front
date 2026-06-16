@@ -50,6 +50,7 @@ function collectChips({ specs, value, onChange }) {
     if (v === undefined || v === null) continue;
     if (spec.type === 'range') addRangeChip(chips, spec, v, clearField);
     else if (spec.type === 'tristate') addTriStateChips(chips, spec, v, updateField);
+    else if (spec.type === 'exclude_only') addTriStateChips(chips, spec, v, updateField);
     else if (spec.type === 'bool') addBoolChip(chips, spec, v, clearField);
   }
 

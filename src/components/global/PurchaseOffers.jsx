@@ -1,4 +1,8 @@
 import { getVendorLogo } from '../../utils/vendorLogo.js';
+import { IconRocket } from '../ds/Icons.jsx';
+
+const FREE_SHIPPING_TARGET_TOTAL = 19800;
+const UNIT_PRICE_EPSILON = 0.0001;
 
 function formatPurchasePrice(price) {
   if (typeof price !== 'number') return '가격 문의';
@@ -21,6 +25,37 @@ function normalizeOffers(offers) {
     .sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
 }
 
+function totalPriceOf(offer) {
+  return typeof offer?.price === 'number' ? offer.price : Infinity;
+}
+
+function sameUnitPrice(a, b) {
+  return Math.abs(a - b) < UNIT_PRICE_EPSILON;
+}
+
+function compareByFreeShippingTotal(a, b) {
+  const aTotal = totalPriceOf(a);
+  const bTotal = totalPriceOf(b);
+  const aMeetsTarget = aTotal >= FREE_SHIPPING_TARGET_TOTAL;
+  const bMeetsTarget = bTotal >= FREE_SHIPPING_TARGET_TOTAL;
+
+  if (aMeetsTarget !== bMeetsTarget) return aMeetsTarget ? -1 : 1;
+  return aTotal - bTotal;
+}
+
+function getBestUnitOffer(offers) {
+  const candidates = (offers ?? [])
+    .map((offer) => ({ offer, unitPrice: unitPriceOf(offer) }))
+    .filter(({ unitPrice }) => typeof unitPrice === 'number');
+  if (candidates.length === 0) return null;
+
+  const cheapestUnitPrice = Math.min(...candidates.map(({ unitPrice }) => unitPrice));
+  return candidates
+    .filter(({ unitPrice }) => sameUnitPrice(unitPrice, cheapestUnitPrice))
+    .map(({ offer }) => offer)
+    .sort(compareByFreeShippingTotal)[0] ?? null;
+}
+
 // 표시 순서 결정
 // - 'total'      : 총액 오름차순
 // - 'unit'       : 개당(단가) 오름차순
@@ -30,24 +65,19 @@ function orderOffers(offers, mode) {
   if (base.length <= 1) return base;
 
   if (mode === 'unit') {
-    return [...base].sort(
-      (a, b) => (unitPriceOf(a) ?? Infinity) - (unitPriceOf(b) ?? Infinity),
-    );
+    return [...base].sort((a, b) => {
+      const aUnit = unitPriceOf(a) ?? Infinity;
+      const bUnit = unitPriceOf(b) ?? Infinity;
+      if (!sameUnitPrice(aUnit, bUnit)) return aUnit - bUnit;
+      return compareByFreeShippingTotal(a, b);
+    });
   }
 
   if (mode === 'unit-first') {
-    let bestIdx = -1;
-    let bestUnit = Infinity;
-    base.forEach((offer, i) => {
-      const u = unitPriceOf(offer);
-      if (typeof u === 'number' && u < bestUnit) {
-        bestUnit = u;
-        bestIdx = i;
-      }
-    });
-    if (bestIdx < 0) return base;
-    // 개당 최저가를 맨 앞으로, 나머지는 base(총액 오름차순) 순서 유지
-    return [base[bestIdx], ...base.filter((_, i) => i !== bestIdx)];
+    const best = getBestUnitOffer(base);
+    if (!best) return base;
+    // 개당 최저가 중 무료배송 기준에 가까운 최저 총액을 맨 앞으로, 나머지는 총액순 유지
+    return [best, ...base.filter((offer) => offer !== best)];
   }
 
   return base; // 'total'
@@ -98,7 +128,7 @@ export default function PurchaseOffers({
   redirectDelay = 1.5,
   showUpdatedAt = false,
   stacked = false,
-  pricePer = 'total', // 'total' 총액 표시 | 'unit' 개당(단가) 최저가 표시
+  pricePer = 'unit',  // 'unit' 개당가 강조 | 'total' 총액 강조
   sortBy = 'total',   // 'total' 총액순 | 'unit' 개당순 | 'unit-first' 개당 최저가 먼저+나머지 총액순
 }) {
   const isUnit = pricePer === 'unit';
@@ -106,8 +136,7 @@ export default function PurchaseOffers({
   const sortMode = isUnit ? 'unit' : sortBy;
   const sorted = orderOffers(offers, sortMode);
   const visible = typeof maxItems === 'number' ? sorted.slice(0, maxItems) : sorted;
-  const unitPrices = sorted.map(unitPriceOf).filter((price) => typeof price === 'number');
-  const cheapestUnitPrice = unitPrices.length > 0 ? Math.min(...unitPrices) : null;
+  const bestUnitOffer = getBestUnitOffer(sorted);
   const updatedLabel = showUpdatedAt ? latestUpdatedLabel(sorted) : null;
   const rootClass = [
     'purchase-offers',
@@ -141,7 +170,7 @@ export default function PurchaseOffers({
       <div className="purchase-offers-list">
         {visible.map((offer, i) => {
           const unitPrice = unitPriceOf(offer);
-          const isBest = typeof unitPrice === 'number' && unitPrice === cheapestUnitPrice;
+          const isBest = offer === bestUnitOffer;
           return (
             <a
               key={`${offer.vendorName}-${offer.url}-${i}`}
@@ -154,11 +183,20 @@ export default function PurchaseOffers({
               <span className="purchase-offer-main">
                 <span className="purchase-offer-vendor">
                   <VendorLabel vendorName={offer.vendorName} />
-                  {offer.isFastDelivery && <span className="purchase-offer-fast">빠른배송</span>}
+                  {offer.isFastDelivery && (
+                    <span className="purchase-offer-fast">
+                      <IconRocket size={11} stroke={1.8} />
+                      빠른배송
+                    </span>
+                  )}
                 </span>
                 <span className="purchase-offer-meta">
                   {offer.quantity ?? 1}개입
-                  {/* 개당 모드에선 메인 가격이 이미 개당가라 중복 표기 생략 */}
+                  {isUnit && typeof offer.price === 'number' && (
+                    <span className="purchase-offer-total">
+                      · 총 {formatPurchasePrice(offer.price)}
+                    </span>
+                  )}
                   {!isUnit && typeof unitPrice === 'number' && (
                     <span className="purchase-offer-unit">
                       · 개당 {Math.round(unitPrice).toLocaleString()}원
@@ -166,8 +204,10 @@ export default function PurchaseOffers({
                   )}
                 </span>
               </span>
-              <span className="purchase-offer-price">
-                {isUnit ? formatUnitPrice(unitPrice) : formatPurchasePrice(offer.price)}
+              <span className="purchase-offer-price-block">
+                <span className="purchase-offer-price">
+                  {isUnit ? formatUnitPrice(unitPrice) : formatPurchasePrice(offer.price)}
+                </span>
               </span>
             </a>
           );
