@@ -230,6 +230,7 @@ export default function ListPageMobile() {
   return (
     <div className="m-list-root">
       <Seo title={seoTitle} canonicalPath="/list" />
+      <h1 className="sr-only">{seoTitle}</h1>
       <AppBar
         onSearch={() => setSearchOpen(true)}
         onCompare={goCompare}

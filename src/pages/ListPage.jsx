@@ -212,6 +212,7 @@ export default function ListPage() {
   return (
     <div className="d-list-page">
       <Seo title={seoTitle} canonicalPath="/list" />
+      <h1 className="sr-only">{seoTitle}</h1>
       <div className="d-list-page-inner">
         {/* 식품유형 칩 — 목적 탭 없이 전 식품유형을 한 줄로, 준비중은 비활성 */}
         <div className="d-list-sub-chips">

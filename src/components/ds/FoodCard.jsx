@@ -21,6 +21,20 @@ import {
 } from '../../data/listSort.js';
 import PurchaseOffers from '../global/PurchaseOffers.jsx';
 
+// 제품 상세 경로 — 크롤러가 따라갈 실제 href (사이트맵 없이도 발견 가능하게)
+function productHref(food) {
+  return food?.id != null ? `/product/${food.id}` : undefined;
+}
+
+// 제품명 링크 클릭 — 새 탭(메타/Ctrl/휠클릭)은 기본 동작 유지,
+// 일반 클릭은 기본 이동을 막고 부모 onClick(SPA 라우팅) 실행 + 카드 전체 onClick 중복 방지
+function handleNameClick(e, onClick) {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+  e.preventDefault();
+  e.stopPropagation();
+  onClick?.();
+}
+
 // 썸네일 이미지 (URL → img, 빈값 → 회색 placeholder)
 // - 원본 DS는 thumb 가 CSS gradient 문자열이라 background 로 적용했지만
 //   우리 데이터의 thumb 은 실제 이미지 URL → <img>로 처리
@@ -144,7 +158,9 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, so
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
-        <div
+        <a
+          href={productHref(food)}
+          onClick={(e) => handleNameClick(e, onClick)}
           style={{
             fontSize: 14,
             color: 'var(--text-primary)',
@@ -154,10 +170,11 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, so
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
+            textDecoration: 'none',
           }}
         >
           {food.name}
-        </div>
+        </a>
         <ServingMeta food={food} showCalories={Boolean(config.primaryMetrics)} />
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
         <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" className="fc-card-offers" />
@@ -506,8 +523,10 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, so
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
 
-        {/* 상품명 */}
-        <div
+        {/* 상품명 — 크롤 가능한 상세 링크 */}
+        <a
+          href={productHref(food)}
+          onClick={(e) => handleNameClick(e, onClick)}
           style={{
             fontSize: 15,
             color: 'var(--text-primary)',
@@ -517,10 +536,11 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, so
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
+            textDecoration: 'none',
           }}
         >
           {food.name}
-        </div>
+        </a>
 
         <ServingMeta food={food} showCalories={Boolean(config.primaryMetrics)} />
 
@@ -611,8 +631,11 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
       </div>
       <div className={`fc-grid-body${showPurchase ? ' has-purchase' : ''}`}>
         <div className="fc-grid-brand">{food.brand}</div>
-        <div
+        <a
           className="fc-grid-name"
+          href={productHref(food)}
+          onClick={(e) => handleNameClick(e, onClick)}
+          style={{ textDecoration: 'none', color: 'inherit' }}
         >
           {food.name}
           {/* 용량 — 제품명 옆 인라인 */}
@@ -621,7 +644,7 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
               {' '}{food.serving}
             </span>
           )}
-        </div>
+        </a>
         {/* 성분 스탯 — 라벨/수치 정렬 그리드 */}
         <StatGrid stats={stats} />
         {/* 가격링크 — 추천 그리드 등에서만 표시 (개당 최저가 1개) */}
