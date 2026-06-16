@@ -5,15 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#16a34a" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <!-- TODO(에셋): /apple-touch-icon.png(180x180), /og/default.png(1200x630), /og/logo.png 추가 필요 -->
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <!-- canonical·og:url은 라우트별로 react-helmet이 단독 관리(정적 중복 시 충돌) -->
+    <!-- TODO(에셋): 전용 og 이미지(1200x630) /og/default.png, apple-touch-icon.png(180x180) 준비되면 추가 -->
+    <!-- canonical·og:url·meta description은 라우트별로 react-helmet이 단독 관리(정적 중복 시 페이지값이 가려짐) -->
     <title>다분해 — 다이어트 식품 비교·해석 플랫폼</title>
-    <meta
-      name="description"
-      content="다이어트 식품의 영양성분을 분해하고 제품 간 가격·성분을 비교합니다. 식약처 공시 영양정보 기반."
-    />
-    <!-- Open Graph (JS 미실행 SNS 공유 봇이 보는 정적 기준선; helmet이 런타임에 라우트별로 덮어씀) -->
+    <!-- Open Graph (JS 미실행 SNS 공유 봇이 보는 정적 홈 기준선; helmet이 런타임에 라우트별로 덮어씀) -->
     <meta property="og:site_name" content="다분해" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ko_KR" />
@@ -22,7 +17,7 @@
       property="og:description"
       content="다이어트 식품의 영양성분을 분해하고 제품 간 가격·성분을 비교합니다."
     />
-    <meta property="og:image" content="https://www.daboonhae.com/og/default.png" />
+    <meta property="og:image" content="https://www.daboonhae.com/assets/banner/grain-protein.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <!-- 구글 서치콘솔 메타 인증 시 여기에 google-site-verification 추가 -->
   </head>

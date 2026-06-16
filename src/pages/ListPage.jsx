@@ -235,13 +235,20 @@ export default function ListPage() {
       ? `${activeSub} 비교`
       : '다이어트 식품 목록';
 
+  // 페이지별 메타 설명 — 카테고리/검색은 전용 문구, 그 외 기본값(undefined)
+  const seoDesc = q
+    ? `'${q}' 검색 결과 — 다이어트 식품의 영양성분·가격을 비교하세요.`
+    : activeSub !== 'all'
+      ? `${activeSub} 영양성분·가격 비교. 단백질·당류·칼로리를 제품별로 한눈에 비교하세요.`
+      : undefined;
+
   // canonical — 카테고리 경로면 /category/:slug, 아니면 /list (둘 다 page만 보존, 필터/정렬 제외)
   const basePath = routeFoodType ? `/category/${routeFoodType.slug}` : '/list';
   const canonicalPath = page > 1 ? `${basePath}?page=${page}` : basePath;
 
   return (
     <div className="d-list-page">
-      <Seo title={seoTitle} canonicalPath={canonicalPath} />
+      <Seo title={seoTitle} description={seoDesc} canonicalPath={canonicalPath} />
       <h1 className="sr-only">{seoTitle}</h1>
       <div className="d-list-page-inner">
         {/* 식품유형 칩 — 목적 탭 없이 전 식품유형을 한 줄로, 준비중은 비활성 */}
