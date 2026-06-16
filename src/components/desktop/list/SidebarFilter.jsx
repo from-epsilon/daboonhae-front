@@ -1,4 +1,4 @@
-import { X, RotateCcw, Check } from 'lucide-react';
+import { AlertTriangle, X, RotateCcw, Check } from 'lucide-react';
 import { splitLabelUnit } from '../../../utils/format.js';
 
 // 데스크탑 좌측 사이드바 필터
@@ -72,8 +72,22 @@ function FilterSection({ spec, value, onChange }) {
   const label = spec.type === 'range' ? splitLabelUnit(spec.label).name : spec.label;
   return (
     <div className={`d-list-filter-section${typeClass}`}>
-      <div className="d-list-filter-section-label">{label}</div>
+      <FilterLabel label={label} note={spec.note} />
       {renderControl(spec, value, onChange)}
+    </div>
+  );
+}
+
+function FilterLabel({ label, note }) {
+  return (
+    <div className="d-list-filter-section-label">
+      <span>{label}</span>
+      {note && (
+        <button type="button" className="d-list-filter-note-wrap" aria-label={note}>
+          <AlertTriangle size={13} aria-hidden />
+          <span className="d-list-filter-note-bubble" role="tooltip">{note}</span>
+        </button>
+      )}
     </div>
   );
 }

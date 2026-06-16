@@ -3,6 +3,7 @@
 // - 내부 임시 상태(draft)에 변경 누적 → 하단 '적용' 클릭 시에만 부모 onApply 호출
 // - '초기화'는 draft만 비움 (적용 안 누르면 외부 상태 유지)
 import { useEffect, useMemo, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { Sheet } from './Sheet.jsx';
 import { Button } from '../../ds/Button.jsx';
 import { IconCheck, IconClose } from '../../ds/Icons.jsx';
@@ -300,22 +301,35 @@ function FilterGroup({ spec, value, onChange }) {
   return (
     <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border-tertiary)' }}>
       {spec.type !== 'bool' && (
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 500,
-            fontSize: 14,
-            color: 'var(--text-primary)',
-            marginBottom: 10,
-          }}
-        >
-          {spec.label}
-        </div>
+        <FilterGroupLabel label={spec.label} note={spec.note} />
       )}
       {spec.type === 'range' && <FilterRange spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'tristate' && <FilterTristate spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'exclude_only' && <FilterExcludeOnly spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'bool' && <FilterBool spec={spec} value={value} onChange={onChange} />}
+    </div>
+  );
+}
+
+function FilterGroupLabel({ label, note }) {
+  return (
+    <div
+      className="m-filter-group-label"
+      style={{
+        fontFamily: 'var(--font-display)',
+        fontWeight: 500,
+        fontSize: 14,
+        color: 'var(--text-primary)',
+        marginBottom: 10,
+      }}
+    >
+      <span>{label}</span>
+      {note && (
+        <button type="button" className="m-filter-note-wrap" aria-label={note}>
+          <AlertTriangle size={13} aria-hidden />
+          <span className="m-filter-note-bubble" role="tooltip">{note}</span>
+        </button>
+      )}
     </div>
   );
 }

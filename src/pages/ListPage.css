@@ -160,11 +160,62 @@
 }
 
 .d-list-filter-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-body);
   font-size: var(--font-size-s);
   font-weight: var(--fw-medium);
   color: var(--text-primary);
   margin-bottom: var(--space-3);
+}
+
+.d-list-filter-note-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: help;
+  outline: none;
+}
+
+.d-list-filter-note-wrap:hover,
+.d-list-filter-note-wrap:focus,
+.d-list-filter-note-wrap:focus-visible {
+  color: var(--text-secondary);
+}
+
+.d-list-filter-note-bubble {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 7px);
+  z-index: var(--z-dropdown);
+  width: 320px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-900);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--fw-regular);
+  line-height: 1.5;
+  box-shadow: var(--shadow-lg);
+  word-break: keep-all;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+}
+
+.d-list-filter-note-wrap:hover .d-list-filter-note-bubble,
+.d-list-filter-note-wrap:focus .d-list-filter-note-bubble,
+.d-list-filter-note-wrap:focus-visible .d-list-filter-note-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 /* ---------- 라디오 리스트 (세부 카테고리) ---------- */

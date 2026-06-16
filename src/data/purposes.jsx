@@ -19,6 +19,9 @@ export const FOOD_CATEGORIES = [
   '셰이크',
 ];
 
+export const ALLERGEN_FILTER_NOTE =
+  '법정 알레르기 표시 대상은 난류(가금류), 우유, 메밀, 땅콩, 대두, 밀, 고등어, 게, 새우, 돼지고기, 복숭아, 토마토, 아황산류(최종제품 SO₂ 10mg/kg 이상), 호두, 닭고기, 쇠고기, 오징어, 조개류(굴·전복·홍합 포함), 잣입니다. 그 외 성분은 데이터가 없어 제외 필터에서 누락될 수 있으니 실제 제품 표시를 확인해 주세요.';
+
 export const PURPOSES = [
   {
     id: 'low_sugar',
@@ -96,7 +99,7 @@ export const PURPOSES = [
     filters: [
       { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 800 },
       { key: 'protein', type: 'range', label: '단백질(g) 이상', min: 0, max: 40 },
-      { key: 'allergens', type: 'exclude_only', label: '알레르기 유발 성분', options: ['유당', '대두', '글루텐', '견과류'] },
+      { key: 'allergens', type: 'exclude_only', label: '알레르기 유발 성분', options: ['유당', '대두', '글루텐', '견과류'], note: ALLERGEN_FILTER_NOTE },
     ],
     reportSections: [
       { id: 'meal_balance', title: '한 끼 영양 균형' },
@@ -114,7 +117,7 @@ export const ALL_FILTERS = [
   { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 30 },
   { key: 'sweeteners', type: 'tristate', label: '대체당', options: ['말티톨', '아스파탐', '수크랄로스', '스테비아', '알룰로스'] },
   { key: 'proteinSources', type: 'tristate', label: '단백질 원료', options: ['WPI', 'WPC', '카제인', '대두', '닭고기', '계란'] },
-  { key: 'allergens', type: 'exclude_only', label: '알레르기 유발 성분', options: ['유당', '대두', '글루텐', '견과류'] },
+  { key: 'allergens', type: 'exclude_only', label: '알레르기 유발 성분', options: ['유당', '대두', '글루텐', '견과류'], note: ALLERGEN_FILTER_NOTE },
   { key: 'lactoseFree', type: 'bool', label: '유당 free' },
 ];
 

@@ -52,3 +52,58 @@
 .m-list-root input[type='number'] {
   -moz-appearance: textfield;
 }
+
+.m-filter-group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.m-filter-note-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: help;
+  outline: none;
+}
+
+.m-filter-note-wrap:hover,
+.m-filter-note-wrap:focus,
+.m-filter-note-wrap:focus-visible {
+  color: var(--text-secondary);
+}
+
+.m-filter-note-bubble {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 7px);
+  z-index: var(--z-dropdown);
+  width: min(320px, calc(100vw - 56px));
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-900);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  box-shadow: var(--shadow-lg);
+  word-break: keep-all;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+}
+
+.m-filter-note-wrap:hover .m-filter-note-bubble,
+.m-filter-note-wrap:focus .m-filter-note-bubble,
+.m-filter-note-wrap:focus-visible .m-filter-note-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

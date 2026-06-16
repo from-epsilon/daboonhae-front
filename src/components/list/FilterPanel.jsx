@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 
 // 목적별 필터 패널
 // - 목적 메타의 filters 스펙을 받아 타입별로 적절한 UI 렌더 (range/multi/bool)
@@ -21,10 +21,24 @@ export default function FilterPanel({ specs, value, onChange }) {
       <div className="filter-panel-title">필터</div>
       {specs.map((spec) => (
         <div key={spec.key} className="filter-item">
-          <div className="filter-label">{spec.label}</div>
+          <FilterLabel label={spec.label} note={spec.note} />
           {renderFilterControl(spec, value[spec.key], (next) => updateField(spec.key, next))}
         </div>
       ))}
+    </div>
+  );
+}
+
+function FilterLabel({ label, note }) {
+  return (
+    <div className="filter-label">
+      <span>{label}</span>
+      {note && (
+        <button type="button" className="filter-note-wrap" aria-label={note}>
+          <AlertTriangle size={13} aria-hidden />
+          <span className="filter-note-bubble" role="tooltip">{note}</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -34,6 +48,7 @@ function renderFilterControl(spec, v, onChange) {
   if (spec.type === 'range') return <RangeControl spec={spec} value={v} onChange={onChange} />;
   if (spec.type === 'multi') return <MultiControl spec={spec} value={v ?? []} onChange={onChange} />;
   if (spec.type === 'tristate') return <TriStateControl spec={spec} value={v ?? {}} onChange={onChange} />;
+  if (spec.type === 'exclude_only') return <ExcludeOnlyControl spec={spec} value={v ?? {}} onChange={onChange} />;
   if (spec.type === 'bool') return <BoolControl value={!!v} onChange={onChange} />;
   return null;
 }
@@ -125,6 +140,36 @@ function TriStateControl({ spec, value, onChange }) {
             <button
               className={`tristate-btn tristate-exclude ${value[opt] === 'exclude' ? 'is-active' : ''}`}
               onClick={() => setState(opt, 'exclude')}
+              aria-label={`${opt} 제외`}
+              aria-pressed={value[opt] === 'exclude'}
+              title="제외"
+            >
+              <X size={16} aria-hidden />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ExcludeOnlyControl({ spec, value, onChange }) {
+  const toggle = (option) => {
+    const next = { ...value };
+    if (next[option] === 'exclude') delete next[option];
+    else next[option] = 'exclude';
+    onChange(next);
+  };
+
+  return (
+    <div className="filter-tristate">
+      {spec.options.map((opt) => (
+        <div key={opt} className="filter-tristate-row">
+          <span className="filter-tristate-label">{opt}</span>
+          <div className="filter-tristate-buttons">
+            <button
+              className={`tristate-btn tristate-exclude ${value[opt] === 'exclude' ? 'is-active' : ''}`}
+              onClick={() => toggle(opt)}
               aria-label={`${opt} 제외`}
               aria-pressed={value[opt] === 'exclude'}
               title="제외"

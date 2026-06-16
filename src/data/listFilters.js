@@ -1,4 +1,4 @@
-import { ALL_FILTERS } from './purposes.jsx';
+import { ALLERGEN_FILTER_NOTE, ALL_FILTERS } from './purposes.jsx';
 import { computeBcaa, computeEaa } from './aminoAcids.js';
 import { cleanProteinLabel, cleanSweetenerLabel } from './proteinQuality.js';
 
@@ -127,6 +127,7 @@ function getProteinDrinkFilterSpecs(
       key: 'allergens',
       type: 'exclude_only',
       label: '알레르기 유발 성분',
+      note: ALLERGEN_FILTER_NOTE,
     }),
   ].filter(Boolean);
 }
@@ -152,10 +153,10 @@ function hasActiveRange(value) {
   return !!value && (value.min !== undefined || value.max !== undefined);
 }
 
-function dynamicOptionSpec({ products, filterState, key, type, label, context }) {
+function dynamicOptionSpec({ products, filterState, key, type, label, note, context }) {
   const options = rankedOptions(products, key, filterState[key], context);
   if (options.length === 0) return null;
-  return { key, type, label, options };
+  return { key, type, label, note, options };
 }
 
 function rankedOptions(products, key, selected = {}, context = {}) {

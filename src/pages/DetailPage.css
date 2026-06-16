@@ -711,7 +711,7 @@
   font-size: 13px;
   color: var(--text-primary);
 }
-.d-analysis-quality-row span {
+.d-analysis-quality-row > span {
   font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
@@ -816,7 +816,7 @@
 }
 .d-analysis-help:hover,
 .d-analysis-help:focus-visible {
-  color: var(--text-primary);
+  color: var(--text-secondary);
   border-color: var(--border-secondary);
 }
 .d-analysis-help-bubble {
