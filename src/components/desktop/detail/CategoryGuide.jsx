@@ -2,6 +2,50 @@ import { ChevronDown } from 'lucide-react';
 import { getCategoryGuide } from '../../../data/categoryGuides.js';
 import { useGuideCollapsed } from '../../../hooks/useGuideCollapsed.js';
 
+function GuideReferenceTooltip({ point }) {
+  return (
+    <span className="d-detail-guide-ref">
+      <button type="button" className="d-detail-guide-ref-trigger">
+        {point.trigger}
+      </button>
+      <span className="d-detail-guide-ref-popover" role="tooltip">
+        {point.items.map((item) => (
+          <span className="d-detail-guide-ref-row" key={item.label}>
+            <span className="d-detail-guide-ref-label">{item.label}</span>
+            <span className="d-detail-guide-ref-text">{item.text}</span>
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+function GuideRichText({ parts }) {
+  return parts.map((part, index) => {
+    if (typeof part === 'string') return part;
+    if (part?.break) return <br key={index} />;
+    if (part?.strong) return <strong key={index}>{part.text}</strong>;
+    return part?.text || null;
+  });
+}
+
+function GuidePoint({ point }) {
+  if (typeof point === 'string') return <li>{point}</li>;
+  if (point?.type === 'richText') {
+    return <li><GuideRichText parts={point.parts} /></li>;
+  }
+  if (point?.type === 'referenceTooltip') {
+    return (
+      <li>
+        {point.text}{' '}
+        <GuideReferenceTooltip point={point} />
+        {point.suffix || null}
+      </li>
+    );
+  }
+  return null;
+}
+
 export function CategoryGuide({ category }) {
   const guide = getCategoryGuide(category);
   const [collapsed, toggle] = useGuideCollapsed();
@@ -32,7 +76,7 @@ export function CategoryGuide({ category }) {
                   {Array.isArray(c.points) && c.points.length > 0 ? (
                     <ul className="d-detail-guide-points">
                       {c.points.map((point, j) => (
-                        <li key={j}>{point}</li>
+                        <GuidePoint key={j} point={point} />
                       ))}
                     </ul>
                   ) : (

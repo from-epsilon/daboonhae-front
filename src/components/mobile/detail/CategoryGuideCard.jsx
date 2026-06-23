@@ -7,6 +7,50 @@ import { getCategoryGuide } from '../../../data/categoryGuides.js';
 import { IconInfo } from '../../ds/Icons.jsx';
 import { useGuideCollapsed } from '../../../hooks/useGuideCollapsed.js';
 
+function GuideReferenceTooltip({ point }) {
+  return (
+    <span className="m-detail-guide-ref">
+      <button type="button" className="m-detail-guide-ref-trigger">
+        {point.trigger}
+      </button>
+      <span className="m-detail-guide-ref-popover" role="tooltip">
+        {point.items.map((item) => (
+          <span className="m-detail-guide-ref-row" key={item.label}>
+            <span className="m-detail-guide-ref-label">{item.label}</span>
+            <span className="m-detail-guide-ref-text">{item.text}</span>
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+function GuideRichText({ parts }) {
+  return parts.map((part, index) => {
+    if (typeof part === 'string') return part;
+    if (part?.break) return <br key={index} />;
+    if (part?.strong) return <strong key={index}>{part.text}</strong>;
+    return part?.text || null;
+  });
+}
+
+function GuidePoint({ point }) {
+  if (typeof point === 'string') return <li>{point}</li>;
+  if (point?.type === 'richText') {
+    return <li><GuideRichText parts={point.parts} /></li>;
+  }
+  if (point?.type === 'referenceTooltip') {
+    return (
+      <li>
+        {point.text}{' '}
+        <GuideReferenceTooltip point={point} />
+        {point.suffix || null}
+      </li>
+    );
+  }
+  return null;
+}
+
 export function CategoryGuideCard({ category }) {
   const guide = getCategoryGuide(category);
   const [collapsed, toggle] = useGuideCollapsed();
@@ -36,7 +80,15 @@ export function CategoryGuideCard({ category }) {
               <span className="m-detail-guide-num">{i + 1}</span>
               <div className="m-detail-guide-body">
                 <h3 className="m-detail-guide-item-title">{c.title}</h3>
-                <p className="m-detail-guide-item-text">{c.text}</p>
+                {Array.isArray(c.points) && c.points.length > 0 ? (
+                  <ul className="m-detail-guide-points">
+                    {c.points.map((point, j) => (
+                      <GuidePoint key={j} point={point} />
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="m-detail-guide-item-text">{c.text}</p>
+                )}
               </div>
             </li>
           ))}
