@@ -25,6 +25,7 @@
 .d-contact-type-btn.is-active {
   background: var(--green-50); border-color: var(--brand-green); color: var(--brand-green); font-weight: 600;
 }
+.d-contact-type-btn:disabled { cursor: not-allowed; opacity: 0.65; }
 
 .d-contact-input {
   padding: 12px 14px; border: 1px solid var(--border-tertiary);
@@ -32,6 +33,7 @@
   background: var(--bg-white); transition: border-color 0.15s;
 }
 .d-contact-input:focus { outline: none; border-color: var(--brand-green); }
+.d-contact-input:disabled { background: var(--gray-50); cursor: not-allowed; }
 
 .d-contact-textarea {
   padding: 14px; border: 1px solid var(--border-tertiary);
@@ -40,6 +42,18 @@
   min-height: 160px; resize: vertical; transition: border-color 0.15s;
 }
 .d-contact-textarea:focus { outline: none; border-color: var(--brand-green); }
+.d-contact-textarea:disabled { background: var(--gray-50); cursor: not-allowed; }
+
+.d-contact-meta {
+  display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap;
+  color: var(--text-tertiary); font-size: 12px; line-height: 1.5;
+}
+
+.d-contact-error {
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: var(--red-50); color: var(--red-600);
+  font-size: 13px;
+}
 
 .d-contact-submit {
   align-self: flex-start;

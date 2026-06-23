@@ -4,8 +4,8 @@
 //   → (빈 상태) EmptyCompare
 //   또는
 //   → 비교 그리드 (sticky 좌측 라벨 컬럼 110px + 가로 스크롤 데이터 컬럼들 150px)
-//      • 행: 헤더(썸네일/브랜드/이름/X) / Score / 칼로리 / 단백질 / 탄수화물 / 지방 / 당류 / 식이섬유 / 태그
-//      • 각 행에서 우수값은 그린 + IconCheck로 강조 (Compare, don't rank — 1위/2위 X)
+//      • 행: 헤더(썸네일/브랜드/이름/X) / 카테고리별 KPI
+//      • 각 행에서 우수값은 그린 텍스트로 강조 (Compare, don't rank — 1위/2위 X)
 //   → AddSlot (max 미만일 때 가로 스크롤 마지막)
 //   → CompareSummary (자동 비교 한 줄)
 import { useMemo } from 'react';
@@ -16,22 +16,33 @@ import { useCompare } from '../../store/CompareContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { CompareColumnHeader } from '../../components/mobile/compare/CompareColumnHeader.jsx';
 import { CompareCell } from '../../components/mobile/compare/CompareCell.jsx';
-import { CompareTagsCell } from '../../components/mobile/compare/CompareTagsCell.jsx';
+import { ComparePurchaseCell } from '../../components/mobile/compare/ComparePurchaseCell.jsx';
 import { AddSlot } from '../../components/mobile/compare/AddSlot.jsx';
 import { EmptyCompare } from '../../components/mobile/compare/EmptyCompare.jsx';
 import { CompareSummary } from '../../components/mobile/compare/CompareSummary.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { productPath } from '../../data/productUrl.js';
 import {
-  COMPARE_METRICS,
-  getBestIndices,
-  buildCompareSummary,
-} from '../../components/mobile/compare/compareUtils.js';
+  LOWEST_UNIT_PRICE_COMPARE_METRIC,
+  getCompareMetricsForProducts,
+  getCompareMetricValue,
+} from '../../data/compareKpis.js';
+import { getBestIndices, buildCompareSummary } from '../../components/mobile/compare/compareUtils.js';
 import './ComparePage.css';
 
 // 비교 그리드 본문 — 좌측 라벨 컬럼 없이, 각 셀이 자체 라벨을 표기
 // (가로 스크롤 데이터 컬럼들 + AddSlot)
-function CompareGrid({ products, bestByKey, onRemove, onOpen, onAdd, canAdd, remaining }) {
+function CompareGrid({
+  products,
+  metrics,
+  bestByKey,
+  purchaseBestSet,
+  onRemove,
+  onOpen,
+  onAdd,
+  canAdd,
+  remaining,
+}) {
   return (
     <div className="m-compare-grid">
       <div className="m-compare-data-scroll">
@@ -41,9 +52,14 @@ function CompareGrid({ products, bestByKey, onRemove, onOpen, onAdd, canAdd, rem
               {/* 헤더 셀 (썸네일/브랜드/이름/X) */}
               <CompareColumnHeader product={p} onRemove={onRemove} onOpen={onOpen} />
 
+              <ComparePurchaseCell
+                product={p}
+                isBest={purchaseBestSet?.has(idx) ?? false}
+              />
+
               {/* 영양소 셀들 — 라벨 + 값 */}
-              {COMPARE_METRICS.map((m) => {
-                const value = p?.nutrition?.[m.key];
+              {metrics.map((m) => {
+                const value = getCompareMetricValue(p, m);
                 const isBest = bestByKey[m.key]?.has(idx) ?? false;
                 return (
                   <CompareCell
@@ -56,8 +72,6 @@ function CompareGrid({ products, bestByKey, onRemove, onOpen, onAdd, canAdd, rem
                 );
               })}
 
-              {/* 자동 태그 셀 */}
-              <CompareTagsCell tags={p.tags} />
             </div>
           ))}
 
@@ -82,19 +96,28 @@ export default function ComparePageMobile() {
     () => ids.map(id => allProducts.find(p => String(p.id) === String(id))).filter(Boolean).map(getAdapted),
     [ids, allProducts],
   );
+  const metrics = useMemo(() => getCompareMetricsForProducts(products), [products]);
 
   // 각 지표별 우수값 인덱스 Set 사전 계산 (렌더마다 N*M 반복 방지)
   const bestByKey = useMemo(() => {
     const out = {};
-    for (const m of COMPARE_METRICS) {
+    for (const m of metrics) {
       if (m.direction === null) {
         out[m.key] = new Set(); // 중립 지표는 강조 없음
         continue;
       }
-      out[m.key] = new Set(getBestIndices(products, m.key, m.direction));
+      out[m.key] = new Set(getBestIndices(products, m, m.direction));
     }
     return out;
-  }, [products]);
+  }, [products, metrics]);
+  const purchaseBestSet = useMemo(
+    () => new Set(getBestIndices(
+      products,
+      LOWEST_UNIT_PRICE_COMPARE_METRIC,
+      LOWEST_UNIT_PRICE_COMPARE_METRIC.direction,
+    )),
+    [products],
+  );
 
   // 자동 요약 문장
   const summary = useMemo(() => buildCompareSummary(products), [products]);
@@ -135,7 +158,7 @@ export default function ComparePageMobile() {
           {/* 액션바: 카운트 + 전체 지우기 (AppBar 우측 슬롯 대안) */}
           <div className="m-compare-actionbar">
             <span className="m-compare-actionbar-count">
-              <b>{products.length}</b> / {max} 선택됨
+              <b>{products.length}</b> / {max}
             </span>
             <button
               type="button"
@@ -149,7 +172,9 @@ export default function ComparePageMobile() {
           {/* 본문 그리드 */}
           <CompareGrid
             products={products}
+            metrics={metrics}
             bestByKey={bestByKey}
+            purchaseBestSet={purchaseBestSet}
             onRemove={handleRemove}
             onOpen={handleOpenDetail}
             onAdd={handleAdd}

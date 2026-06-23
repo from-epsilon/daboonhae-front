@@ -10,10 +10,17 @@
   font-size: 16px; line-height: 1.7; color: var(--text-secondary); margin: 0;
   max-width: 600px; margin-left: auto; margin-right: auto;
 }
+.d-about-hero-count {
+  margin: 16px 0 0; font-size: 13px; font-weight: 700; color: var(--text-tertiary);
+}
 
 .d-about-section-title {
   font-family: var(--font-display); font-size: 22px; font-weight: 700;
   color: var(--text-primary); margin: 0 0 24px;
+}
+.d-about-section-sub {
+  max-width: 680px; margin: -10px 0 22px;
+  font-size: 15px; line-height: 1.7; color: var(--text-secondary);
 }
 
 .d-about-feature-grid {
@@ -33,6 +40,15 @@
 }
 .d-about-feature-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; }
 .d-about-feature-desc { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+.d-about-chip-list {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto;
+}
+.d-about-chip {
+  display: inline-flex; align-items: center; min-height: 30px;
+  padding: 0 10px; border: 1px solid var(--border-tertiary); border-radius: var(--radius-sm);
+  background: var(--bg-card-ui); color: var(--text-secondary);
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+}
 
 .d-about-story-body {
   max-width: 680px;
@@ -68,4 +84,6 @@
 @media (max-width: 600px) {
   .d-about-hero-title { font-size: 28px; }
   .d-about-feature-grid { grid-template-columns: 1fr; }
+  .d-about { gap: 44px; padding-left: 20px; padding-right: 20px; }
+  .d-about-cta-actions { flex-direction: column; padding: 0 20px; }
 }

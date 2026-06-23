@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { NUTRIENT_GROUP, isNutrientGroup } from '../../../data/nutrientGroups.js';
 
 // 접힘 기본 표시 영양소 — 열·탄·단·지
 const BASE_CODES = ['energy_kcal', 'carbohydrate_g', 'protein_g', 'fat_g'];
@@ -50,13 +51,13 @@ const NON_ESSENTIAL_AMINO_NAMES = new Set([
 ]);
 
 // 아미노산(필수·비필수·집계) 판별 — 우측 열에 모으고 좌측 extras에서는 제외
-// 1) 알려진 코드/라벨, 2) nutrients.group_name이 '아미노산'류, 3) 한글명 폴백
+// 1) 알려진 코드/라벨, 2) nutrients.group_name='아미노산', 3) 한글명 폴백
 function isAminoNutrient(fn) {
   if (AMINO_CODES.has(fn.nutrient_code)) return true;
   const name = (fn.nutrients?.name_ko || '').trim();
   const upper = name.toUpperCase();
   if (upper === 'EAA' || upper === 'BCAA') return true;
-  if (/아미노산|amino/i.test(fn.nutrients?.group_name || '')) return true;
+  if (isNutrientGroup(fn, NUTRIENT_GROUP.AMINO_ACID)) return true;
   return NON_ESSENTIAL_AMINO_NAMES.has(name);
 }
 

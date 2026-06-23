@@ -196,9 +196,47 @@ function WideRow({ protein, carbs, fat, kcal, ratioOnly = false }) {
   );
 }
 
-export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = false, wide = false, ratioOnly = false }) {
+function formatMacroAmount(value) {
+  if (value === undefined || value === null || isNaN(value)) return '-';
+  return value >= 100 ? Math.round(value) : Math.round(value * 10) / 10;
+}
+
+function MiniRatioRow({ protein, carbs, fat }) {
+  const total = protein + carbs + fat;
+  const pct = (v) => (total > 0 ? Math.round((v / total) * 100) : 0);
+  const item = (label, value, key) => (
+    <span>
+      <i className={`macro-mini-dot macro-mini-dot--${key}`} />
+      {label}
+      <b className="macro-mini-amount">{formatMacroAmount(value)}g</b>
+      <em className="macro-mini-ratio">{pct(value)}%</em>
+    </span>
+  );
+  return (
+    <div
+      className="macro-mini"
+      aria-label={`탄수화물 ${formatMacroAmount(carbs)}g ${pct(carbs)}%, 단백질 ${formatMacroAmount(protein)}g ${pct(protein)}%, 지방 ${formatMacroAmount(fat)}g ${pct(fat)}%`}
+    >
+      <div className="macro-mini-bar" aria-hidden="true">
+        <span className="macro-mini-seg macro-mini-seg--carbs" style={{ width: `${calcPercent(carbs, total)}%` }} />
+        <span className="macro-mini-seg macro-mini-seg--protein" style={{ width: `${calcPercent(protein, total)}%` }} />
+        <span className="macro-mini-seg macro-mini-seg--fat" style={{ width: `${calcPercent(fat, total)}%` }} />
+      </div>
+      <div className="macro-mini-values">
+        {item('탄', carbs, 'carbs')}
+        {item('단', protein, 'protein')}
+        {item('지', fat, 'fat')}
+      </div>
+    </div>
+  );
+}
+
+export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = false, wide = false, ratioOnly = false, variant }) {
   if (compact) {
     return <CompactRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} />;
+  }
+  if (variant === 'mini') {
+    return <MiniRatioRow protein={protein} carbs={carbs} fat={fat} />;
   }
   if (wide) {
     return <WideRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} ratioOnly={ratioOnly} />;

@@ -49,6 +49,7 @@ function renderFilterControl(spec, v, onChange) {
   if (spec.type === 'multi') return <MultiControl spec={spec} value={v ?? []} onChange={onChange} />;
   if (spec.type === 'tristate') return <TriStateControl spec={spec} value={v ?? {}} onChange={onChange} />;
   if (spec.type === 'exclude_only') return <ExcludeOnlyControl spec={spec} value={v ?? {}} onChange={onChange} />;
+  if (spec.type === 'single') return <SingleControl spec={spec} value={v} onChange={onChange} />;
   if (spec.type === 'bool') return <BoolControl value={!!v} onChange={onChange} />;
   return null;
 }
@@ -105,6 +106,23 @@ function BoolControl({ value, onChange }) {
       <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} />
       <span>적용</span>
     </label>
+  );
+}
+
+// single: 드롭다운에서 옵션 중 하나만 선택
+function SingleControl({ spec, value, onChange }) {
+  return (
+    <select
+      className="filter-single-select"
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value || undefined)}
+      aria-label={spec.label}
+    >
+      <option value="">전체</option>
+      {spec.options.map((opt) => (
+        <option key={opt} value={opt}>{opt}</option>
+      ))}
+    </select>
   );
 }
 

@@ -36,20 +36,14 @@ function RemoveButton({ name, onClick }) {
   );
 }
 
-// 첫 번째 컬럼은 "기준 제품"으로 시각 강조 — soft-green 배경 + 좌측 액센트 바
-export function CompareHeaderRow({ product, onRemove, onOpen, isAnchor }) {
+export function CompareHeaderRow({ product, onRemove, onOpen }) {
   // 상세 이동 핸들러 (가드 포함)
   const handleOpen = () => {
     if (typeof onOpen === 'function') onOpen(product.id);
   };
 
-  const className = `d-compare-col-header${isAnchor ? ' d-compare-col-header--anchor' : ''}`;
-
   return (
-    <div className={className}>
-      {isAnchor && (
-        <span className="d-compare-col-anchor-tag" aria-label="기준 제품">기준</span>
-      )}
+    <div className="d-compare-col-header">
       <RemoveButton name={product.name} onClick={() => onRemove(product.id)} />
       <button
         type="button"
@@ -59,7 +53,12 @@ export function CompareHeaderRow({ product, onRemove, onOpen, isAnchor }) {
       >
         <Thumb src={product.thumb} alt={product.name} />
         <div className="d-compare-col-brand">{product.brand}</div>
-        <div className="d-compare-col-name">{product.name}</div>
+        <div className="d-compare-col-name">
+          <span>{product.name}</span>
+          {product.serving && (
+            <span className="d-compare-col-volume">{product.serving}</span>
+          )}
+        </div>
       </button>
     </div>
   );

@@ -20,6 +20,8 @@ const ComparePage = lazy(() => import('./pages/ComparePage.jsx'));
 const AboutPage = lazy(() => import('./pages/AboutPage.jsx'));
 const FaqPage = lazy(() => import('./pages/FaqPage.jsx'));
 const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
+const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'));
 const RedirectPage = lazy(() => import('./pages/RedirectPage.jsx'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'));
 // 모바일 페이지 — 데스크탑 사용자는 받지 않음
@@ -56,6 +58,8 @@ function DesktopShell() {
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/privacy" element={<PrivacyPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </main>
@@ -90,6 +94,11 @@ function MobileShell() {
                     <Route path="/category/:categorySlug" element={<ListPageMobile />} />
                     <Route path="/product/:id" element={<DetailPageMobile />} />
                     <Route path="/compare" element={<ComparePageMobile />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/faq" element={<FaqPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/privacy" element={<PrivacyPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </main>

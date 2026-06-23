@@ -4,13 +4,10 @@
 //   - 각 행마다 자체 grid-template-columns 를 동일하게 사용해 컬럼 정렬 보장
 // 행 종류:
 //   1) 헤더 행: 빈 라벨 셀 + 제품 카드들(썸네일/브랜드/이름/X/Score) [+AddSlot]
-//   2) 다분해 점수 행
-//   3) 영양소 행들 (COMPARE_METRICS)
-//   4) 자동 태그 행
-//   5) Trust 배지 행 (공식 영양정보)
+//   2) 카테고리별 KPI 행들
 import { CompareHeaderRow } from './CompareHeaderRow.jsx';
 import { CompareMetricRow } from './CompareMetricRow.jsx';
-import { CompareTagsRow, CompareTrustRow } from './CompareTagsRow.jsx';
+import { ComparePurchaseRow } from './ComparePurchaseRow.jsx';
 import { CompareAddSlot } from './CompareAddSlot.jsx';
 
 // 좌측 라벨 컬럼(160px) + 데이터 컬럼들(각 1fr, min 180px)
@@ -22,6 +19,7 @@ function buildGridTemplate(dataColCount) {
 export function CompareTable({
   products,
   bestByKey,
+  purchaseBestSet,
   metrics,
   onRemove,
   onOpen,
@@ -41,22 +39,29 @@ export function CompareTable({
           className="d-compare-row-label d-compare-row-label--header"
           aria-hidden="true"
         />
-        {products.map((p, idx) => (
+        {products.map((p) => (
           <CompareHeaderRow
             key={p.id}
             product={p}
             onRemove={onRemove}
             onOpen={onOpen}
-            isAnchor={idx === 0}
           />
         ))}
         {canAdd && <CompareAddSlot onClick={onAdd} remaining={remaining} />}
       </div>
 
-      {/* 2) 영양소 행들 */}
+      <ComparePurchaseRow
+        products={products}
+        bestSet={purchaseBestSet}
+        rowStyle={rowStyle}
+        hasAdd={canAdd}
+      />
+
+      {/* 2) KPI 행들 */}
       {metrics.map((m) => (
         <CompareMetricRow
           key={m.key}
+          metric={m}
           label={m.label}
           products={products}
           metricKey={m.key}
@@ -66,22 +71,6 @@ export function CompareTable({
           hasAdd={canAdd}
         />
       ))}
-
-      {/* 4) 자동 태그 행 */}
-      <CompareTagsRow
-        label="자동 태그"
-        products={products}
-        rowStyle={rowStyle}
-        hasAdd={canAdd}
-      />
-
-      {/* 5) Trust 배지 행 */}
-      <CompareTrustRow
-        label="신뢰도"
-        products={products}
-        rowStyle={rowStyle}
-        hasAdd={canAdd}
-      />
     </section>
   );
 }

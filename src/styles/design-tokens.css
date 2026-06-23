@@ -73,6 +73,18 @@
   --blue-100: #CBE8FF;
   --blue-50:  #EEF7FF;
 
+  /* ---------- PURPLE ramp (Very high / premium emphasis) ---------- */
+  --purple-900: #581C87;
+  --purple-800: #6B21A8;
+  --purple-700: #7E22CE;
+  --purple-600: #9333EA;
+  --purple-500: #A855F7;
+  --purple-400: #C084FC;
+  --purple-300: #D8B4FE;
+  --purple-200: #E9D5FF;
+  --purple-100: #F3E8FF;
+  --purple-50:  #FAF5FF;
+
   /* ---------- RED ramp (Warning) ---------- */
   --red-900: #7D0800;
   --red-800: #9F0A01;
@@ -137,6 +149,59 @@
   --state-informative: var(--blue-500);  /* 별점/공식태그 */
   --state-warning:     var(--red-500);   /* 취소/탈퇴 */
   --state-delay:       var(--orange-500);/* 배송지연 */
+
+  /* ---------- SEMANTIC: RATING ---------- */
+  --rating-poor-bg:       #FFF7ED;
+  --rating-poor-border:   #FED7AA;
+  --rating-poor-text:     #C2410C;
+  --rating-poor-tag-bg:   #FFEDD5;
+
+  --rating-light-bg:      #FFF7ED;
+  --rating-light-border:  #FED7AA;
+  --rating-light-text:    #EA580C;
+  --rating-light-tag-bg:  #FFF7ED;
+
+  --rating-near-bg:       #FFFBEA;
+  --rating-near-border:   #FDE68A;
+  --rating-near-text:     #A16207;
+  --rating-near-tag-bg:   #FEF3C7;
+
+  --rating-solid-bg:      var(--green-50);
+  --rating-solid-border:  var(--green-100);
+  --rating-solid-text:    var(--green-600);
+  --rating-solid-tag-bg:  var(--green-50);
+
+  --rating-strong-bg:     #ECFDF5;
+  --rating-strong-border: #A7F3D0;
+  --rating-strong-text:   #047857;
+  --rating-strong-tag-bg: #D1FAE5;
+
+  --rating-high-bg:       #EFF6FF;
+  --rating-high-border:   #BFDBFE;
+  --rating-high-text:     #1D4ED8;
+  --rating-high-tag-bg:   #DBEAFE;
+
+  --rating-very-high-bg:      var(--purple-50);
+  --rating-very-high-border:  var(--purple-200);
+  --rating-very-high-text:    var(--purple-700);
+  --rating-very-high-tag-bg:  var(--purple-100);
+
+  /* ---------- SEMANTIC: CATEGORY RANK ---------- */
+  --category-rank-top-bg:      #FFF7D6;
+  --category-rank-top-border:  #F6C94B;
+  --category-rank-top-text:    #7A4D00;
+
+  --category-rank-upper-bg:    #F3F4F6;
+  --category-rank-upper-border:#C7CBD1;
+  --category-rank-upper-text:  #4B5563;
+
+  --category-rank-mid-bg:      #FFF1E6;
+  --category-rank-mid-border:  #D79A62;
+  --category-rank-mid-text:    #7C3F12;
+
+  --category-rank-low-bg:      var(--gray-100);
+  --category-rank-low-border:  var(--gray-300);
+  --category-rank-low-text:    var(--text-secondary);
 
   /* ===========================================================================
      TYPOGRAPHY

@@ -11,8 +11,8 @@ import { useMetricColumn } from './MetricColumnContext.jsx';
 import { IconPlus, IconCheck } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
 import { getCategoryCardConfig, computeMetricValues, getHighlightValue } from '../../data/categoryCardMetrics.js';
-import { formatProteinSourceLabel } from '../../data/listFilters.js';
-import { useProteinResolver } from '../../data/proteinQuality.js';
+import { formatProteinSourceLabel, formatSweetenerLabel } from '../../data/listFilters.js';
+import { useProteinResolver, useSweetenerResolver } from '../../data/proteinQuality.js';
 import {
   PROTEIN_SORT_BASES,
   PROTEIN_SORT_MODES,
@@ -116,9 +116,35 @@ function formatInlineNumber(value) {
   return value >= 100 ? Math.round(value) : Math.round(value * 10) / 10;
 }
 
-function ServingMeta({ food, showCalories = false }) {
+function formatAmountLabel(amount, unit) {
+  const num = formatInlineNumber(amount);
+  if (num === null) return null;
+  return `${num}${unit || ''}`;
+}
+
+function sizeVariantLabelOf(food) {
+  const label = String(food.sizeVariantLabel ?? '').trim();
+  return label || null;
+}
+
+function ProductNameContent({ food, config }) {
+  const variantLabel = config.titleVariant === 'size' ? sizeVariantLabelOf(food) : null;
+  return (
+    <>
+      {food.name}
+      {variantLabel && <span className="fc-title-variant">{variantLabel}</span>}
+    </>
+  );
+}
+
+function ServingMeta({ food, showCalories = false, variant }) {
   const parts = [];
-  if (food.serving) parts.push(food.serving);
+  if (variant === 'explicit') {
+    const serving = formatAmountLabel(food.servingAmount ?? food.servingSize, food.servingUnit);
+    if (serving) parts.push(`1회 제공량 ${serving}`);
+  } else if (food.serving) {
+    parts.push(food.serving);
+  }
   if (showCalories) {
     const calories = formatInlineNumber(food.nutrition?.calories);
     if (calories !== null) parts.push(`${calories}kcal`);
@@ -174,11 +200,25 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, so
             textDecoration: 'none',
           }}
         >
-          {food.name}
+          <ProductNameContent food={food} config={config} />
         </a>
-        <ServingMeta food={food} showCalories={Boolean(config.primaryMetrics)} />
+        <ServingMeta
+          food={food}
+          showCalories={Boolean(config.primaryMetrics) || config.showServingCalories === true}
+          variant={config.servingMetaVariant}
+        />
+        {config.showMacroBar !== false && config.macroBarVariant && (
+          <MacroRow {...food.macros} variant={config.macroBarVariant} />
+        )}
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
-        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" className="fc-card-offers" />
+        <PurchaseOffers
+          offers={food.purchaseLinks}
+          compact
+          sortBy="unit-first"
+          pricePer={config.purchasePricePer ?? 'unit'}
+          servingsPerUnit={food.servingsPerUnit}
+          className="fc-card-offers"
+        />
       </div>
     </div>
   );
@@ -189,6 +229,9 @@ function CategoryMetricsBlock({ food, tabId, subLabel, sortKey }) {
   // 우선순위 기반(tiered) 카드 구성이 지정된 카테고리는 전용 렌더링
   if (config.primaryMetrics) {
     return <TieredMetricsBlock food={food} config={config} sortKey={sortKey} />;
+  }
+  if (config.showProteinSource || config.showSweetenerMeta) {
+    return <IngredientMetaBlock food={food} config={config} />;
   }
   const { metrics, showSweeteners } = config;
 
@@ -229,13 +272,25 @@ function CategoryMetricsBlock({ food, tabId, subLabel, sortKey }) {
   );
 }
 
+function IngredientMetaBlock({ food, config }) {
+  const sources = config.showProteinSource ? (food.ingredients?.proteinSources ?? []) : [];
+  const sweeteners = config.showSweetenerMeta ? (food.ingredients?.sweeteners ?? food.sweeteners ?? []) : [];
+  return (
+    <div style={{ marginTop: 4 }}>
+      <TieredMeta sources={sources} sweeteners={sweeteners} showSweeteners={config.showSweetenerMeta} />
+    </div>
+  );
+}
+
 // 우선순위 기반 카드 메트릭 (단백질 음료 등)
 // - 상단: 단백질원, 용량 라인: 용량·열량, 하단: 정렬 기준별 핵심 지표
 // - 하단: 핵심 지표(총량 + 칼로리/가격 대비) 열 정렬 표
 function TieredMetricsBlock({ food, config, sortKey }) {
   const primary = config.primaryMetrics ?? [];
   const sources = config.showProteinSource ? (food.ingredients?.proteinSources ?? []) : [];
-  const isRecommend = !sortKey || sortKey === PROTEIN_SORT_RECOMMEND;
+  const sweeteners = config.showSweetenerMeta ? (food.ingredients?.sweeteners ?? food.sweeteners ?? []) : [];
+  const isProteinMetricSort = isTieredMetricSort(sortKey, primary);
+  const isRecommend = !isProteinMetricSort || sortKey === PROTEIN_SORT_RECOMMEND;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
@@ -245,29 +300,50 @@ function TieredMetricsBlock({ food, config, sortKey }) {
         <SelectedProteinMetric food={food} metrics={primary} sortKey={sortKey} />
       )}
 
-      <TieredMeta sources={sources} />
+      <TieredMeta sources={sources} sweeteners={sweeteners} showSweeteners={config.showSweetenerMeta} />
     </div>
   );
 }
 
-// 표 위 부가정보 — 단백질원만 간결하게 표시
-function TieredMeta({ sources }) {
+function isTieredMetricSort(sortKey, metrics) {
+  if (sortKey === PROTEIN_SORT_RECOMMEND) return false;
+  if (typeof sortKey !== 'string' || !sortKey.includes('_')) return false;
+  const { base, mode } = splitProteinSortKey(sortKey);
+  return metrics.some((m) => m.key === base) && PROTEIN_SORT_MODES.some((m) => m.key === mode);
+}
+
+// 표 위 부가정보 — 단백질원/대체당을 간결하게 표시
+function TieredMeta({ sources, sweeteners, showSweeteners = false }) {
   const resolveProtein = useProteinResolver(sources);
+  const resolveSweetener = useSweetenerResolver(sweeteners);
   const hasSource = sources.length > 0;
-  if (!hasSource) return null;
+  if (!hasSource && !showSweeteners) return null;
 
   const sourceLabels = sources.map((source) => {
     return formatProteinSourceLabel(source, resolveProtein);
   });
+  const sweetenerLabels = sweeteners.map((sweetener) => {
+    return formatSweetenerLabel(sweetener, resolveSweetener);
+  });
 
   return (
     <div className="fc-meta">
-      <div className="fc-meta-row">
-        <span className="fc-meta-label">단백질원</span>
-        <span className="fc-meta-value">
-          {sourceLabels.join(' · ')}
-        </span>
-      </div>
+      {hasSource && (
+        <div className="fc-meta-row">
+          <span className="fc-meta-label">단백질원</span>
+          <span className="fc-meta-value">
+            {sourceLabels.join(' · ')}
+          </span>
+        </div>
+      )}
+      {showSweeteners && (
+        <div className="fc-meta-row">
+          <span className="fc-meta-label">대체당</span>
+          <span className="fc-meta-value">
+            {sweetenerLabels.length > 0 ? sweetenerLabels.join(' · ') : '없음'}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -540,16 +616,27 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, so
             textDecoration: 'none',
           }}
         >
-          {food.name}
+          <ProductNameContent food={food} config={config} />
         </a>
 
-        <ServingMeta food={food} showCalories={Boolean(config.primaryMetrics)} />
+        <ServingMeta
+          food={food}
+          showCalories={Boolean(config.primaryMetrics) || config.showServingCalories === true}
+          variant={config.servingMetaVariant}
+        />
+
+        {/* 셰이크형 미니 탄단지 — 원료 상세보다 먼저 보이도록 배치 */}
+        {config.showMacroBar !== false && config.macroBarVariant && (
+          <MacroRow {...food.macros} wide ratioOnly variant={config.macroBarVariant} />
+        )}
 
         {/* 카테고리별 강조 지표 — 모바일 리스트 카드와 동일(CategoryMetricsBlock) */}
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
 
         {/* 탄단지 비율 막대 — 카테고리 설정에서 끌 수 있음(showMacroBar=false) */}
-        {config.showMacroBar !== false && <MacroRow {...food.macros} wide ratioOnly />}
+        {config.showMacroBar !== false && !config.macroBarVariant && (
+          <MacroRow {...food.macros} wide ratioOnly />
+        )}
 
         {/* 나머지 영양성분 — 카테고리 설정에서 끌 수 있음(showSubNutrients=false) */}
         {config.showSubNutrients !== false && (
@@ -561,7 +648,14 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, so
         {config.showIngredientDetails !== false && (
           <IngredientDetails ingredients={food.ingredients} hide={config.hideIngredients} />
         )}
-        <PurchaseOffers offers={food.purchaseLinks} compact sortBy="unit-first" className="fc-card-offers" />
+        <PurchaseOffers
+          offers={food.purchaseLinks}
+          compact
+          sortBy="unit-first"
+          pricePer={config.purchasePricePer ?? 'unit'}
+          servingsPerUnit={food.servingsPerUnit}
+          className="fc-card-offers"
+        />
       </div>
     </div>
   );

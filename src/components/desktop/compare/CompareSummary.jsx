@@ -22,10 +22,6 @@ export function CompareSummary({ sentences }) {
           </li>
         ))}
       </ul>
-      <p className="d-compare-summary-note">
-        같은 카테고리·다른 기준에서는 다른 제품이 우수할 수 있어요.
-        순위가 아닌 차이를 보여드려요.
-      </p>
     </section>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IconSearch } from '../ds/Icons.jsx';
 
-const HIDE_SEARCH_PATHS = ['/about', '/faq', '/contact'];
+const HIDE_SEARCH_PATHS = ['/about', '/faq', '/contact', '/terms', '/privacy'];
 
 // 다분해 심볼 마크 (배너에서 헤더로 이동) — currentColor로 브랜드 그린 상속
 function BrandMark() {

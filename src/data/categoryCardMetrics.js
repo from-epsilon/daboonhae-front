@@ -17,6 +17,7 @@ const PROTEIN_DRINK_PRIMARY = [
   { key: 'eaa', label: '필수아미노산', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
   { key: 'bcaa', label: 'BCAA', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
 ];
+
 // 3순위: 보조 영양 (작게, 총량만)
 const PROTEIN_DRINK_SECONDARY = [
   { key: 'calories', label: '칼로리', unit: 'kcal' },
@@ -52,10 +53,6 @@ const CEREAL_METRICS = [
   { key: 'fiber', label: '식이섬유', unit: 'g', perVol: true },
 ];
 
-const SHAKE_METRICS = [
-  ...MEAL_COMMON,
-];
-
 // tabId:subLabel → { metrics, showSweeteners }
 // subLabel은 categoryTabs.js의 tab.subs[].label과 일치해야 함 (DB name_ko 변경 반영)
 const CONFIG = {
@@ -66,6 +63,7 @@ const CONFIG = {
   'protein:단백질 음료': {
     primaryMetrics: PROTEIN_DRINK_PRIMARY,
     showProteinSource: true,
+    detailPrimaryMetrics: true,
     secondaryMetrics: PROTEIN_DRINK_SECONDARY,
     showSweeteners: false,
     showMacroBar: false,
@@ -86,7 +84,20 @@ const CONFIG = {
   'meal:밥':              { metrics: MEAL_COMMON, showSweeteners: false },
   'meal:면':              { metrics: MEAL_COMMON, showSweeteners: false },
   'meal:시리얼/그래놀라/오트밀': { metrics: CEREAL_METRICS, showSweeteners: false },
-  'meal:셰이크':           { metrics: SHAKE_METRICS, showSweeteners: true },
+  'meal:셰이크': {
+    metrics: [],
+    showProteinSource: true,
+    showSweetenerMeta: true,
+    showSweeteners: false,
+    macroBarVariant: 'mini',
+    purchasePricePer: 'serving',
+    titleVariant: 'size',
+    servingMetaVariant: 'explicit',
+    showServingCalories: true,
+    showSubNutrients: false,
+    showIngredientDetails: false,
+    detailPrimaryMetrics: false,
+  },
   'meal:에너지바':          { metrics: MEAL_COMMON, showSweeteners: false },
 };
 
@@ -122,6 +133,10 @@ export function getPrimaryMetricsByCode(categoryCode) {
   const ft = getFoodTypeByCode(categoryCode);
   if (!ft) return null;
   const config = getCategoryCardConfig(ft.tab, ft.label);
+  if (Array.isArray(config.detailPrimaryMetrics)) {
+    return config.detailPrimaryMetrics.length > 0 ? config.detailPrimaryMetrics : null;
+  }
+  if (config.detailPrimaryMetrics === false) return null;
   const metrics = config.primaryMetrics ?? [];
   return metrics.length > 0 ? metrics : null;
 }

@@ -151,6 +151,7 @@
 }
 .d-list-filter-section + .d-list-filter-section--tristate,
 .d-list-filter-section + .d-list-filter-section--bool,
+.d-list-filter-section--single + .d-list-filter-section,
 .d-list-filter-section--tristate + .d-list-filter-section,
 .d-list-filter-section--exclude_only + .d-list-filter-section,
 .d-list-filter-section--bool + .d-list-filter-section {
@@ -347,6 +348,31 @@
 .d-list-range-sep {
   color: var(--text-tertiary);
   font-size: var(--font-size-s);
+}
+
+/* ---------- single select ---------- */
+.d-list-single-select {
+  width: 100%;
+  height: 38px;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  color: var(--text-primary);
+  padding: 0 10px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.d-list-single-select:focus {
+  border-color: var(--gray-700);
+}
+
+.d-list-single-select:focus-visible {
+  outline: none;
 }
 
 /* ---------- tristate ---------- */

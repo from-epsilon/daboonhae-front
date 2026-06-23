@@ -23,6 +23,7 @@ import {
   getListFilterSpecs,
   getProteinSourceTexts,
   getSweetenerTexts,
+  supportsProteinSourceListFilters,
 } from '../../data/listFilters.js';
 import { useProteinResolver, useSweetenerResolver } from '../../data/proteinQuality.js';
 import {
@@ -156,7 +157,7 @@ export default function ListPageMobile() {
   }, [q, PRODUCTS, activeCode]);
 
   const proteinSourceTexts = useMemo(
-    () => (activeCode === 'protein_drink' ? getProteinSourceTexts(baseProducts) : []),
+    () => (supportsProteinSourceListFilters(activeCode) ? getProteinSourceTexts(baseProducts) : []),
     [baseProducts, activeCode],
   );
   const resolveProteinSource = useProteinResolver(proteinSourceTexts);
@@ -165,7 +166,7 @@ export default function ListPageMobile() {
     [resolveProteinSource],
   );
   const sweetenerTexts = useMemo(
-    () => (activeCode === 'protein_drink' ? getSweetenerTexts(baseProducts) : []),
+    () => (supportsProteinSourceListFilters(activeCode) ? getSweetenerTexts(baseProducts) : []),
     [baseProducts, activeCode],
   );
   const resolveSweetener = useSweetenerResolver(sweetenerTexts);

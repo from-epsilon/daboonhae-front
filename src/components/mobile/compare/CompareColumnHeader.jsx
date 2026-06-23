@@ -46,7 +46,12 @@ export function CompareColumnHeader({ product, onRemove, onOpen }) {
       >
         <Thumb src={product.thumb} alt={product.name} />
         <div className="m-compare-col-brand">{product.brand}</div>
-        <div className="m-compare-col-name">{product.name}</div>
+        <div className="m-compare-col-name">
+          <span>{product.name}</span>
+          {product.serving && (
+            <span className="m-compare-col-volume">{product.serving}</span>
+          )}
+        </div>
       </button>
     </div>
   );

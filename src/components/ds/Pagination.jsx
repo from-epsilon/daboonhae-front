@@ -10,10 +10,14 @@ import './Pagination.css';
 // 표시할 페이지 번호 배열 생성 (생략 구간은 '…')
 function buildPages(page, pageCount) {
   const WINDOW = 1; // 현재 페이지 좌우로 보여줄 개수
+  const EDGE_COUNT = 3; // 시작/끝 근처에서는 최소 3개를 보여줌
+  const normalizedPage = Math.min(Math.max(1, page), pageCount);
   const pages = [];
   for (let p = 1; p <= pageCount; p += 1) {
-    const inWindow = p >= page - WINDOW && p <= page + WINDOW;
-    if (p === 1 || p === pageCount || inWindow) {
+    const inStart = normalizedPage <= EDGE_COUNT && p <= EDGE_COUNT;
+    const inEnd = normalizedPage >= pageCount - EDGE_COUNT + 1 && p > pageCount - EDGE_COUNT;
+    const inWindow = p >= normalizedPage - WINDOW && p <= normalizedPage + WINDOW;
+    if (p === 1 || p === pageCount || inStart || inEnd || inWindow) {
       pages.push(p);
     } else if (pages[pages.length - 1] !== '…') {
       pages.push('…');

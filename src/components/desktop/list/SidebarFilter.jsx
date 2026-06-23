@@ -97,6 +97,7 @@ function renderControl(spec, v, onChange) {
   if (spec.type === 'range') return <RangeControl spec={spec} value={v} onChange={onChange} />;
   if (spec.type === 'tristate') return <TriStateControl spec={spec} value={v ?? {}} onChange={onChange} />;
   if (spec.type === 'exclude_only') return <ExcludeOnlyControl spec={spec} value={v ?? {}} onChange={onChange} />;
+  if (spec.type === 'single') return <SingleSelectControl spec={spec} value={v} onChange={onChange} />;
   if (spec.type === 'bool') return <BoolToggle value={!!v} onChange={onChange} />;
   return null;
 }
@@ -145,6 +146,23 @@ function RangeControl({ spec, value, onChange }) {
         {unit && <span className="d-list-range-unit" aria-hidden="true">{unit}</span>}
       </div>
     </div>
+  );
+}
+
+// single: 드롭다운에서 옵션 중 하나만 선택
+function SingleSelectControl({ spec, value, onChange }) {
+  return (
+    <select
+      className="d-list-single-select"
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value || undefined)}
+      aria-label={spec.label}
+    >
+      <option value="">전체</option>
+      {spec.options.map((option) => (
+        <option key={option} value={option}>{option}</option>
+      ))}
+    </select>
   );
 }
 

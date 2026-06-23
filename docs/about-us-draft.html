@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>다분해. 소개 페이지 시안</title>
+  <style>
+    :root {
+      --brand-green: #00c600;
+      --green-700: #018600;
+      --green-50: #e5fce3;
+      --blue-700: #0048c8;
+      --blue-50: #eef7ff;
+      --orange-700: #b43200;
+      --orange-50: #fff6f2;
+      --gray-900: #222;
+      --gray-800: #424242;
+      --gray-700: #616161;
+      --gray-500: #9e9e9e;
+      --gray-300: #e0e0e0;
+      --gray-200: #eee;
+      --gray-100: #f5f5f5;
+      --gray-50: #fafafa;
+      --white: #fff;
+      --font-display: "Gmarket Sans", "Noto Sans KR", system-ui, sans-serif;
+      --font-body: "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--gray-900);
+      background: var(--white);
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .about-page {
+      min-height: 100vh;
+      background: var(--white);
+    }
+
+    .section {
+      width: 100%;
+      padding: 64px 20px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .section--quiet { background: var(--gray-50); }
+
+    .inner {
+      width: min(1080px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding-top: 72px;
+      padding-bottom: 56px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green-700);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-green);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 18px;
+      font-family: var(--font-display);
+      font-size: 44px;
+      line-height: 1.24;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .accent { color: var(--green-700); }
+
+    .lead {
+      max-width: 660px;
+      margin-bottom: 28px;
+      font-size: 17px;
+      line-height: 1.78;
+      color: var(--gray-700);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      background: var(--white);
+    }
+
+    .button--primary {
+      border-color: var(--brand-green);
+      color: var(--white);
+      background: var(--brand-green);
+    }
+
+    .hero-panel {
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    .hero-image {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: var(--gray-100);
+    }
+
+    .hero-panel-body {
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-row {
+      display: grid;
+      grid-template-columns: 92px 1fr 54px;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .mini-label { color: var(--gray-700); font-weight: 700; }
+
+    .bar {
+      height: 8px;
+      border-radius: 8px;
+      background: var(--gray-200);
+      overflow: hidden;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: var(--brand-green);
+    }
+
+    .mini-value {
+      color: var(--gray-800);
+      font-weight: 800;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    h2 {
+      margin-bottom: 0;
+      font-family: var(--font-display);
+      font-size: 28px;
+      line-height: 1.36;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .section-note {
+      max-width: 460px;
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.68;
+      color: var(--gray-700);
+    }
+
+    .meaning-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .meaning-item {
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      padding: 22px;
+      background: var(--white);
+    }
+
+    .meaning-item strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .meaning-item p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--gray-700);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .feature {
+      min-height: 236px;
+      padding: 26px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .feature-kicker {
+      color: var(--green-700);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .feature h3 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.4;
+      font-weight: 800;
+    }
+
+    .feature p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--gray-700);
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-800);
+      background: var(--gray-50);
+      white-space: nowrap;
+    }
+
+    .chip--green {
+      border-color: #bdebb9;
+      color: var(--green-700);
+      background: var(--green-50);
+    }
+
+    .chip--blue {
+      border-color: #c7ddff;
+      color: var(--blue-700);
+      background: var(--blue-50);
+    }
+
+    .chip--orange {
+      border-color: #ffd0b8;
+      color: var(--orange-700);
+      background: var(--orange-50);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 44px;
+      align-items: start;
+    }
+
+    .story-copy {
+      display: grid;
+      gap: 16px;
+    }
+
+    .story-copy p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.82;
+      color: var(--gray-700);
+    }
+
+    .source-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .source-item {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 16px;
+      padding: 18px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .source-item strong {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .source-item span {
+      font-size: 14px;
+      line-height: 1.62;
+      color: var(--gray-700);
+    }
+
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .principle {
+      padding: 24px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .principle strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .principle p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--gray-700);
+    }
+
+    .cta-band {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 30px;
+      border: 1px solid #bdebb9;
+      border-radius: 8px;
+      background: var(--green-50);
+    }
+
+    .cta-band h2 { font-size: 24px; }
+
+    .cta-band p {
+      margin: 8px 0 0;
+      color: var(--gray-700);
+      line-height: 1.65;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-panel {
+        max-width: 420px;
+      }
+
+      .meaning-grid,
+      .principles {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .section {
+        padding: 44px 16px;
+      }
+
+      .hero {
+        padding-top: 48px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      h2 {
+        font-size: 23px;
+      }
+
+      .section-head {
+        display: grid;
+        gap: 12px;
+      }
+
+      .meaning-grid,
+      .feature-grid,
+      .principles {
+        grid-template-columns: 1fr;
+      }
+
+      .source-item {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-band {
+        display: grid;
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="about-page">
+    <section class="section hero">
+      <div class="inner hero-grid">
+        <div>
+          <p class="eyebrow">다이어트 식품 성분 분석 서비스</p>
+          <h1>
+            다이어트 식품을<br />
+            <span class="accent">다 분해해서</span> 보여드립니다
+          </h1>
+          <p class="lead">
+            다분해.는 이름 그대로, 다이어트 식품을 성분 단위로 풀어 보는 서비스입니다.
+            제품명과 광고 문구만으로는 알기 어려운 영양성분, 원재료, 알레르기 정보,
+            가격 정보를 한곳에 모아 비교할 수 있게 정리합니다.
+          </p>
+          <div class="hero-actions">
+            <a class="button button--primary" href="#features">핵심 기능 보기</a>
+            <a class="button" href="#story">왜 만들었나요</a>
+          </div>
+        </div>
+
+        <aside class="hero-panel" aria-label="성분 분해 예시">
+          <img class="hero-image" src="../public/images/categories/protein-drink.jpg" alt="단백질 음료 제품 이미지" />
+          <div class="hero-panel-body">
+            <div class="mini-row">
+              <span class="mini-label">단백질</span>
+              <span class="bar"><span style="width: 82%"></span></span>
+              <span class="mini-value">24g</span>
+            </div>
+            <div class="mini-row">
+              <span class="mini-label">당류</span>
+              <span class="bar"><span style="width: 14%"></span></span>
+              <span class="mini-value">1g</span>
+            </div>
+            <div class="mini-row">
+              <span class="mini-label">칼로리</span>
+              <span class="bar"><span style="width: 42%"></span></span>
+              <span class="mini-value">165</span>
+            </div>
+            <div class="mini-row">
+              <span class="mini-label">BCAA</span>
+              <span class="bar"><span style="width: 68%"></span></span>
+              <span class="mini-value">4.8g</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section section--quiet">
+      <div class="inner">
+        <div class="section-head">
+          <h2>다분해라는 이름의 뜻</h2>
+          <p class="section-note">
+            다분해는 “다이어트 식품을 분해한다”는 뜻에서 시작했습니다.
+            보기 좋은 문구보다 제품을 이루는 숫자와 성분을 먼저 봅니다.
+          </p>
+        </div>
+
+        <div class="meaning-grid">
+          <article class="meaning-item">
+            <strong>다이어트 식품</strong>
+            <p>닭가슴살, 단백질 음료, 셰이크, 저당 간식처럼 선택지가 빠르게 늘어나는 제품군을 다룹니다.</p>
+          </article>
+          <article class="meaning-item">
+            <strong>다 모아서</strong>
+            <p>제품 라벨, 제조사 공개 자료, 공공 데이터, 판매처 정보를 흩어진 채로 두지 않고 한 화면에 모읍니다.</p>
+          </article>
+          <article class="meaning-item">
+            <strong>분해해서</strong>
+            <p>칼로리, 단백질, 당류, 지방, 원재료, 알레르기 정보를 제품별 판단 재료로 나눠 보여줍니다.</p>
+          </article>
+          <article class="meaning-item">
+            <strong>비교하게</strong>
+            <p>내 목적에 맞는 조건으로 걸러보고, 여러 제품을 같은 기준 위에 놓고 비교할 수 있게 합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="inner">
+        <div class="section-head">
+          <h2>핵심 기능</h2>
+          <p class="section-note">
+            다분해의 기준은 단순합니다. 제품을 찾고, 성분을 확인하고,
+            조건에 맞게 걸러보고, 마지막에는 직접 비교할 수 있어야 합니다.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature">
+            <span class="feature-kicker">01 성분 분해</span>
+            <h3>영양성분표를 제품 선택에 필요한 지표로 다시 정리합니다</h3>
+            <p>
+              제품마다 제공되는 데이터 범위는 다르지만, 확인 가능한 항목은 같은 형식으로 맞춰 보여줍니다.
+              숫자의 단위와 기준량을 함께 보며 제품을 해석할 수 있습니다.
+            </p>
+            <div class="chip-list" aria-label="영양 지표 예시">
+              <span class="chip chip--green">칼로리</span>
+              <span class="chip chip--green">단백질</span>
+              <span class="chip chip--green">탄수화물</span>
+              <span class="chip chip--green">당류</span>
+              <span class="chip chip--green">지방</span>
+              <span class="chip chip--green">포화지방</span>
+              <span class="chip chip--green">트랜스지방</span>
+              <span class="chip chip--green">나트륨</span>
+              <span class="chip chip--green">식이섬유</span>
+              <span class="chip chip--green">콜레스테롤</span>
+              <span class="chip chip--green">EAA</span>
+              <span class="chip chip--green">BCAA</span>
+            </div>
+          </article>
+
+          <article class="feature">
+            <span class="feature-kicker">02 필터링</span>
+            <h3>목적에 맞는 조건으로 제품을 먼저 좁힙니다</h3>
+            <p>
+              단백질 보충, 저당 간식, 식사 대용처럼 목적을 고르고
+              칼로리, 단백질, 당류, 대체당, 단백질 원료, 알레르기 유발 성분 조건으로 후보를 줄입니다.
+            </p>
+            <div class="chip-list" aria-label="필터 예시">
+              <span class="chip chip--blue">칼로리 범위</span>
+              <span class="chip chip--blue">단백질 함량</span>
+              <span class="chip chip--blue">당류 함량</span>
+              <span class="chip chip--blue">대체당 포함·제외</span>
+              <span class="chip chip--blue">단백질 원료</span>
+              <span class="chip chip--blue">알레르기 제외</span>
+              <span class="chip chip--blue">유당 free</span>
+            </div>
+          </article>
+
+          <article class="feature">
+            <span class="feature-kicker">03 비교 도구</span>
+            <h3>최대 5개 제품을 같은 표 위에 놓고 봅니다</h3>
+            <p>
+              목록에서 마음에 드는 제품을 비교함에 담으면 영양성분, 원재료,
+              목적별 지표를 나란히 확인할 수 있습니다. 제품 상세 페이지를 여러 번 오가지 않아도 됩니다.
+            </p>
+            <div class="chip-list" aria-label="비교 항목 예시">
+              <span class="chip">제품별 함량</span>
+              <span class="chip">목적별 핵심 지표</span>
+              <span class="chip">원재료 차이</span>
+              <span class="chip">알레르기 정보</span>
+            </div>
+          </article>
+
+          <article class="feature">
+            <span class="feature-kicker">04 구매 전 확인</span>
+            <h3>가격과 판매처 정보는 참고하고, 최종 조건은 판매처에서 확인합니다</h3>
+            <p>
+              다분해는 제품을 직접 판매하지 않습니다. 구매처 링크와 가격 정보는 선택을 돕는 참고 정보이며,
+              실제 가격, 배송비, 쿠폰, 교환·환불 조건은 외부 판매처에서 최종 확인해야 합니다.
+            </p>
+            <div class="chip-list" aria-label="구매 전 확인 항목">
+              <span class="chip chip--orange">가격 변동 가능</span>
+              <span class="chip chip--orange">배송비 확인</span>
+              <span class="chip chip--orange">판매처 조건 확인</span>
+              <span class="chip chip--orange">제휴 링크 고지</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--quiet" id="story">
+      <div class="inner split">
+        <div>
+          <h2>왜 만들었나요?</h2>
+        </div>
+        <div class="story-copy">
+          <p>
+            다이어트 식품을 고를 때 필요한 정보는 한곳에 있지 않습니다.
+            제품 패키지에는 영양성분표가 있고, 제조사 페이지에는 원재료와 알레르기 정보가 있고,
+            쇼핑몰에는 가격과 묶음 구성이 따로 올라옵니다.
+          </p>
+          <p>
+            문제는 정보가 흩어져 있을수록 비교가 어려워진다는 점입니다.
+            “저당”, “고단백”, “식사 대용”이라는 문구는 많지만, 실제로 당류가 몇 g인지,
+            단백질 원료가 무엇인지, 나에게 피해야 할 성분이 있는지는 직접 찾아봐야 합니다.
+          </p>
+          <p>
+            다분해.는 이 흩어진 정보를 모아 제품을 같은 기준으로 다시 보여주기 위해 시작했습니다.
+            어떤 제품이 무조건 좋다고 말하기보다, 사용자가 자기 목적에 맞게 판단할 수 있는 재료를 정리합니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="inner split">
+        <div>
+          <h2>우리가 모으는 정보</h2>
+        </div>
+        <div class="source-list">
+          <div class="source-item">
+            <strong>제품 라벨</strong>
+            <span>영양성분표, 원재료명, 알레르기 표시, 섭취 주의사항처럼 구매 전 확인해야 하는 기본 정보를 정리합니다.</span>
+          </div>
+          <div class="source-item">
+            <strong>공개 자료</strong>
+            <span>제조사 공개 자료와 식품 관련 공공 데이터를 참고해 제품 정보를 보완하고 업데이트합니다.</span>
+          </div>
+          <div class="source-item">
+            <strong>판매처 정보</strong>
+            <span>가격, 구성, 판매 링크는 참고용으로 제공하며 실제 구매 조건은 판매처에서 다시 확인하도록 안내합니다.</span>
+          </div>
+          <div class="source-item">
+            <strong>사용자 제보</strong>
+            <span>누락된 제품, 잘못된 수치, 변경된 표시사항은 문의와 제보를 통해 검토하고 반영합니다.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--quiet">
+      <div class="inner">
+        <div class="section-head">
+          <h2>다분해의 원칙</h2>
+          <p class="section-note">
+            식품 선택은 개인의 목적과 몸 상태에 따라 달라집니다.
+            그래서 다분해는 단정 대신 비교 가능한 근거를 남깁니다.
+          </p>
+        </div>
+
+        <div class="principles">
+          <article class="principle">
+            <strong>광고보다 표시사항</strong>
+            <p>마케팅 문구보다 영양성분표, 원재료명, 알레르기 표시처럼 확인 가능한 정보를 우선합니다.</p>
+          </article>
+          <article class="principle">
+            <strong>판단보다 기준</strong>
+            <p>좋다거나 나쁘다고 단정하기보다, 이용자가 직접 비교할 수 있는 지표와 맥락을 제공합니다.</p>
+          </article>
+          <article class="principle">
+            <strong>완성보다 업데이트</strong>
+            <p>제품은 계속 바뀝니다. 변경된 성분, 가격, 판매 조건을 발견하면 다시 확인하고 고쳐갑니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="inner cta-band">
+        <div>
+          <h2>광고 문구를 읽기 전에, 성분을 먼저 봅니다</h2>
+          <p>다분해.는 제품을 고르는 시간을 줄이고, 확인해야 할 숫자를 놓치지 않도록 돕는 서비스입니다.</p>
+        </div>
+        <a class="button button--primary" href="#">제품 둘러보기</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

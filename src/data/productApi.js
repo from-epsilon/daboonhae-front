@@ -6,6 +6,8 @@
 // - 컬럼은 SUPABASE_PRODUCT_QUERY_GUIDE 기준 신규 스키마만 사용(레거시 컬럼 사용 금지)
 
 import { supabase } from '../lib/supabase.js';
+import { AMINO_ACID_KEYS, AMINO_ACID_KO_ALIASES } from './aminoAcids.js';
+import { NUTRIENT_GROUP, isNutrientGroup } from './nutrientGroups.js';
 
 export const PROTEIN_DRINK_SCORE_PROFILE = 'protein_drink_default_v1';
 
@@ -35,15 +37,82 @@ const NUTRIENT_KEY = {
   histidine: 'histidine',
 };
 
+const AMINO_CODE_ALIASES = {
+  glutamate: 'glutamic_acid',
+  aspartate: 'aspartic_acid',
+};
+
+for (const key of AMINO_ACID_KEYS) {
+  AMINO_CODE_ALIASES[key] = key;
+  AMINO_CODE_ALIASES[`${key}_mg`] = key;
+  AMINO_CODE_ALIASES[`l_${key}`] = key;
+  AMINO_CODE_ALIASES[`l_${key}_mg`] = key;
+  AMINO_CODE_ALIASES[`src_${key}_mg`] = key;
+  AMINO_CODE_ALIASES[`src_l_${key}_mg`] = key;
+  AMINO_CODE_ALIASES[`amino_${key}`] = key;
+  AMINO_CODE_ALIASES[`amino_acid_${key}`] = key;
+}
+
+const AMINO_KO_ALIASES = Object.fromEntries(
+  Object.entries(AMINO_ACID_KO_ALIASES).map(([name, key]) => [normalizeKoName(name), key]),
+);
+
+function normalizeNutrientCode(value) {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/^l[-_\s]+/, '')
+    .replace(/[-\s]+/g, '_');
+}
+
+function normalizeKoName(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/^l[-_\s]+/i, '')
+    .replace(/^l(?=[가-힣])/i, '')
+    .replace(/\s+/g, '');
+}
+
+function resolveAminoKey(fn) {
+  const candidates = [
+    fn?.nutrient_code,
+    fn?.nutrients?.code,
+    fn?.nutrients?.name_en,
+  ];
+  for (const candidate of candidates) {
+    const key = AMINO_CODE_ALIASES[normalizeNutrientCode(candidate)];
+    if (key) return key;
+  }
+
+  const nameKey = AMINO_KO_ALIASES[normalizeKoName(fn?.nutrients?.name_ko)];
+  if (nameKey) return nameKey;
+
+  return null;
+}
+
+function resolveNutrientKey(fn) {
+  const directKey = NUTRIENT_KEY[fn?.nutrient_code];
+  if (directKey) return directKey;
+
+  const aminoKey = resolveAminoKey(fn);
+  if (aminoKey) return aminoKey;
+
+  if (isNutrientGroup(fn, NUTRIENT_GROUP.AMINO_ACID)) {
+    return resolveAminoKey(fn);
+  }
+
+  return null;
+}
+
 function parseNutrition(foodNutrients) {
   const n = {
     calories: 0, protein: 0, carbs: 0, sugar: 0, fat: 0, fiber: 0,
     sodium: 0, transFat: 0, saturatedFat: 0, cholesterol: 0, allulose: undefined,
-    eaa: 0, bcaa: 0, leucine: 0, isoleucine: 0, valine: 0,
-    lysine: 0, methionine: 0, phenylalanine: 0, threonine: 0, tryptophan: 0, histidine: 0,
+    eaa: 0, bcaa: 0,
   };
+  for (const key of AMINO_ACID_KEYS) n[key] = 0;
   for (const fn of foodNutrients ?? []) {
-    const key = NUTRIENT_KEY[fn.nutrient_code];
+    const key = resolveNutrientKey(fn);
     if (key) n[key] = fn.amount ?? 0;
   }
   return n;
@@ -65,6 +134,27 @@ function nutritionBasisOf(food) {
     default:
       return { type: null, amount: null, unit };
   }
+}
+
+function servingsPerUnitOf(food) {
+  const net = Number(food.net_content_amount);
+  const serving = Number(food.serving_amount);
+  if (Number.isFinite(net) && net > 0 && Number.isFinite(serving) && serving > 0) {
+    return net / serving;
+  }
+
+  // 단일 파우치/팩은 serving_amount가 비어 있어도 순내용량 자체가 1회분인 경우가 많다.
+  if (
+    food.nutrition_basis_type === 'net_content' &&
+    Number.isFinite(net) &&
+    net > 0 &&
+    net <= 100 &&
+    ['g', 'ml'].includes(food.net_content_unit)
+  ) {
+    return 1;
+  }
+
+  return null;
 }
 
 // ── food_purpose_category_links → 정규화된 목적 카테고리 배열
@@ -191,6 +281,7 @@ function transformProduct(food) {
   const lactoseFree = !allergens.some(a => a.includes('우유') || a.includes('유당'));
   const purposeCategories = parsePurposeCategories(food.food_purpose_category_links);
   const basis = nutritionBasisOf(food);
+  const servingsPerUnit = servingsPerUnitOf(food);
   const family = parseFamily(food.food_families);
   const purchaseLinks = parsePurchaseLinks(food.food_purchase_links);
   const scoreSnapshots = parseScoreSnapshots(food.food_score_snapshots);
@@ -207,6 +298,8 @@ function transformProduct(food) {
     brand: food.brand ?? '',
     thumbnail: food.image_url ?? '',
     volume,
+    flavorCode: food.flavor_code ?? '',
+    flavorName: food.food_flavors?.name_ko ?? food.flavor_code ?? '',
     // 표시용 식품유형 라벨(name_ko 우선) + 매칭용 코드 분리 보존
     category: food.food_type_categories?.name_ko ?? food.food_type_category_code ?? '',
     categoryCode: food.food_type_category_code ?? '',
@@ -241,7 +334,11 @@ function transformProduct(food) {
       // 영양표 토글/per100 계산에 쓰는 '기준량' (이전 servingSize 자리)
       servingSize: basis.amount,
       servingUnit: basis.unit,
+      servingAmount: food.serving_amount ?? null,
       servingDescription: food.serving_description ?? '',
+      servingsPerUnit,
+      netContentAmount: food.net_content_amount ?? null,
+      netContentUnit: food.net_content_unit ?? '',
       nutritionBasisType: basis.type,
       sizeVariantLabel: food.size_variant_label ?? '',
       isMfdsOfficial: food.is_mfds_official_source ?? false,
@@ -277,11 +374,15 @@ const SCORE_JOIN = `
     profile_code, profile_version, score, confidence, components, reasons, computed_at
   ),
 `;
+const FLAVOR_JOIN = `
+  food_flavors ( code, name_ko, display_order, is_active ),
+`;
 
 // ── 목록 select 절 (목록/검색 공통). optional=true면 family/purpose 조인 포함
 const LIST_SELECT_BASE = (optional) => `
   id, name, brand, barcode, image_url,
   is_mfds_official_source, source_url, source_food_code,
+  flavor_code,
   net_content_amount, net_content_unit,
   package_unit_count, package_unit_name, package_unit_amount,
   serving_amount, serving_description, nutrition_basis_type,
@@ -289,6 +390,7 @@ const LIST_SELECT_BASE = (optional) => `
   caution_notes, additional_content, ingredient_annotations,
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories!inner ( code, name_ko, is_active ),
+  ${FLAVOR_JOIN}
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
   ${PURCHASE_JOIN}
@@ -303,6 +405,7 @@ const LIST_SELECT_BASE = (optional) => `
 const DETAIL_SELECT_BASE = (optional) => `
   id, name, brand, barcode, image_url,
   is_mfds_official_source, source_url, source_food_code,
+  flavor_code,
   net_content_amount, net_content_unit,
   package_unit_count, package_unit_name, package_unit_amount,
   serving_amount, serving_description, nutrition_basis_type,
@@ -310,6 +413,7 @@ const DETAIL_SELECT_BASE = (optional) => `
   caution_notes, additional_content, ingredient_annotations,
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories!inner ( code, name_ko, is_active ),
+  ${FLAVOR_JOIN}
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
   ${PURCHASE_JOIN}

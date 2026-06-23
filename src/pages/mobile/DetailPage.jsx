@@ -6,7 +6,8 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { productPath, parseProductId } from '../../data/productUrl.js';
 import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
-import { getPrimaryMetricsByCode } from '../../data/categoryCardMetrics.js';
+import { getFoodTypeByCode } from '../../data/categoryTabs.js';
+import { getCategoryCardConfig, getPrimaryMetricsByCode } from '../../data/categoryCardMetrics.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
@@ -50,15 +51,21 @@ function MacroSection({ macros }) {
 
 // 핵심 지표 카드 — 리스트 카드와 동일한 단백질/EAA/BCAA × 총량·100kcal당·1,000원당
 function PrimaryMetricsSection({ food, metrics }) {
+  const priceBasis = metrics?.some((metric) => metric.pricePer === 'serving') ? '1회분당' : '개당';
   return (
     <section className="m-detail-card m-detail-metrics">
       <header className="m-detail-card-head">
         <h2 className="m-detail-card-title">핵심 지표</h2>
       </header>
       <TieredPrimaryTable food={food} metrics={metrics} />
-      <p className="m-detail-metrics-note">1,000원당 값은 등록된 구매링크의 개당 최저가 기준이에요.</p>
+      <p className="m-detail-metrics-note">1,000원당 값은 등록된 구매링크의 {priceBasis} 최저가 기준이에요.</p>
     </section>
   );
+}
+
+function getDetailCardConfig(categoryCode) {
+  const foodType = getFoodTypeByCode(categoryCode);
+  return foodType ? getCategoryCardConfig(foodType.tab, foodType.label) : null;
 }
 
 // 제품 없음 안내 — 홈으로 가는 버튼
@@ -117,6 +124,7 @@ export default function DetailPageMobile() {
   const inCart = has(product.id);
   // 핵심 지표 표 — 1순위 지표가 있는 카테고리(단백질 음료 등)만 노출
   const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
+  const detailConfig = getDetailCardConfig(raw?.categoryCode);
 
   // 비교함 토글 — 가득 차고 새로 담으려 하면 안내
   const handleToggleCompare = () => {
@@ -164,14 +172,20 @@ export default function DetailPageMobile() {
 
       <div className="m-detail">
         {/* 1. 히어로: 이미지 + 브랜드/이름 + 태그 + 신뢰 배지 */}
-        <HeroSection product={product} />
-        <PurchaseOffers offers={product.purchaseLinks} className="m-detail-purchase-offers" />
+        <HeroSection product={product} config={detailConfig} />
+        <PurchaseOffers
+          offers={product.purchaseLinks}
+          className="m-detail-purchase-offers"
+          sortBy="unit-first"
+          pricePer={detailConfig?.purchasePricePer ?? 'unit'}
+          servingsPerUnit={product.servingsPerUnit}
+        />
 
         {/* 2. 선택 가이드 (본문 최상단 섹션, 토글로 접기 가능) */}
         <CategoryGuideCard category={raw?.category} />
 
         {/* 3. 매크로 분포 */}
-        <MacroSection macros={product.macros} />
+        {!detailConfig?.macroBarVariant && <MacroSection macros={product.macros} />}
 
         {/* 3-1. 핵심 지표 표 (단백질/EAA/BCAA × 총량·100kcal당·1,000원당) */}
         {primaryMetrics && <PrimaryMetricsSection food={product} metrics={primaryMetrics} />}
@@ -193,7 +207,7 @@ export default function DetailPageMobile() {
         </NutritionTable>
 
         {/* 5. 분석 리포트 (목적별 룰 기반) */}
-        <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} />
+        <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} products={allProducts} />
 
         {/* 6. 후기 */}
         <ReviewSection productId={product.id} />

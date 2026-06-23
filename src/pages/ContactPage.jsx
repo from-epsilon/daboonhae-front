@@ -1,17 +1,41 @@
 import { useState } from 'react';
 import { Send } from 'lucide-react';
 import Seo from '../components/global/Seo.jsx';
+import { submitFeedback } from '../data/feedbackApi.js';
 import './ContactPage.css';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ type: 'general', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const update = (key, value) => setForm((f) => ({ ...f, [key]: value }));
+  const update = (key, value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    if (errorMessage) setErrorMessage('');
+  };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!form.message.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      await submitFeedback({
+        source: 'contact_page',
+        category: form.type,
+        email: form.email,
+        message: form.message,
+      });
+      setSubmitted(true);
+    } catch (error) {
+      console.error('[contact feedback]', error);
+      setErrorMessage('문의 접수에 실패했어요. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -22,7 +46,7 @@ export default function ContactPage() {
             <Send size={32} />
           </div>
           <h2 className="d-contact-done-title">문의가 접수되었습니다</h2>
-          <p className="d-contact-done-sub">빠른 시일 내에 이메일로 답변 드리겠습니다.</p>
+          <p className="d-contact-done-sub">검토 후 필요한 경우 이메일로 답변 드리겠습니다.</p>
         </div>
       </div>
     );
@@ -57,6 +81,7 @@ export default function ContactPage() {
                 type="button"
                 className={`d-contact-type-btn${form.type === opt.id ? ' is-active' : ''}`}
                 onClick={() => update('type', opt.id)}
+                disabled={isSubmitting}
               >
                 {opt.label}
               </button>
@@ -73,6 +98,8 @@ export default function ContactPage() {
             placeholder="답변 받으실 이메일"
             value={form.email}
             onChange={(e) => update('email', e.target.value)}
+            maxLength={320}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -84,12 +111,26 @@ export default function ContactPage() {
             placeholder="문의 내용을 입력해주세요"
             value={form.message}
             onChange={(e) => update('message', e.target.value)}
+            maxLength={2000}
+            disabled={isSubmitting}
             required
           />
+          <div className="d-contact-meta">
+            <span>제출 시 내용, 이메일(입력한 경우), 접속 페이지가 저장됩니다.</span>
+            <span>{form.message.length}/2000</span>
+          </div>
         </div>
 
-        <button type="submit" className="d-contact-submit" disabled={!form.message.trim()}>
-          보내기
+        {errorMessage && (
+          <div className="d-contact-error" role="status">{errorMessage}</div>
+        )}
+
+        <button
+          type="submit"
+          className="d-contact-submit"
+          disabled={!form.message.trim() || isSubmitting}
+        >
+          {isSubmitting ? '보내는 중' : '보내기'}
         </button>
       </form>
     </div>

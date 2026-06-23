@@ -4,11 +4,15 @@ import { productPath, parseProductId } from '../data/productUrl.js';
 import { useProductById, useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { categoryPath } from '../data/categoryTabs.js';
-import { getPrimaryMetricsByCode } from '../data/categoryCardMetrics.js';
+import { getFoodTypeByCode } from '../data/categoryTabs.js';
+import { getCategoryCardConfig, getPrimaryMetricsByCode } from '../data/categoryCardMetrics.js';
+import { formatProteinSourceLabel, formatSweetenerLabel } from '../data/listFilters.js';
+import { useProteinResolver, useSweetenerResolver } from '../data/proteinQuality.js';
 import { useCompare } from '../store/CompareContext.jsx';
 
 import { Check } from 'lucide-react';
 import ProductThumb from '../components/global/ProductThumb.jsx';
+import { MacroRow } from '../components/ds/MacroRow.jsx';
 import { TieredPrimaryTable } from '../components/ds/FoodCard.jsx';
 import { NutritionTable } from '../components/desktop/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
@@ -60,11 +64,12 @@ function Breadcrumb({ category, categoryCode, productName, onBack }) {
 
 // 핵심 지표 표 — 리스트 카드와 동일한 단백질/EAA/BCAA × 총량·100kcal당·1,000원당
 function PrimaryMetricsSummary({ food, metrics }) {
+  const priceBasis = metrics?.some((metric) => metric.pricePer === 'serving') ? '1회분당' : '개당';
   return (
     <div className="d-detail-metrics">
       <span className="d-detail-metrics-title">핵심 지표</span>
       <TieredPrimaryTable food={food} metrics={metrics} />
-      <p className="d-detail-metrics-note">1,000원당 값은 등록된 구매링크의 개당 최저가 기준이며, 실제 판매가와 다를 수 있어요.</p>
+      <p className="d-detail-metrics-note">1,000원당 값은 등록된 구매링크의 {priceBasis} 최저가 기준이며, 실제 판매가와 다를 수 있어요.</p>
     </div>
   );
 }
@@ -74,17 +79,87 @@ function formatHeaderNumber(value) {
   return value >= 100 ? Math.round(value).toLocaleString() : (Math.round(value * 10) / 10).toLocaleString();
 }
 
-function ProductServingMeta({ product }) {
+function getDetailCardConfig(categoryCode) {
+  const foodType = getFoodTypeByCode(categoryCode);
+  return foodType ? getCategoryCardConfig(foodType.tab, foodType.label) : null;
+}
+
+function ProductServingMeta({ product, explicit = false }) {
   const parts = [];
-  if (product.serving) parts.push(product.serving);
+  if (product.serving) parts.push(explicit ? `1회 제공량 ${product.serving}` : product.serving);
   const calories = formatHeaderNumber(product.nutrition?.calories);
   if (calories !== null) parts.push(`${calories}kcal`);
   if (parts.length === 0) return null;
   return <span className="d-detail-header-serving">{parts.join(' · ')}</span>;
 }
 
+function DetailIngredientFacts({ product, config }) {
+  const sources = config?.showProteinSource ? (product.ingredients?.proteinSources ?? []) : [];
+  const sweeteners = config?.showSweetenerMeta ? (product.ingredients?.sweeteners ?? product.sweeteners ?? []) : [];
+  const proteinResolver = useProteinResolver(sources);
+  const sweetenerResolver = useSweetenerResolver(sweeteners);
+  const rows = [];
+
+  if (sources.length > 0) {
+    rows.push({
+      key: 'protein',
+      label: '단백질원',
+      value: [...new Set(sources.map((source) => formatProteinSourceLabel(source, proteinResolver)))].join(' · '),
+    });
+  }
+  if (config?.showSweetenerMeta) {
+    rows.push({
+      key: 'sweetener',
+      label: '대체당',
+      value: sweeteners.length > 0
+        ? [...new Set(sweeteners.map((sweetener) => formatSweetenerLabel(sweetener, sweetenerResolver)))].join(' · ')
+        : '없음',
+    });
+  }
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="d-detail-facts-meta">
+      {rows.map((row) => (
+        <div className="d-detail-facts-meta-row" key={row.key}>
+          <span className="d-detail-facts-meta-label">{row.label}</span>
+          <span className="d-detail-facts-meta-value">{row.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DetailSummaryFacts({ product, config }) {
+  const showMacro = config?.macroBarVariant || config?.showMacroBar !== false;
+  const hasMacro = showMacro && product.macros && (
+    Number(product.macros.carbs) > 0 ||
+    Number(product.macros.protein) > 0 ||
+    Number(product.macros.fat) > 0
+  );
+
+  return (
+    <div className="d-detail-facts">
+      <ProductServingMeta
+        product={product}
+        explicit={config?.servingMetaVariant === 'explicit'}
+      />
+      {hasMacro && (
+        <MacroRow
+          {...product.macros}
+          variant={config?.macroBarVariant ?? 'mini'}
+          ratioOnly
+        />
+      )}
+      <DetailIngredientFacts product={product} config={config} />
+    </div>
+  );
+}
+
 function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, detailOpen, onToggleDetail }) {
   const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
+  const config = getDetailCardConfig(raw?.categoryCode);
+  const titleVariant = config?.titleVariant === 'size' ? product.sizeVariantLabel : '';
 
   return (
     <section className="d-detail-overview">
@@ -105,10 +180,13 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
           <div className="d-detail-overview-titlebar">
             <div className="d-detail-overview-title">
               <span className="d-detail-header-brand">{product.brand}</span>
-              <h1 className="d-detail-header-name">{product.name}</h1>
-              <ProductServingMeta product={product} />
+              <h1 className="d-detail-header-name">
+                {product.name}
+                {titleVariant && <span className="d-detail-header-variant">{titleVariant}</span>}
+              </h1>
             </div>
           </div>
+          <DetailSummaryFacts product={product} config={config} />
           {primaryMetrics && <PrimaryMetricsSummary food={product} metrics={primaryMetrics} />}
         </div>
       </div>
@@ -276,6 +354,7 @@ export default function DetailPage() {
 
   const inCart = has(product.id);
   const n = product.nutrition ?? {};
+  const detailConfig = getDetailCardConfig(raw?.categoryCode);
 
   const handleToggleCompare = () => {
     if (!inCart && isFull) {
@@ -341,6 +420,9 @@ export default function DetailPage() {
                 category={raw?.category}
                 categoryCode={raw?.categoryCode}
                 foodNutrients={raw?._raw?.foodNutrients}
+                additionalContent={raw?._raw?.additionalContent}
+                servingSize={raw?._raw?.servingSize}
+                servingUnit={raw?._raw?.servingUnit}
               />
             </div>
             <div id="reviews">
@@ -357,7 +439,15 @@ export default function DetailPage() {
         {/* 우측 가격 비교 패널 — 스크롤 시 고정 */}
         <aside className="d-detail-aside">
           <div className="d-detail-aside-inner">
-            <PurchaseOffers offers={product.purchaseLinks} title="가격 비교" showUpdatedAt stacked />
+            <PurchaseOffers
+              offers={product.purchaseLinks}
+              title="가격 비교"
+              showUpdatedAt
+              stacked
+              sortBy="unit-first"
+              pricePer={detailConfig?.purchasePricePer ?? 'unit'}
+              servingsPerUnit={product.servingsPerUnit}
+            />
             <CategoryGuide category={raw?.category} />
           </div>
         </aside>

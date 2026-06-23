@@ -3,7 +3,7 @@
    - DS 토큰만 사용 (var(--...))
    - 레이아웃: sticky 좌측 라벨 컬럼(110px) + 가로 스크롤 데이터 컬럼들(각 150px)
    - 각 행 높이는 토큰으로 통일해 좌/우가 정확히 정렬되도록 함
-   - 강조: 우수값은 그린 텍스트 + soft-green pill 배경 + IconCheck
+   - 강조: 우수값은 그린 텍스트
    =========================================================================== */
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -234,6 +234,14 @@
   overflow: hidden;
   padding: 0 4px;
 }
+.m-compare-col-volume {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: var(--font-size-xxs);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
 
 /* ─────────────────────────────────────────────────────────────────────────
    데이터 셀 (영양소 1개)
@@ -276,9 +284,16 @@
   margin-left: 1px;
 }
 
-/* 우수값 강조 — soft-green 배경 + 그린 텍스트 + 체크 아이콘 */
-.m-compare-cell--best {
-  background: var(--green-50);
+/* 우수값 강조 — 값 뒤에만 형광펜 표시 */
+.m-compare-cell--best .m-compare-cell-valrow {
+  padding: 1px 4px 2px;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      to top,
+      rgba(190, 242, 100, 0.78) 0 48%,
+      transparent 48% 100%
+    );
 }
 .m-compare-cell--best .m-compare-cell-num {
   color: var(--green-700);
@@ -289,17 +304,59 @@
 .m-compare-cell--best .m-compare-cell-label {
   color: var(--green-700);
 }
-.m-compare-cell-check {
+
+.m-compare-purchase-cell {
+  min-height: 92px;
+  gap: 5px;
+}
+.m-compare-purchase-price {
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-m);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.m-compare-purchase-cell--best .m-compare-purchase-price {
+  padding: 1px 4px 2px;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      to top,
+      rgba(190, 242, 100, 0.78) 0 48%,
+      transparent 48% 100%
+    );
+  color: var(--green-700);
+}
+.m-compare-purchase-meta {
+  display: block;
+  max-width: 136px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+.m-compare-purchase-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 13px;
-  height: 13px;
-  border-radius: 999px;
-  background: var(--green-500);
-  color: white;
-  flex-shrink: 0;
-  align-self: center;
+  min-width: 52px;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: var(--green-600);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-decoration: none;
+}
+.m-compare-purchase-empty {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
 }
 
 /* 태그 셀 */

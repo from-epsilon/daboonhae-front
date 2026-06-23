@@ -51,6 +51,7 @@ function collectChips({ specs, value, onChange }) {
     if (spec.type === 'range') addRangeChip(chips, spec, v, clearField);
     else if (spec.type === 'tristate') addTriStateChips(chips, spec, v, updateField);
     else if (spec.type === 'exclude_only') addTriStateChips(chips, spec, v, updateField);
+    else if (spec.type === 'single') addSingleChip(chips, spec, v, clearField);
     else if (spec.type === 'bool') addBoolChip(chips, spec, v, clearField);
   }
 
@@ -89,6 +90,21 @@ function addTriStateChips(chips, spec, v, updateField) {
       },
     });
   }
+}
+
+// single: 선택된 옵션 1개만 칩 표시
+function addSingleChip(chips, spec, v, clearField) {
+  if (!v) return;
+  chips.push({
+    id: `single:${spec.key}:${v}`,
+    label: formatSingleChipLabel(spec, v),
+    onRemove: () => clearField(spec.key),
+  });
+}
+
+function formatSingleChipLabel(spec, value) {
+  if (spec.key === 'flavor') return value === '기타' ? value : `${value}맛`;
+  return `${spec.label} ${value}`;
 }
 
 // bool: 토글된 경우만 칩 표시 ("유당 free 적용")

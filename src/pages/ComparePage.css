@@ -184,35 +184,6 @@
   background: var(--red-50);
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   기준(anchor) 컬럼 강조 — 사용자가 비교 중심으로 삼는 1열
-   - 헤더 셀: 헤더 톤(bg-card-ui) 위에 soft-green 오버레이
-   - 각 행의 2번째 자식(데이터 첫 셀)에 좌측 액센트 보더
-   ──────────────────────────────────────────────────────────────────────── */
-.d-compare-col-header--anchor {
-  background: var(--green-50);
-  box-shadow: inset 3px 0 0 var(--brand-green);
-}
-.d-compare-col-anchor-tag {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: var(--brand-green);
-  color: var(--white);
-  font-family: var(--font-body);
-  font-size: var(--font-size-xxs);
-  font-weight: 500;
-  line-height: 1;
-  padding: 4px 8px;
-  border-radius: var(--radius-pill);
-  z-index: 1;
-  letter-spacing: 0.02em;
-}
-/* 본문/태그/Trust 셀의 첫 데이터 컬럼 = 그리드 2번째 자식 */
-.d-compare-row:not(.d-compare-row--header) > :nth-child(2) {
-  box-shadow: inset 3px 0 0 var(--brand-green);
-}
-
 /* 썸네일 + 브랜드 + 이름 클릭 영역 */
 .d-compare-col-open {
   display: flex;
@@ -267,6 +238,14 @@
   transition: color 150ms ease;
   padding: 0 4px;
 }
+.d-compare-col-volume {
+  display: inline-block;
+  margin-left: 5px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
 
 .d-compare-col-score {
   margin-top: var(--space-2);
@@ -296,7 +275,7 @@
   background: var(--bg-card-ui);
 }
 
-/* 숫자 + 단위 + 체크 */
+/* 숫자 + 단위 */
 .d-compare-metric-value {
   display: inline-flex;
   align-items: baseline;
@@ -316,42 +295,16 @@
   color: var(--text-secondary);
   font-weight: 500;
 }
-.d-compare-metric-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: var(--radius-pill);
-  background: var(--green-500);
-  color: white;
-  align-self: center;
-  margin-right: 2px;
-  flex-shrink: 0;
-}
-
-/* 가로 막대 (상대값 시각화) */
-.d-compare-metric-bar {
-  width: 100%;
-  max-width: 140px;
-  height: 6px;
-  background: var(--gray-100);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-.d-compare-metric-bar-fill {
-  height: 100%;
-  background: var(--gray-400);
-  border-radius: var(--radius-pill);
-  transition: width 300ms ease-out;
-}
-.d-compare-metric-bar-fill--score {
-  background: var(--green-500);
-}
-
-/* 우수값 강조 — soft-green pill + 그린 텍스트 + 체크 아이콘 */
-.d-compare-metric-cell--best {
-  background: var(--green-50);
+/* 우수값 강조 — 값 뒤에만 형광펜 표시 */
+.d-compare-metric-cell--best .d-compare-metric-value {
+  padding: 1px 5px 2px;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      to top,
+      rgba(190, 242, 100, 0.78) 0 48%,
+      transparent 48% 100%
+    );
 }
 .d-compare-metric-cell--best .d-compare-metric-num {
   color: var(--green-700);
@@ -359,11 +312,79 @@
 .d-compare-metric-cell--best .d-compare-metric-unit {
   color: var(--green-600);
 }
-.d-compare-metric-cell--best .d-compare-metric-bar {
-  background: rgba(0, 198, 0, 0.18);
+
+/* 최저가 행 */
+.d-compare-purchase-cell {
+  min-height: 96px;
+  padding: var(--space-4) var(--space-3);
+  border-right: 1px solid var(--bg-divider);
+  background: var(--bg-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-align: center;
 }
-.d-compare-metric-cell--best .d-compare-metric-bar-fill {
-  background: var(--green-500);
+.d-compare-purchase-cell:last-child {
+  border-right: none;
+}
+.d-compare-purchase-cell--empty {
+  background: var(--bg-card-ui);
+}
+.d-compare-purchase-price {
+  font-family: var(--font-numeric);
+  line-height: 1;
+}
+.d-compare-purchase-price-main {
+  font-size: var(--font-size-l);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.d-compare-purchase-cell--best .d-compare-purchase-price-main {
+  padding: 1px 5px 2px;
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      to top,
+      rgba(190, 242, 100, 0.78) 0 48%,
+      transparent 48% 100%
+    );
+  color: var(--green-700);
+}
+.d-compare-purchase-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px 8px;
+  max-width: 160px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xxs);
+  line-height: 1.35;
+  color: var(--text-tertiary);
+}
+.d-compare-purchase-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background: var(--green-600);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.d-compare-purchase-cta:hover {
+  background: var(--green-700);
+}
+.d-compare-purchase-empty {
+  font-family: var(--font-body);
+  font-size: var(--font-size-s);
+  color: var(--text-tertiary);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -561,7 +582,6 @@
    접근성: 모션 민감 사용자 대응
    ──────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .d-compare-metric-bar-fill,
   .d-compare-add-slot,
   .d-compare-add-icon,
   .d-compare-col-open,

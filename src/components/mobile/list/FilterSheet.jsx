@@ -1,5 +1,5 @@
 // 모바일 필터 시트
-// - purpose.filters 스펙(range / tristate / bool)에 따라 동적 렌더링
+// - purpose.filters 스펙(range / tristate / single / bool)에 따라 동적 렌더링
 // - 내부 임시 상태(draft)에 변경 누적 → 하단 '적용' 클릭 시에만 부모 onApply 호출
 // - '초기화'는 draft만 비움 (적용 안 누르면 외부 상태 유지)
 import { useEffect, useMemo, useState } from 'react';
@@ -22,6 +22,8 @@ export function countActiveFilters(specs, state) {
       // include/exclude 가 하나라도 있어야 활성
       const has = Object.values(v).some((s) => s === 'include' || s === 'exclude');
       if (has) n += 1;
+    } else if (spec.type === 'single') {
+      if (v) n += 1;
     } else if (spec.type === 'bool') {
       if (v === true) n += 1;
     }
@@ -232,6 +234,36 @@ function TristateChip({ label, state, onClick }) {
   );
 }
 
+// ============================================================ Single 필터
+// 옵션 중 하나만 드롭다운으로 선택
+function FilterSingle({ spec, value, onChange }) {
+  return (
+    <select
+      className="m-filter-single-select"
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value || undefined)}
+      aria-label={spec.label}
+      style={{
+        width: '100%',
+        minHeight: 44,
+        padding: '0 36px 0 12px',
+        borderRadius: 8,
+        border: '1px solid var(--border-tertiary)',
+        background: 'white',
+        color: value ? 'var(--text-primary)' : 'var(--text-tertiary)',
+        fontFamily: 'var(--font-body)',
+        fontSize: 16,
+        fontWeight: 500,
+      }}
+    >
+      <option value="">전체</option>
+      {spec.options.map((opt) => (
+        <option key={opt} value={opt}>{opt}</option>
+      ))}
+    </select>
+  );
+}
+
 // ============================================================ Exclude-only 필터
 function FilterExcludeOnly({ spec, value, onChange }) {
   const handleClick = (option) => {
@@ -298,14 +330,22 @@ function FilterBool({ spec, value, onChange }) {
 // ============================================================ 단일 그룹 (제목 + 본문)
 function FilterGroup({ spec, value, onChange }) {
   // bool 은 라벨이 칩 자체에 있어서 제목 생략
+  const sectionStyle = {
+    padding: spec.type === 'single' ? '16px 0 18px' : '16px 0',
+    borderBottom: spec.type === 'single'
+      ? '1px solid var(--border-secondary)'
+      : '1px solid var(--border-tertiary)',
+    marginBottom: spec.type === 'single' ? 4 : 0,
+  };
   return (
-    <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border-tertiary)' }}>
+    <div style={sectionStyle}>
       {spec.type !== 'bool' && (
         <FilterGroupLabel label={spec.label} note={spec.note} />
       )}
       {spec.type === 'range' && <FilterRange spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'tristate' && <FilterTristate spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'exclude_only' && <FilterExcludeOnly spec={spec} value={value} onChange={onChange} />}
+      {spec.type === 'single' && <FilterSingle spec={spec} value={value} onChange={onChange} />}
       {spec.type === 'bool' && <FilterBool spec={spec} value={value} onChange={onChange} />}
     </div>
   );

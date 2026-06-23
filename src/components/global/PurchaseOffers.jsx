@@ -43,9 +43,9 @@ function compareByFreeShippingTotal(a, b) {
   return aTotal - bTotal;
 }
 
-function getBestUnitOffer(offers) {
+function getBestUnitOffer(offers, priceOf = unitPriceOf) {
   const candidates = (offers ?? [])
-    .map((offer) => ({ offer, unitPrice: unitPriceOf(offer) }))
+    .map((offer) => ({ offer, unitPrice: priceOf(offer) }))
     .filter(({ unitPrice }) => typeof unitPrice === 'number');
   if (candidates.length === 0) return null;
 
@@ -60,21 +60,21 @@ function getBestUnitOffer(offers) {
 // - 'total'      : 총액 오름차순
 // - 'unit'       : 개당(단가) 오름차순
 // - 'unit-first' : 개당 최저가 1개를 맨 앞에 고정 + 나머지는 총액 오름차순
-function orderOffers(offers, mode) {
+function orderOffers(offers, mode, priceOf = unitPriceOf) {
   const base = normalizeOffers(offers); // 총액 오름차순 + 유효 필터
   if (base.length <= 1) return base;
 
   if (mode === 'unit') {
     return [...base].sort((a, b) => {
-      const aUnit = unitPriceOf(a) ?? Infinity;
-      const bUnit = unitPriceOf(b) ?? Infinity;
+      const aUnit = priceOf(a) ?? Infinity;
+      const bUnit = priceOf(b) ?? Infinity;
       if (!sameUnitPrice(aUnit, bUnit)) return aUnit - bUnit;
       return compareByFreeShippingTotal(a, b);
     });
   }
 
   if (mode === 'unit-first') {
-    const best = getBestUnitOffer(base);
+    const best = getBestUnitOffer(base, priceOf);
     if (!best) return base;
     // 개당 최저가 중 무료배송 기준에 가까운 최저 총액을 맨 앞으로, 나머지는 총액순 유지
     return [best, ...base.filter((offer) => offer !== best)];
@@ -90,10 +90,18 @@ function unitPriceOf(offer) {
   return offer.price / quantity;
 }
 
-// 개당 가격 표기 (개당 N원) — 단가 없으면 가격 문의
-function formatUnitPrice(unitPrice) {
-  if (typeof unitPrice !== 'number') return '가격 문의';
-  return `개당 ${Math.round(unitPrice).toLocaleString()}원`;
+function servingPriceOf(offer, servingsPerUnit) {
+  const unitPrice = unitPriceOf(offer);
+  const servings = Number(servingsPerUnit);
+  if (typeof unitPrice !== 'number') return null;
+  if (!Number.isFinite(servings) || servings <= 0) return unitPrice;
+  return unitPrice / servings;
+}
+
+function formatBasisPrice(price, pricePer) {
+  if (typeof price !== 'number') return '가격 문의';
+  const label = pricePer === 'serving' ? '1회분당' : '개당';
+  return `${label} ${Math.round(price).toLocaleString()}원`;
 }
 
 function getRedirectUrl(offer, delaySeconds = 1.5) {
@@ -128,15 +136,19 @@ export default function PurchaseOffers({
   redirectDelay = 1.5,
   showUpdatedAt = false,
   stacked = false,
-  pricePer = 'unit',  // 'unit' 개당가 강조 | 'total' 총액 강조
+  pricePer = 'unit',  // 'unit' 개당가 강조 | 'serving' 1회분당 강조 | 'total' 총액 강조
   sortBy = 'total',   // 'total' 총액순 | 'unit' 개당순 | 'unit-first' 개당 최저가 먼저+나머지 총액순
+  servingsPerUnit,
 }) {
-  const isUnit = pricePer === 'unit';
-  // 개당 표시 모드는 자연히 개당순 정렬
-  const sortMode = isUnit ? 'unit' : sortBy;
-  const sorted = orderOffers(offers, sortMode);
+  const isUnitLike = pricePer === 'unit' || pricePer === 'serving';
+  const basisPriceOf = pricePer === 'serving'
+    ? (offer) => servingPriceOf(offer, servingsPerUnit)
+    : unitPriceOf;
+  // 단가 표시 모드는 자연히 단가순 정렬
+  const sortMode = isUnitLike ? 'unit' : sortBy;
+  const sorted = orderOffers(offers, sortMode, basisPriceOf);
   const visible = typeof maxItems === 'number' ? sorted.slice(0, maxItems) : sorted;
-  const bestUnitOffer = getBestUnitOffer(sorted);
+  const bestUnitOffer = getBestUnitOffer(sorted, basisPriceOf);
   const updatedLabel = showUpdatedAt ? latestUpdatedLabel(sorted) : null;
   const rootClass = [
     'purchase-offers',
@@ -169,6 +181,7 @@ export default function PurchaseOffers({
       )}
       <div className="purchase-offers-list">
         {visible.map((offer, i) => {
+          const basisPrice = basisPriceOf(offer);
           const unitPrice = unitPriceOf(offer);
           const isBest = offer === bestUnitOffer;
           return (
@@ -192,12 +205,12 @@ export default function PurchaseOffers({
                 </span>
                 <span className="purchase-offer-meta">
                   {offer.quantity ?? 1}개입
-                  {isUnit && typeof offer.price === 'number' && (
+                  {isUnitLike && typeof offer.price === 'number' && (
                     <span className="purchase-offer-total">
                       · 총 {formatPurchasePrice(offer.price)}
                     </span>
                   )}
-                  {!isUnit && typeof unitPrice === 'number' && (
+                  {!isUnitLike && typeof unitPrice === 'number' && (
                     <span className="purchase-offer-unit">
                       · 개당 {Math.round(unitPrice).toLocaleString()}원
                     </span>
@@ -206,7 +219,7 @@ export default function PurchaseOffers({
               </span>
               <span className="purchase-offer-price-block">
                 <span className="purchase-offer-price">
-                  {isUnit ? formatUnitPrice(unitPrice) : formatPurchasePrice(offer.price)}
+                  {isUnitLike ? formatBasisPrice(basisPrice, pricePer) : formatPurchasePrice(offer.price)}
                 </span>
               </span>
             </a>

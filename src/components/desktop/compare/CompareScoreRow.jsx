@@ -1,7 +1,6 @@
 // 데스크탑 비교 - 다분해 점수 행
-// - 좌측 라벨 + 각 컬럼 점수(텍스트) + 막대 + best 그린 배경
+// - 좌측 라벨 + 각 컬럼 점수(텍스트) + 막대 + best 텍스트 강조
 // - 헤더 행에 ScoreGauge가 이미 있어서 본문은 숫자+막대로 간소화
-import { IconCheck } from '../../ds/Icons.jsx';
 
 // 한 셀 (SRP)
 function ScoreCell({ score, isBest }) {
@@ -13,11 +12,6 @@ function ScoreCell({ score, isBest }) {
   return (
     <div className={cls}>
       <div className="d-compare-metric-value">
-        {isBest && (
-          <span className="d-compare-metric-check" aria-label="가장 높은 점수">
-            <IconCheck size={11} stroke={2.5} />
-          </span>
-        )}
         <span className="d-compare-metric-num">{safe.toFixed(1)}</span>
         <span className="d-compare-metric-unit">점</span>
       </div>
