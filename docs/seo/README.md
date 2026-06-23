@@ -5,6 +5,7 @@
 
 ## 문서 구성
 - **[전체 계획·진단](../seo-refactoring-plan.md)** — 라이브 실측 결과, 트랙 분리, 우선순위 매트릭스, 한계.
+- **[🔴 라이브 감사 리포트 (2026-06-23)](./audit-2026-06-23.md)** — 7개 에이전트 병렬 + Playwright 실측. Phase 진행 검증 + 신규 결함(API 401/404, 출처 모순, 2.4MB fetch 등) + 통합 점수 38/100.
 - **[Phase 1 — 메타 인프라 + GSC + 정적 OG](./phase-1-meta-infra.md)**
 - **[Phase 2 — 구조화 데이터(JSON-LD)](./phase-2-structured-data.md)**
 - **[Phase 3 — 위생(robots/404/리다이렉트/캐싱)](./phase-3-hygiene.md)**
