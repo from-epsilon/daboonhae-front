@@ -3,5 +3,4 @@ Allow: /
 Disallow: /redirect
 Disallow: /compare
 
-# sitemap은 현재 범위 제외 — 도입 시 아래 주석 해제
-# Sitemap: https://www.daboonhae.com/sitemap.xml
+Sitemap: https://www.daboonhae.com/sitemap.xml
