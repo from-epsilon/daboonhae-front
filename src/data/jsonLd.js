@@ -38,6 +38,29 @@ export function websiteLd() {
   };
 }
 
+// 영양성분 → schema.org NutritionInformation
+// - 핵심 매크로(칼로리·단백질·탄수·당류·지방)는 항상, 나머지는 값이 있을 때만(허위 0 방지)
+// - 화면 영양표와 일치시키는 게 원칙(구조화 데이터는 가시 콘텐츠를 반영해야 함)
+function nutritionLd(n, serving) {
+  if (!n) return undefined;
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+  const info = { '@type': 'NutritionInformation' };
+  if (typeof serving === 'string' && serving.trim()) info.servingSize = serving.trim();
+  if (isNum(n.calories)) info.calories = `${n.calories} kcal`;
+  if (isNum(n.protein)) info.proteinContent = `${n.protein} g`;
+  if (isNum(n.carbs)) info.carbohydrateContent = `${n.carbs} g`;
+  if (isNum(n.sugar)) info.sugarContent = `${n.sugar} g`;
+  if (isNum(n.fat)) info.fatContent = `${n.fat} g`;
+  if (n.sodium > 0) info.sodiumContent = `${n.sodium} mg`;
+  if (n.saturatedFat > 0) info.saturatedFatContent = `${n.saturatedFat} g`;
+  if (n.transFat > 0) info.transFatContent = `${n.transFat} g`;
+  if (n.cholesterol > 0) info.cholesterolContent = `${n.cholesterol} mg`;
+  if (n.fiber > 0) info.fiberContent = `${n.fiber} g`;
+  // @type/servingSize 외에 실제 영양값이 하나도 없으면 생략
+  const hasValue = Object.keys(info).some((k) => k !== '@type' && k !== 'servingSize');
+  return hasValue ? info : undefined;
+}
+
 // 제품 상세 — adapted product 기준
 // (adapted shape: thumb, brand, name, id, category, nutrition{}, purchaseLinks[{price,...}])
 export function productLd(product) {
@@ -50,12 +73,17 @@ export function productLd(product) {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    image: product.thumb ? absUrl(product.thumb) : undefined,
+    // base64 데이터URI는 구글이 크롤 못 함 → 유효 이미지 URL일 때만 포함
+    image:
+      product.thumb && !String(product.thumb).startsWith('data:')
+        ? absUrl(product.thumb)
+        : undefined,
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     category: product.category || undefined,
     description:
       `${product.name} 영양성분: 칼로리 ${n.calories ?? '-'}kcal, ` +
       `단백질 ${n.protein ?? '-'}g, 당류 ${n.sugar ?? '-'}g.`,
+    nutrition: nutritionLd(n, product.serving),
     url: absUrl(productPath(product)),
   };
 
