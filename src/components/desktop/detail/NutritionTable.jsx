@@ -5,32 +5,18 @@ import { NUTRIENT_GROUP, isNutrientGroup } from '../../../data/nutrientGroups.js
 // 접힘 기본 표시 영양소 — 열·탄·단·지
 const BASE_CODES = ['energy_kcal', 'carbohydrate_g', 'protein_g', 'fat_g'];
 
-const NUTRI_INFO = {
-  energy_kcal: '식품이 제공하는 총 에너지량. 성인 1일 권장 약 2,000kcal.',
-  sodium_mg: '나트륨은 하루 총량 기준으로 보는 항목입니다. 성인 기준 하루 2,000mg 미만을 권장하며, 누적량을 확인하는 게 좋아요.',
-  carbohydrate_g: '총 탄수화물입니다. 저당 제품이어도 탄수화물이 높으면 칼로리나 혈당 부담이 있을 수 있어요.',
-  sugars_g: '실제 \'당류\' 양입니다. 저당·무설탕 제품을 볼 때 가장 먼저 확인할 항목이에요.',
-  dietary_fiber: '식이섬유가 높으면 포만감에 도움이 될 수 있어요. 단, 식이섬유로 탄수화물 수치를 채운 제품도 있어서 원재료를 같이 보는 게 좋아요.',
-  src_알룰로오스_g: '알룰로스는 당처럼 달지만 칼로리 부담이 낮은 감미료입니다. 다만 많이 들어간 제품은 단맛 의존도가 높을 수 있어요.',
-  fat_g: '총 지방입니다. 지방이 높으면 칼로리가 쉽게 올라갑니다. 특히 디저트류 저당 제품에서 자주 높게 나와요.',
-  trans_fat_g: '가능하면 0에 가까운 게 좋습니다. 0g으로 표시돼도 완전히 없다는 뜻은 아닐 수 있어요.',
-  saturated_fat_g: '포화지방은 과하면 부담이 큰 지방입니다. 저당 아이스크림, 초콜릿, 크림류 제품은 포화지방이 높을 수 있어요.',
-  cholesterol_mg: '동물성 원료가 들어간 제품에서 나올 수 있습니다. 계란, 우유, 크림, 육류 기반 제품이라면 함께 확인하세요.',
-  protein_g: '단백질 함량입니다. 단백질 제품이라면 칼로리 대비 단백질이 충분한지 보는 게 중요해요.',
-};
-
 const NUTRIENT_ORDER = [
   { code: 'energy_kcal',     indent: false },
   { code: 'carbohydrate_g',  indent: false },
   { code: 'sugars_g',        indent: true },
+  { code: 'dietary_fiber',   indent: true },
+  { code: 'src_알룰로오스_g', indent: true },
   { code: 'protein_g',       indent: false },
   { code: 'fat_g',           indent: false },
   { code: 'saturated_fat_g', indent: true },
   { code: 'trans_fat_g',     indent: true },
   { code: 'cholesterol_mg',  indent: false },
   { code: 'sodium_mg',       indent: false },
-  { code: 'dietary_fiber',   indent: false },
-  { code: 'src_알룰로오스_g', indent: false },
 ];
 
 const KNOWN_CODES = new Set(NUTRIENT_ORDER.map(r => r.code));
@@ -87,6 +73,8 @@ const MANDATORY_CODES = new Set([
   'energy_kcal',
   'carbohydrate_g',
   'sugars_g',
+  'dietary_fiber',
+  'src_알룰로오스_g',
   'protein_g',
   'fat_g',
   'saturated_fat_g',
@@ -94,6 +82,20 @@ const MANDATORY_CODES = new Set([
   'cholesterol_mg',
   'sodium_mg',
 ]);
+
+const VITAMIN_NAME_PATTERN = /비타민|엽산|나이아신|비오틴|판토텐산/i;
+const MINERAL_NAME_PATTERN = /칼슘|철|아연|마그네슘|칼륨|셀레늄|구리|망간|요오드|크롬|몰리브덴/i;
+
+function micronutrientType(fn) {
+  const name = fn.nutrients?.name_ko || '';
+  if (isNutrientGroup(fn, NUTRIENT_GROUP.VITAMIN) || VITAMIN_NAME_PATTERN.test(name)) {
+    return 'vitamin';
+  }
+  if (isNutrientGroup(fn, NUTRIENT_GROUP.MINERAL) || fn.nutrients?.group_name === '무기질' || MINERAL_NAME_PATTERN.test(name)) {
+    return 'mineral';
+  }
+  return null;
+}
 
 function formatValue(fn, ratio) {
   if (ratio === 1) {
@@ -107,7 +109,13 @@ function formatValue(fn, ratio) {
   return `${converted}${unit}`;
 }
 
-function NutritionCell({ label, display, depth = 0, muted = false, extra = false }) {
+function nutrientInfo(fn) {
+  const benefits = fn?.nutrients?.benefits_text;
+  const cautions = fn?.nutrients?.cautions_text;
+  return [benefits, cautions].filter(Boolean).join(' ') || null;
+}
+
+function NutritionCell({ label, display, info, depth = 0, muted = false, extra = false }) {
   const cls = [
     'd-detail-nutri-cell',
     depth >= 1 ? 'is-indent' : '',
@@ -116,7 +124,7 @@ function NutritionCell({ label, display, depth = 0, muted = false, extra = false
     extra ? 'is-extra' : '',
   ].filter(Boolean).join(' ');
   return (
-    <li className={cls}>
+    <li className={cls} title={info || undefined}>
       <div className="d-detail-nutri-cell-label">
         <span>{label}</span>
       </div>
@@ -150,8 +158,9 @@ function BasisToggle({ basis, onChangeBasis, servingSize, servingUnit }) {
   );
 }
 
-export function NutritionTable({ nutrition, serving, foodNutrients, servingSize, servingUnit, expanded = false, onToggleExpand }) {
+export function NutritionTable({ nutrition, serving, foodNutrients, servingSize, servingUnit, categoryCode, expanded = false, onToggleExpand }) {
   const [basis, setBasis] = useState('serving');
+  const isShake = categoryCode === 'shake';
 
   const ratio = useMemo(() => {
     if (basis === 'serving' || !servingSize || servingSize <= 0) return 1;
@@ -160,8 +169,10 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
 
   const unit = servingUnit?.includes('ml') ? 'ml' : 'g';
 
-  const { mandatoryRows, optionalRows } = useMemo(() => {
-    if (!foodNutrients || foodNutrients.length === 0) return { mandatoryRows: [], optionalRows: [] };
+  const { mandatoryRows, optionalRows, micronutrientRows } = useMemo(() => {
+    if (!foodNutrients || foodNutrients.length === 0) {
+      return { mandatoryRows: [], optionalRows: [], micronutrientRows: [] };
+    }
 
     const byCode = {};
     for (const fn of foodNutrients) {
@@ -170,6 +181,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
 
     const mandatory = [];
     const optional = [];
+    const micronutrients = [];
 
     for (const spec of NUTRIENT_ORDER) {
       const fn = byCode[spec.code];
@@ -178,7 +190,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
         key: spec.code,
         label: fn.nutrients?.name_ko || spec.code,
         display: formatValue(fn, ratio),
-        info: NUTRI_INFO[spec.code],
+        info: nutrientInfo(fn),
         indent: spec.indent,
       };
       if (MANDATORY_CODES.has(spec.code)) mandatory.push(row);
@@ -190,17 +202,23 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
       .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999));
 
     for (const fn of extras) {
-      optional.push({
+      const row = {
         key: fn.nutrient_code,
         label: fn.nutrients?.name_ko || fn.nutrient_code,
         display: formatValue(fn, ratio),
-        info: null,
+        info: nutrientInfo(fn),
         indent: false,
-      });
+      };
+      const microType = micronutrientType(fn);
+      if (isShake && microType) {
+        micronutrients.push({ ...row, microType });
+      } else {
+        optional.push(row);
+      }
     }
 
-    return { mandatoryRows: mandatory, optionalRows: optional };
-  }, [foodNutrients, ratio]);
+    return { mandatoryRows: mandatory, optionalRows: optional, micronutrientRows: micronutrients };
+  }, [foodNutrients, isShake, ratio]);
 
   // 아미노산 계층 트리 — EAA > (BCAA > 3종) + 비BCAA 필수아미노산 6종
   // - 집계값(EAA/BCAA)은 개별값이 전부 있으면 합산, 하나라도 비면 DB 집계 컬럼 폴백
@@ -217,6 +235,13 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
     // 집계 후보 코드 중 먼저 존재하는 값
     const aggOf = (codes) => {
       for (const c of codes) { const v = amountOf(c); if (v != null) return v; }
+      return null;
+    };
+    const infoOf = (codes) => {
+      for (const c of codes) {
+        const info = nutrientInfo(byCode[c]);
+        if (info) return info;
+      }
       return null;
     };
     // 개별값 합 — 하나라도 있으면 합, 전무하면 null
@@ -265,13 +290,13 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
 
     const rows = [];
     // EAA (필수아미노산) — 최상위
-    rows.push(aminoRow('eaa', '필수 아미노산(EAA)', eaaTotal, 0));
+    rows.push(aminoRow('eaa', '필수 아미노산(EAA)', eaaTotal, 0, infoOf(EAA_AGG_CODES)));
     // BCAA — EAA 하위
-    rows.push(aminoRow('bcaa', 'BCAA', bcaaTotal, 1, '류신·이소류신·발린 3종 합계. 근육 합성에 핵심.'));
+    rows.push(aminoRow('bcaa', 'BCAA', bcaaTotal, 1, infoOf(BCAA_AGG_CODES)));
     // BCAA 3종 — BCAA 하위
-    for (const k of BCAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 2));
+    for (const k of BCAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 2, nutrientInfo(byCode[k.code])));
     // 비BCAA 필수아미노산 6종 — EAA 하위(BCAA와 동위)
-    for (const k of NON_BCAA_EAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 1));
+    for (const k of NON_BCAA_EAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 1, nutrientInfo(byCode[k.code])));
     // 비필수 아미노산 — EAA와 동위(depth 0)
     for (const fn of nonEssential) {
       rows.push({
@@ -279,6 +304,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
         label: fn.nutrients?.name_ko || fn.nutrient_code,
         display: formatValue(fn, ratio),
         depth: 0,
+        info: nutrientInfo(fn),
         muted: fn.amount == null,
       });
     }
@@ -288,7 +314,13 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
   // 접힘 땐 부모만(좌: 열·탄·단·지 / 우: EAA·BCAA) 보이고,
   // 펼치면 자식·추가 영양소 행이 부모 아래로 슬라이드 오픈됨(아코디언)
   const isLeftExtra = (key) => !BASE_CODES.includes(key);
-  const isAminoExtra = (key) => key !== 'eaa' && key !== 'bcaa';
+  const isProteinDrink = categoryCode === 'protein_drink';
+  const isAminoExtra = (key) => key !== 'eaa' && key !== 'bcaa' && !(isProteinDrink && key === 'leucine');
+  const vitaminRows = isShake ? micronutrientRows.filter((r) => r.microType === 'vitamin') : [];
+  const mineralRows = isShake ? micronutrientRows.filter((r) => r.microType === 'mineral') : [];
+  const showRightColumn = isShake
+    ? micronutrientRows.length > 0 || aminoTree.length > 0
+    : aminoTree.length > 0;
 
   return (
     <section className="d-detail-card d-detail-nutri">
@@ -315,7 +347,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
         </div>
       </header>
 
-      <div className={`d-detail-nutri-columns${expanded ? ' is-open' : ''}${aminoTree.length === 0 ? ' has-single-column' : ''}`}>
+      <div className={`d-detail-nutri-columns${expanded ? ' is-open' : ''}${!showRightColumn ? ' has-single-column' : ''}`}>
         {/* 좌측: 필수 영양소 + 칼슘 등. 자식 행(당류·포화지방 등)은 펼칠 때 부모 아래로 슬라이드 */}
         <div className="d-detail-nutri-group">
           <ul className="d-detail-nutri-list">
@@ -324,6 +356,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
                 key={r.key}
                 label={r.label}
                 display={r.display}
+                info={r.info}
                 depth={r.depth ?? (r.indent ? 1 : 0)}
                 muted={r.muted}
                 extra={isLeftExtra(r.key)}
@@ -331,21 +364,91 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
             ))}
           </ul>
         </div>
-        {/* 우측: 아미노산 계층. 접힘 땐 EAA·BCAA만, 펼치면 하위 아미노산 슬라이드 */}
-        {aminoTree.length > 0 && (
+        {/* 우측: 단백질음료는 아미노산, 셰이크는 비타민·무기질 */}
+        {showRightColumn && (
           <div className="d-detail-nutri-group d-detail-nutri-group--optional">
-            <ul className="d-detail-nutri-list">
-              {aminoTree.map((r) => (
-                <NutritionCell
-                  key={r.key}
-                  label={r.label}
-                  display={r.display}
-                  depth={r.depth}
-                  muted={r.muted}
-                  extra={isAminoExtra(r.key)}
-                />
-              ))}
-            </ul>
+            {isShake ? (
+              <ul className="d-detail-nutri-list">
+                {vitaminRows.length > 0 && (
+                  <>
+                    <NutritionCell
+                      label="비타민"
+                      display={`${vitaminRows.length}종`}
+                    />
+                    {vitaminRows.map((r) => (
+                      <NutritionCell
+                        key={r.key}
+                        label={r.label}
+                        display={r.display}
+                        info={r.info}
+                        depth={1}
+                        muted={r.muted}
+                        extra
+                      />
+                    ))}
+                  </>
+                )}
+                {mineralRows.length > 0 && (
+                  <>
+                    <NutritionCell
+                      label="무기질"
+                      display={`${mineralRows.length}종`}
+                    />
+                    {mineralRows.map((r) => (
+                      <NutritionCell
+                        key={r.key}
+                        label={r.label}
+                        display={r.display}
+                        info={r.info}
+                        depth={1}
+                        muted={r.muted}
+                        extra
+                      />
+                    ))}
+                  </>
+                )}
+                {micronutrientRows.length === 0 && aminoTree.map((r) => (
+                  <NutritionCell
+                    key={r.key}
+                    label={r.label}
+                    display={r.display}
+                    info={r.info}
+                    depth={r.depth}
+                    muted={r.muted}
+                    extra={isAminoExtra(r.key)}
+                  />
+                ))}
+                {micronutrientRows.length > 0 && aminoTree.length > 0 && (
+                  <>
+                    {aminoTree.map((r) => (
+                      <NutritionCell
+                        key={r.key}
+                        label={r.label}
+                        display={r.display}
+                        info={r.info}
+                        depth={r.depth}
+                        muted={r.muted}
+                        extra
+                      />
+                    ))}
+                  </>
+                )}
+              </ul>
+            ) : (
+              <ul className="d-detail-nutri-list">
+                {aminoTree.map((r) => (
+                  <NutritionCell
+                    key={r.key}
+                    label={r.label}
+                    display={r.display}
+                    info={r.info}
+                    depth={r.depth}
+                    muted={r.muted}
+                    extra={isAminoExtra(r.key)}
+                  />
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>

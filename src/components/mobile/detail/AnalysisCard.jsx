@@ -3,9 +3,9 @@
 // - 각 섹션은 analyzeSection(raw, sectionId) 결과 문장 배열을 받음
 // - 데이터-우선 톤 (analyzers.js가 이미 numbers-first로 짜여 있음)
 import { analyzeSection } from '../../../data/analyzers.js';
-import { formatProteinSourceLabel } from '../../../data/listFilters.js';
-import { useProteinResolver } from '../../../data/proteinQuality.js';
+import { useResolvedProteinSources, useResolvedSweeteners } from '../../../data/proteinQuality.js';
 import { IconInfo } from '../../ds/Icons.jsx';
+import { IngredientList } from './IngredientList.jsx';
 
 function round1(value) {
   return Math.round(value * 10) / 10;
@@ -349,8 +349,9 @@ function ShakeReportMobile({ rawProduct, products }) {
   const proteinSources = ingredients.proteinSources ?? [];
   const sweeteners = ingredients.sweeteners ?? [];
   const micronutrients = displayedMicronutrients(foodNutrients);
-  const proteinResolver = useProteinResolver(proteinSources);
-  const displaySources = [...new Set(proteinSources.map((source) => formatProteinSourceLabel(source, proteinResolver)).filter(Boolean))];
+  const displaySources = useResolvedProteinSources(proteinSources)
+    .map((source) => source.abbreviation ? `${source.nameKo}(${source.abbreviation})` : source.nameKo);
+  const displaySweeteners = useResolvedSweeteners(sweeteners).map((sweetener) => sweetener.nameKo);
   const calorieNote = preparation.body ? (
     <>
       <span className="m-detail-shake-note-line">{preparation.calorieText || '제품 표시 기준 열량입니다.'}</span>
@@ -451,8 +452,8 @@ function ShakeReportMobile({ rawProduct, products }) {
 
         <ShakeSection title="대체당">
           <div className="m-detail-shake-chip-list">
-            {sweeteners.length > 0
-              ? sweeteners.map((name) => <span key={`s-${name}`}><strong>{name}</strong>{sweetenerType(name)}</span>)
+            {displaySweeteners.length > 0
+              ? displaySweeteners.map((name) => <span key={`s-${name}`}><strong>{name}</strong>{sweetenerType(name)}</span>)
               : <p className="m-detail-report-empty">추출된 대체당 정보가 아직 없어요.</p>}
           </div>
         </ShakeSection>
@@ -469,6 +470,13 @@ function ShakeReportMobile({ rawProduct, products }) {
               : <p className="m-detail-report-empty">추가 영양성분 정보가 없어요.</p>}
           </div>
         </ShakeSection>
+        <IngredientList
+          ingredients={ingredients}
+          rawText={raw.ingredientsText}
+          annotations={raw.ingredientAnnotations}
+          rawOnly
+          title="원재료명"
+        />
       </div>
     </section>
   );
@@ -533,6 +541,13 @@ export function AnalysisCard({ rawProduct, purpose, purposeId, products }) {
           />
         ))}
       </div>
+      <IngredientList
+        ingredients={rawProduct?.ingredients}
+        rawText={rawProduct?._raw?.ingredientsText}
+        annotations={rawProduct?._raw?.ingredientAnnotations}
+        rawOnly
+        title="원재료명"
+      />
     </section>
   );
 }

@@ -17,7 +17,6 @@ import { TieredPrimaryTable } from '../../components/ds/FoodCard.jsx';
 import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
 import { NutritionTable } from '../../components/mobile/detail/NutritionTable.jsx';
 import { AnalysisCard } from '../../components/mobile/detail/AnalysisCard.jsx';
-import { IngredientList } from '../../components/mobile/detail/IngredientList.jsx';
 import { ProductNotice } from '../../components/mobile/detail/ProductNotice.jsx';
 import { ReviewSection } from '../../components/mobile/detail/ReviewSection.jsx';
 import { CategoryGuideCard } from '../../components/mobile/detail/CategoryGuideCard.jsx';
@@ -49,7 +48,7 @@ function MacroSection({ macros }) {
   );
 }
 
-// 핵심 지표 카드 — 리스트 카드와 동일한 단백질/EAA/BCAA × 총량·100kcal당·1,000원당
+// 핵심 지표 카드 — 리스트 카드와 동일한 단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당
 function PrimaryMetricsSection({ food, metrics }) {
   const priceBasis = metrics?.some((metric) => metric.pricePer === 'serving') ? '1회분당' : '개당';
   return (
@@ -187,17 +186,16 @@ export default function DetailPageMobile() {
         {/* 3. 매크로 분포 */}
         {!detailConfig?.macroBarVariant && <MacroSection macros={product.macros} />}
 
-        {/* 3-1. 핵심 지표 표 (단백질/EAA/BCAA × 총량·100kcal당·1,000원당) */}
+        {/* 3-1. 핵심 지표 표 (단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당) */}
         {primaryMetrics && <PrimaryMetricsSection food={product} metrics={primaryMetrics} />}
 
-        {/* 4. 영양성분표 + 펼침 안 원료·추가 안내 */}
-        <NutritionTable nutrition={product.nutrition} serving={product.serving} foodNutrients={raw?._raw?.foodNutrients}>
-          <IngredientList
-            ingredients={product.ingredients}
-            rawText={raw?._raw?.ingredientsText}
-            annotations={raw?._raw?.ingredientAnnotations}
-            embedded
-          />
+        {/* 4. 영양성분표 + 펼침 안 추가 안내 */}
+        <NutritionTable
+          nutrition={product.nutrition}
+          serving={product.serving}
+          foodNutrients={raw?._raw?.foodNutrients}
+          categoryCode={raw?.categoryCode}
+        >
           <ProductNotice
             additionalContent={raw?._raw?.additionalContent}
             cautionNotes={raw?._raw?.cautionNotes}

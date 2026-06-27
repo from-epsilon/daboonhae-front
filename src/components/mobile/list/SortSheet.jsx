@@ -1,6 +1,6 @@
 // 모바일 정렬 액션 시트
 // - 단순 라디오 리스트 (옵션 1탭으로 선택 + 자동 닫힘)
-// - 정렬 옵션은 카테고리별로 다름(단백질 음료=단백질/EAA/BCAA 전용) → listSort에서 일괄 관리
+// - 정렬 옵션은 카테고리별로 다름(단백질 음료=단백질/EAA/류신/BCAA 전용) → listSort에서 일괄 관리
 import { Sheet } from './Sheet.jsx';
 import { IconCheck } from '../../ds/Icons.jsx';
 import {

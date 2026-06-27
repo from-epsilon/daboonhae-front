@@ -57,6 +57,23 @@ const AMINO_KO_ALIASES = Object.fromEntries(
   Object.entries(AMINO_ACID_KO_ALIASES).map(([name, key]) => [normalizeKoName(name), key]),
 );
 
+function publicStorageImageUrl(path) {
+  if (!path) return '';
+  return supabase.storage.from('food-images').getPublicUrl(path).data.publicUrl;
+}
+
+function productImageUrl(food) {
+  return publicStorageImageUrl(food.storage_image_path) || food.image_url || '';
+}
+
+function normalizeSearchAlias(value) {
+  return String(value ?? '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_\-./()[\]{}%,·・:：]+/g, '');
+}
+
 function normalizeNutrientCode(value) {
   return String(value ?? '')
     .trim()
@@ -105,15 +122,12 @@ function resolveNutrientKey(fn) {
 }
 
 function parseNutrition(foodNutrients) {
-  const n = {
-    calories: 0, protein: 0, carbs: 0, sugar: 0, fat: 0, fiber: 0,
-    sodium: 0, transFat: 0, saturatedFat: 0, cholesterol: 0, allulose: undefined,
-    eaa: 0, bcaa: 0,
-  };
-  for (const key of AMINO_ACID_KEYS) n[key] = 0;
+  const n = {};
   for (const fn of foodNutrients ?? []) {
     const key = resolveNutrientKey(fn);
-    if (key) n[key] = fn.amount ?? 0;
+    if (!key || fn.amount == null) continue;
+    const amount = typeof fn.amount === 'number' ? fn.amount : Number(fn.amount);
+    n[key] = Number.isFinite(amount) ? amount : fn.amount;
   }
   return n;
 }
@@ -296,7 +310,7 @@ function transformProduct(food) {
     id: food.id,
     name: food.name ?? '',
     brand: food.brand ?? '',
-    thumbnail: food.image_url ?? '',
+    thumbnail: productImageUrl(food),
     volume,
     flavorCode: food.flavor_code ?? '',
     flavorName: food.food_flavors?.name_ko ?? food.flavor_code ?? '',
@@ -380,7 +394,7 @@ const FLAVOR_JOIN = `
 
 // ── 목록 select 절 (목록/검색 공통). optional=true면 family/purpose 조인 포함
 const LIST_SELECT_BASE = (optional) => `
-  id, name, brand, barcode, image_url,
+  id, name, brand, barcode, image_url, storage_image_path,
   is_mfds_official_source, source_url, source_food_code,
   flavor_code,
   net_content_amount, net_content_unit,
@@ -397,13 +411,13 @@ const LIST_SELECT_BASE = (optional) => `
   ${SCORE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
-    nutrients ( code, name_ko, default_unit, group_name, display_order )
+    nutrients ( code, name_ko, default_unit, group_name, display_order, benefits_text, cautions_text )
   )
 `;
 
 // ── 단건 상세 select 절. optional=true면 family/purpose/alias 조인 포함
 const DETAIL_SELECT_BASE = (optional) => `
-  id, name, brand, barcode, image_url,
+  id, name, brand, barcode, image_url, storage_image_path,
   is_mfds_official_source, source_url, source_food_code,
   flavor_code,
   net_content_amount, net_content_unit,
@@ -420,7 +434,7 @@ const DETAIL_SELECT_BASE = (optional) => `
   ${SCORE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
-    nutrients ( code, name_ko, name_en, default_unit, group_name, display_order )
+    nutrients ( code, name_ko, name_en, default_unit, group_name, display_order, benefits_text, cautions_text )
   )${optional ? ',' : ''}
   ${optional ? ALIAS_JOIN.trim().replace(/,$/, '') : ''}
 `;
@@ -444,6 +458,95 @@ function isOptionalJoinError(error) {
 function isNoRowsError(error) {
   if (!error) return false;
   return error.code === 'PGRST116' || (error.message ?? '').toLowerCase().includes('no rows');
+}
+
+function mergeProducts(primary, secondary, limit = 50) {
+  const seen = new Set();
+  const merged = [];
+  for (const product of [...(primary ?? []), ...(secondary ?? [])]) {
+    const key = String(product?.id ?? '');
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(product);
+    if (merged.length >= limit) break;
+  }
+  return merged;
+}
+
+async function fetchProductsByIds(ids) {
+  const uniqueIds = [...new Set((ids ?? []).filter((id) => id != null))];
+  if (uniqueIds.length === 0) return [];
+
+  if (optionalJoinsAvailable) {
+    const { data, error } = await supabase
+      .from('foods')
+      .select(LIST_SELECT_BASE(true))
+      .eq('is_active', true)
+      .eq('food_type_categories.is_active', true)
+      .in('id', uniqueIds);
+
+    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
+    if (!isOptionalJoinError(error)) throw error;
+    optionalJoinsAvailable = false;
+  }
+
+  const { data, error } = await supabase
+    .from('foods')
+    .select(LIST_SELECT_BASE(false))
+    .eq('is_active', true)
+    .eq('food_type_categories.is_active', true)
+    .in('id', uniqueIds);
+
+  if (error) throw error;
+  return onlyActiveCategoryRows(data).map(transformProduct);
+}
+
+async function searchAliasProductIds(query) {
+  const normalized = normalizeSearchAlias(query);
+  if (!normalized) return [];
+  const { data, error } = await supabase
+    .from('food_aliases')
+    .select('food_id')
+    .ilike('normalized_alias', `%${normalized}%`)
+    .limit(50);
+
+  if (error) {
+    if (isOptionalJoinError(error)) {
+      console.warn('[productApi] food_aliases 검색 불가, 기본 검색만 사용');
+      return [];
+    }
+    throw error;
+  }
+  return [...new Set((data ?? []).map((row) => row.food_id).filter((id) => id != null))];
+}
+
+async function searchProductsByFilter(orFilter) {
+  if (optionalJoinsAvailable) {
+    const { data, error } = await supabase
+      .from('foods')
+      .select(LIST_SELECT_BASE(true))
+      .eq('is_active', true)
+      .eq('food_type_categories.is_active', true)
+      .or(orFilter)
+      .order('updated_at', { ascending: false })
+      .limit(50);
+
+    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
+    if (!isOptionalJoinError(error)) throw error;
+    optionalJoinsAvailable = false;
+  }
+
+  const { data, error } = await supabase
+    .from('foods')
+    .select(LIST_SELECT_BASE(false))
+    .eq('is_active', true)
+    .eq('food_type_categories.is_active', true)
+    .or(orFilter)
+    .order('updated_at', { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+  return onlyActiveCategoryRows(data).map(transformProduct);
 }
 
 // ── 제품 목록 전체 조회
@@ -508,30 +611,8 @@ export async function searchProductsRemote(query) {
   const escaped = query.replaceAll('%', '\\%').replaceAll('_', '\\_');
   const orFilter = `name.ilike.%${escaped}%,brand.ilike.%${escaped}%,food_type_category_code.ilike.%${escaped}%,barcode.ilike.%${escaped}%,source_food_code.ilike.%${escaped}%`;
 
-  if (optionalJoinsAvailable) {
-    const { data, error } = await supabase
-      .from('foods')
-      .select(LIST_SELECT_BASE(true))
-      .eq('is_active', true)
-      .eq('food_type_categories.is_active', true)
-      .or(orFilter)
-      .order('updated_at', { ascending: false })
-      .limit(50);
-
-    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
-    if (!isOptionalJoinError(error)) throw error;
-    optionalJoinsAvailable = false;
-  }
-
-  const { data, error } = await supabase
-    .from('foods')
-    .select(LIST_SELECT_BASE(false))
-    .eq('is_active', true)
-    .eq('food_type_categories.is_active', true)
-    .or(orFilter)
-    .order('updated_at', { ascending: false })
-    .limit(50);
-
-  if (error) throw error;
-  return onlyActiveCategoryRows(data).map(transformProduct);
+  const direct = await searchProductsByFilter(orFilter);
+  const aliasIds = await searchAliasProductIds(query);
+  const aliasMatches = await fetchProductsByIds(aliasIds);
+  return mergeProducts(direct, aliasMatches);
 }

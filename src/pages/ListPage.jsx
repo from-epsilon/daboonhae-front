@@ -151,7 +151,7 @@ export default function ListPage() {
       proteinSourceLabelOf,
       sweetenerLabelOf,
     });
-    // 정렬 기준은 카테고리(서브 라벨)별로 달라짐 — 단백질 음료는 단백질/EAA/BCAA 전용
+    // 정렬 기준은 카테고리(서브 라벨)별로 달라짐 — 단백질 음료는 단백질/EAA/류신/BCAA 전용
     result = applySort(result, activeSub, sortKey);
     return result;
   }, [baseProducts, filterSpecs, activeSub, filterState, sortKey, proteinSourceLabelOf, sweetenerLabelOf]);

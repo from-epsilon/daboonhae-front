@@ -1,5 +1,5 @@
 // 리스트 정렬 — 카테고리별 정렬 옵션·기준 통합 (데스크톱/모바일 공용)
-// - 단백질 음료는 단백질/필수아미노산(EAA)/BCAA × 총량·칼로리대비·가격대비 전용 9종
+// - 단백질 음료는 단백질/필수아미노산(EAA)/류신/BCAA × 총량·칼로리대비·가격대비 전용
 // - 그 외 카테고리는 공통 기본 옵션(당류/탄수화물 등)
 // - 정렬값은 카드 메트릭(computeMetricValues)과 동일한 기준(칼로리/가격 대비)으로 산출
 import { cheapestUnitPrice } from './categoryCardMetrics.js';
@@ -34,9 +34,10 @@ export const PROTEIN_SORT_MODES = [
   { key: 'price', label: '1,000원 기준' },
 ];
 export const PROTEIN_SORT_BASES = [
-  { key: 'protein', label: '단백질' },
-  { key: 'eaa', label: '필수아미노산' },
-  { key: 'bcaa', label: 'BCAA' },
+  { key: 'protein', label: '단백질', unit: 'g' },
+  { key: 'eaa', label: '필수아미노산', unit: 'mg' },
+  { key: 'leucine', label: '류신', unit: 'mg' },
+  { key: 'bcaa', label: 'BCAA', unit: 'mg' },
 ];
 
 export function isProteinDrinkCategory(category) {
@@ -66,7 +67,7 @@ export function getProteinSortParts(sortKey) {
   return { modeLabel: m.label, baseLabel: b.label };
 }
 
-// 단백질 음료 전용 정렬 옵션 — 추천순 + (기준 × 성분) 9종
+// 단백질 음료 전용 정렬 옵션 — 추천순 + (기준 × 성분)
 // 라벨 형식: "{기준} {성분} 높은 순" (예: 100kcal당 BCAA 높은 순)
 export const PROTEIN_DRINK_SORT_OPTIONS = [
   { key: PROTEIN_SORT_RECOMMEND, label: '추천순', short: '추천순' },
@@ -112,12 +113,13 @@ export function getSortShortLabel(category, sortKey) {
 function proteinDrinkValue(food, sortKey) {
   const n = food?.nutrition ?? {};
   const sep = sortKey.lastIndexOf('_');
-  const base = sortKey.slice(0, sep); // protein | eaa | bcaa
+  const base = sortKey.slice(0, sep); // protein | eaa | leucine | bcaa
   const mode = sortKey.slice(sep + 1); // total | kcal | price
 
   let total;
   if (base === 'protein') total = n.protein ?? 0;
   else if (base === 'eaa') total = computeEaa(n);
+  else if (base === 'leucine') total = n.leucine ?? 0;
   else if (base === 'bcaa') total = computeBcaa(n);
   else return -Infinity;
 
@@ -159,12 +161,35 @@ function compareProteinRecommend(a, b) {
   return String(a?.name ?? '').localeCompare(String(b?.name ?? ''), 'ko');
 }
 
+function numericValue(food, key) {
+  const value = food?.nutrition?.[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function compareAscMissingLast(a, b, key) {
+  const av = numericValue(a, key);
+  const bv = numericValue(b, key);
+  if (av == null && bv == null) return 0;
+  if (av == null) return 1;
+  if (bv == null) return -1;
+  return av - bv;
+}
+
+function compareDescMissingLast(a, b, key) {
+  const av = numericValue(a, key);
+  const bv = numericValue(b, key);
+  if (av == null && bv == null) return 0;
+  if (av == null) return 1;
+  if (bv == null) return -1;
+  return bv - av;
+}
+
 // 정렬 적용 — 카테고리별 기준 분기 (raw 제품 배열 입력)
 export function applySort(products, category, sortKey) {
   const key = resolveSortKey(category, sortKey);
   const arr = [...products];
 
-  // 단백질 음료 — 추천순은 단백질 음료 전용 종합 점수, 그 외는 단백질/EAA/BCAA 기준 내림차순
+  // 단백질 음료 — 추천순은 단백질 음료 전용 종합 점수, 그 외는 단백질/EAA/류신/BCAA 기준 내림차순
   if (category === PROTEIN_DRINK_CATEGORY) {
     if (key === PROTEIN_SORT_RECOMMEND) return arr.sort(compareProteinRecommend);
     return arr.sort((a, b) => proteinDrinkValue(b, key) - proteinDrinkValue(a, key));
@@ -172,13 +197,13 @@ export function applySort(products, category, sortKey) {
 
   switch (key) {
     case 'calories_asc':
-      return arr.sort((a, b) => (a.nutrition.calories ?? 0) - (b.nutrition.calories ?? 0));
+      return arr.sort((a, b) => compareAscMissingLast(a, b, 'calories'));
     case 'protein_desc':
-      return arr.sort((a, b) => (b.nutrition.protein ?? 0) - (a.nutrition.protein ?? 0));
+      return arr.sort((a, b) => compareDescMissingLast(a, b, 'protein'));
     case 'carbs_asc':
-      return arr.sort((a, b) => (a.nutrition.carbs ?? 0) - (b.nutrition.carbs ?? 0));
+      return arr.sort((a, b) => compareAscMissingLast(a, b, 'carbs'));
     case 'sugar_asc':
-      return arr.sort((a, b) => (a.nutrition.sugar ?? 0) - (b.nutrition.sugar ?? 0));
+      return arr.sort((a, b) => compareAscMissingLast(a, b, 'sugar'));
     default:
       return arr;
   }

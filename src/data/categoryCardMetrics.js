@@ -15,6 +15,7 @@ const PROTEIN_COMMON = [
 const PROTEIN_DRINK_PRIMARY = [
   { key: 'protein', label: '단백질', unit: 'g', perKcal: true, perPrice: true, unitInRatio: true },
   { key: 'eaa', label: '필수아미노산', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
+  { key: 'leucine', label: '류신', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
   { key: 'bcaa', label: 'BCAA', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
 ];
 
@@ -127,7 +128,7 @@ export function getCategoryCardConfig(tabId, subLabel) {
 }
 
 // 상세페이지 핵심 지표 표용 — 제품의 식품유형(코드)별 1순위 지표 배열
-// - 리스트 카드와 동일한 정의를 재사용(단백질 음료=단백질/EAA/BCAA)
+// - 리스트 카드와 동일한 정의를 재사용(단백질 음료=단백질/EAA/류신/BCAA)
 // - 1순위 지표가 없는 카테고리는 null → 상세페이지에서 표 미노출
 export function getPrimaryMetricsByCode(categoryCode) {
   const ft = getFoodTypeByCode(categoryCode);

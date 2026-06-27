@@ -7,7 +7,7 @@ import { Badge } from '../../ds/Badge.jsx';
 import { IconAlert, IconCheck } from '../../ds/Icons.jsx';
 import { ChevronDown } from 'lucide-react';
 import { buildIngredientSegments } from '../../../utils/ingredientHighlight.js';
-import { useProteinResolver, proteinGradeMeta, cleanProteinLabel } from '../../../data/proteinQuality.js';
+import { useResolvedProteinSources, proteinGradeMeta } from '../../../data/proteinQuality.js';
 
 // 원재료명 구간 마킹 색상 클래스 (type → 클래스)
 const MARK_CLASS = {
@@ -100,25 +100,18 @@ function ChipRow({ label, items, emptyLabel = '없음', variant = 'outline' }) {
 
 // 단백질 원료 — 원문을 정규 원료로 해석해 약자·품질 등급 배지 표시
 function ProteinChipRow({ items, emptyLabel = '없음' }) {
-  // 라벨 정리(분말/숫자 suffix 제거) 후 중복 제거
-  const labels = [...new Set(
-    (Array.isArray(items) ? items : [])
-      .map((it) => cleanProteinLabel(typeof it === 'string' ? it : it.label))
-      .filter(Boolean),
-  )];
-  const resolve = useProteinResolver(labels);
+  const sources = useResolvedProteinSources(items);
   return (
     <div className="m-detail-ingr-row">
       <span className="m-detail-ingr-label">단백질 원료</span>
       <div className="m-detail-ingr-values">
-        {labels.length > 0 ? (
-          labels.map((label) => {
-            const ing = resolve(label);
-            const grade = ing ? proteinGradeMeta(ing.qualityGrade) : null;
+        {sources.length > 0 ? (
+          sources.map((source) => {
+            const grade = proteinGradeMeta(source.qualityGrade);
+            const name = source.abbreviation ? `${source.nameKo} (${source.abbreviation})` : source.nameKo;
             return (
-              <span key={label} className="m-detail-protein-chip">
-                <span className="m-detail-protein-name">{label}</span>
-                {ing?.abbreviation && <span className="m-detail-protein-abbr">{ing.abbreviation}</span>}
+              <span key={source.code} className="m-detail-protein-chip">
+                <span className="m-detail-protein-name">{name}</span>
                 {grade && <span className={`m-detail-protein-grade ${grade.cls}`}>{grade.label}</span>}
               </span>
             );
@@ -161,12 +154,25 @@ function SweetenerNotice({ sweeteners }) {
   );
 }
 
-export function IngredientList({ ingredients, rawText, annotations, embedded = false }) {
+export function IngredientList({ ingredients, rawText, annotations, embedded = false, rawOnly = false, title = '원료 · 성분' }) {
   const ing = ingredients ?? {};
+  const className = `${embedded ? 'm-detail-embedded-section ' : 'm-detail-card '}m-detail-ingr`;
+
+  if (rawOnly) {
+    return (
+      <section className={className}>
+        <header className="m-detail-card-head">
+          <h2 className="m-detail-card-title">{title}</h2>
+        </header>
+        <RawTextToggle rawText={rawText} annotations={annotations} />
+      </section>
+    );
+  }
+
   return (
-    <section className={`${embedded ? 'm-detail-embedded-section ' : 'm-detail-card '}m-detail-ingr`}>
+    <section className={className}>
       <header className="m-detail-card-head">
-        <h2 className="m-detail-card-title">원료 · 성분</h2>
+        <h2 className="m-detail-card-title">{title}</h2>
       </header>
       <div className="m-detail-ingr-list">
         <ProteinChipRow items={ing.proteinSources} />

@@ -2,6 +2,7 @@
 // 로고가 없는 판매처는 텍스트로 폴백
 const VENDOR_LOGOS = {
   '쿠팡': { src: '/icons/vendor-coupang.png', alt: '쿠팡' },
+  '대상웰라이프': { src: '/icons/vendor-daesang.png', alt: '대상웰라이프' },
 };
 
 export function getVendorLogo(vendorName) {

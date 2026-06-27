@@ -98,10 +98,12 @@ function servingPriceOf(offer, servingsPerUnit) {
   return unitPrice / servings;
 }
 
-function formatBasisPrice(price, pricePer) {
-  if (typeof price !== 'number') return '가격 문의';
-  const label = pricePer === 'serving' ? '1회분당' : '개당';
-  return `${label} ${Math.round(price).toLocaleString()}원`;
+function basisPriceParts(price, pricePer) {
+  if (typeof price !== 'number') return null;
+  return {
+    label: pricePer === 'serving' ? '1회분당' : '개당',
+    value: `${Math.round(price).toLocaleString()}원`,
+  };
 }
 
 function getRedirectUrl(offer, delaySeconds = 1.5) {
@@ -182,6 +184,7 @@ export default function PurchaseOffers({
       <div className="purchase-offers-list">
         {visible.map((offer, i) => {
           const basisPrice = basisPriceOf(offer);
+          const basisParts = basisPriceParts(basisPrice, pricePer);
           const unitPrice = unitPriceOf(offer);
           const isBest = offer === bestUnitOffer;
           return (
@@ -218,9 +221,16 @@ export default function PurchaseOffers({
                 </span>
               </span>
               <span className="purchase-offer-price-block">
-                <span className="purchase-offer-price">
-                  {isUnitLike ? formatBasisPrice(basisPrice, pricePer) : formatPurchasePrice(offer.price)}
-                </span>
+                {isUnitLike && basisParts ? (
+                  <span className="purchase-offer-price">
+                    <span className="purchase-offer-price-label">{basisParts.label}</span>
+                    <span className="purchase-offer-price-value">{basisParts.value}</span>
+                  </span>
+                ) : (
+                  <span className="purchase-offer-price">
+                    <span className="purchase-offer-price-value">{formatPurchasePrice(offer.price)}</span>
+                  </span>
+                )}
               </span>
             </a>
           );

@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { Badge } from '../../ds/Badge.jsx';
 import { IconCheck, IconAlert, IconInfo } from '../../ds/Icons.jsx';
 import { getAdapted } from '../../../data/adapters.js';
 import { EAA_KEYS, BCAA_KEYS } from '../../../data/aminoAcids.js';
 import { cheapestUnitPrice } from '../../../data/categoryCardMetrics.js';
-import { useProteinResolver, proteinGradeMeta, cleanProteinLabel } from '../../../data/proteinQuality.js';
+import { useResolvedProteinSources, useResolvedSweeteners, proteinGradeMeta } from '../../../data/proteinQuality.js';
+import { IngredientList } from './IngredientList.jsx';
 
 // 감미료별 특성 설명
 const SWEETENER_INFO = {
@@ -21,6 +21,7 @@ const SWEETENER_INFO = {
 const RANK_BASES = [
   { key: 'protein', label: '단백질', unit: 'g' },
   { key: 'eaa', label: 'EAA', unit: 'mg' },
+  { key: 'leucine', label: '류신', unit: 'mg' },
   { key: 'bcaa', label: 'BCAA', unit: 'mg' },
 ];
 
@@ -360,6 +361,71 @@ function bcaaAmountCriterion(bcaa) {
   };
 }
 
+function leucineAmountCriterion(leucine) {
+  if (!(leucine > 0)) {
+    return {
+      tone: 'neutral',
+      label: '정보 없음',
+      summary: '류신 개별 수치가 없어요.',
+      basis: '류신 개별 수치 기준',
+    };
+  }
+  if (leucine < 700) {
+    return {
+      tone: 'poor',
+      label: '매우 낮음',
+      summary: '류신 함량이 매우 낮아 단백질 보충용으로 보기엔 부족한 편이에요.',
+      basis: '류신 700mg 미만 / 700~1,499 / 1,500~1,999 / 2,000~2,399 / 2,400~2,999 / 3,000~3,499 / 3,500mg 이상 기준',
+    };
+  }
+  if (leucine < 1500) {
+    return {
+      tone: 'light',
+      label: '낮은 편',
+      summary: '일반적인 단백질 보충 기준으로도 류신이 낮은 편이에요.',
+      basis: '류신 700mg 미만 / 700~1,499 / 1,500~1,999 / 2,000~2,399 / 2,400~2,999 / 3,000~3,499 / 3,500mg 이상 기준',
+    };
+  }
+  if (leucine < 2000) {
+    return {
+      tone: 'near',
+      label: '기본선 근접',
+      summary: '일반 보충 기준으로 보기 좋은 2g에 가까워지는 함량이에요.',
+      basis: '류신 700mg 미만 / 700~1,499 / 1,500~1,999 / 2,000~2,399 / 2,400~2,999 / 3,000~3,499 / 3,500mg 이상 기준',
+    };
+  }
+  if (leucine < 2400) {
+    return {
+      tone: 'solid',
+      label: '충분',
+      summary: '일반적인 단백질 보충 기준으로는 충분한 류신 함량이에요.',
+      basis: '류신 700mg 미만 / 700~1,499 / 1,500~1,999 / 2,000~2,399 / 2,400~2,999 / 3,000~3,499 / 3,500mg 이상 기준',
+    };
+  }
+  if (leucine < 3000) {
+    return {
+      tone: 'strong',
+      label: '넉넉함',
+      summary: '일반적인 단백질 보충 기준을 넘는 넉넉한 류신 함량이에요.',
+      basis: '류신 700mg 미만 / 700~1,499 / 1,500~1,999 / 2,000~2,399 / 2,400~2,999 / 3,000~3,499 / 3,500mg 이상 기준',
+    };
+  }
+  if (leucine < 3500) {
+    return {
+      tone: 'high',
+      label: '높은 편',
+      summary: '운동 후 기준의 상단에 가까워지는 높은 류신 함량이에요.',
+      basis: '류신 700mg 미만 / 700~1,499 / 1,500~1,999 / 2,000~2,399 / 2,400~2,999 / 3,000~3,499 / 3,500mg 이상 기준',
+    };
+  }
+  return {
+    tone: 'very-high',
+    label: '매우 높음',
+    summary: '운동 후 기준에서도 상단에 가까운 매우 높은 류신 함량이에요.',
+    basis: '류신 700mg 미만 / 700~1,499 / 1,500~1,999 / 2,000~2,399 / 2,400~2,999 / 3,000~3,499 / 3,500mg 이상 기준',
+  };
+}
+
 function formatPercent(value) {
   if (!Number.isFinite(value)) return '0%';
   return `${round1(value).toLocaleString()}%`;
@@ -427,7 +493,6 @@ function proteinCompositionData(nutrition) {
       key: 'bcaa-orphan',
       label: 'BCAA',
       displayValue: `${formatG(bcaaG)}`,
-      subValue: '필수아미노산 총량이 없어 구성 비율은 계산하지 않아요.',
       color: NUTRIENT_COLORS.protein.bcaa,
       child: true,
     } : {
@@ -610,7 +675,7 @@ function buildCategoryRanks(current, products, categoryCode, category) {
 
 function categoryRankTier(avgTopPercent) {
   if (!Number.isFinite(avgTopPercent)) return null;
-  const title = `단백질, EAA, BCAA 평균 상위 ${formatPercent(avgTopPercent)}`;
+  const title = `단백질, EAA, 류신, BCAA 평균 상위 ${formatPercent(avgTopPercent)}`;
   if (avgTopPercent <= 15) {
     return {
       label: '최상위권',
@@ -663,17 +728,12 @@ function sourceInfo(note) {
   return text;
 }
 
-function proteinCardClass(isPrimary) {
-  return `d-analysis-ingr-card is-neutral d-analysis-protein-card${isPrimary ? ' is-primary-source' : ''}`;
-}
-
-function ProteinNoteCard({ note, isPrimary = false }) {
+function ProteinNoteCard({ note }) {
+  const name = note.abbreviation ? `${note.name} (${note.abbreviation})` : note.name;
   return (
-    <div className={proteinCardClass(isPrimary)}>
-      {isPrimary && <span className="d-analysis-source-main">주원료</span>}
+    <div className="d-analysis-ingr-card is-neutral d-analysis-protein-card">
       <div className="d-analysis-ingr-head d-analysis-protein-head">
-        <span className="d-analysis-ingr-name">{note.name}</span>
-        {note.abbreviation && <span className="d-analysis-ingr-abbr">{note.abbreviation}</span>}
+        <span className="d-analysis-ingr-name">{name}</span>
         {note.grade && <span className={`d-analysis-ingr-grade ${note.grade.cls}`}>{note.grade.label}</span>}
       </div>
       <p className="d-analysis-ingr-text">{sourceInfo(note)}</p>
@@ -745,15 +805,14 @@ function bcaaJudgment(nutrition) {
 
   if (nutrition?.bcaa > 0) {
     const tier = bcaaAmountCriterion(nutrition.bcaa);
-    const leucineText = nutrition?.leucine > 0 ? ` 류신 ${formatMg(nutrition.leucine)} 포함.` : '';
     return {
       value: formatMg(nutrition.bcaa),
       label: tier.label,
       tone: tier.tone,
-      text: `${tier.summary}${leucineText}`,
+      text: tier.summary,
       help: bcaaComplete
-        ? `${tier.basis}. 현재 단백질 음료 전체 분포와 단백질 대비 BCAA 비율 스케일을 참고했습니다. BCAA는 류신, 이소류신, 발린 3종입니다. ${breakdown}.`
-        : `${tier.basis}. 현재 단백질 음료 전체 분포와 단백질 대비 BCAA 비율 스케일을 참고했습니다. BCAA 총량은 있지만 3종 중 ${bcaaCount}종만 개별 수치가 있어요.${ratio != null ? ` 단백질 대비 약 ${ratio}%입니다.` : ''}`,
+        ? `${tier.basis}. 현재 단백질 음료 전체 분포와 단백질 대비 BCAA 비율 스케일을 참고했습니다. BCAA는 류신, 이소류신, 발린 3종을 묶은 보조 지표입니다. ${breakdown}.`
+        : `${tier.basis}. 현재 단백질 음료 전체 분포와 단백질 대비 BCAA 비율 스케일을 참고했습니다. BCAA는 류신, 이소류신, 발린 3종을 묶은 보조 지표이며, 총량은 있지만 3종 중 ${bcaaCount}종만 개별 수치가 있어요.${ratio != null ? ` 단백질 대비 약 ${ratio}%입니다.` : ''}`,
     };
   }
 
@@ -767,28 +826,34 @@ function bcaaJudgment(nutrition) {
   };
 }
 
-function primarySourceJudgment(primaryNote) {
-  if (!primaryNote) {
+function leucineJudgment(nutrition) {
+  const leucine = nutrition?.leucine;
+  const tier = leucineAmountCriterion(leucine);
+  const help = `${tier.basis}. ISSN의 류신 700~3000mg 범위와 휴식 시 약 2g, 운동 후 최대 3.5g 해석, 현재 등록 제품 분포를 함께 참고했습니다. 류신은 단백질 총량과 EAA 구성도 함께 봐야 합니다.`;
+
+  if (!(leucine > 0)) {
     return {
       value: '정보 없음',
-      label: '원료 미등록',
-      tone: 'neutral',
-      text: '등록된 단백질 원료 정보가 아직 없어요.',
+      label: tier.label,
+      tone: tier.tone,
+      text: tier.summary,
+      help,
     };
   }
+
   return {
-    value: primaryNote.abbreviation || primaryNote.name,
-    label: '주원료',
-    tone: 'high',
-    text: `${primaryNote.name} 중심 제품이에요.`,
-    help: sourceInfo(primaryNote),
+    value: formatMg(leucine),
+    label: tier.label,
+    tone: tier.tone,
+    text: tier.summary,
+    help,
   };
 }
 
-function KeyJudgmentSection({ nutrition, proteinVerdict, primaryNote }) {
+function KeyJudgmentSection({ nutrition, proteinVerdict }) {
   const eaa = eaaJudgment(nutrition);
+  const leucine = leucineJudgment(nutrition);
   const bcaa = bcaaJudgment(nutrition);
-  const source = primarySourceJudgment(primaryNote);
 
   return (
     <div className="d-analysis-judgment-grid" aria-label="핵심 판단">
@@ -809,20 +874,20 @@ function KeyJudgmentSection({ nutrition, proteinVerdict, primaryNote }) {
         help={eaa.help}
       />
       <JudgmentCard
+        title="류신"
+        value={leucine.value}
+        label={leucine.label}
+        tone={leucine.tone}
+        text={leucine.text}
+        help={leucine.help}
+      />
+      <JudgmentCard
         title="BCAA"
         value={bcaa.value}
         label={bcaa.label}
         tone={bcaa.tone}
         text={bcaa.text}
         help={bcaa.help}
-      />
-      <JudgmentCard
-        title="단백질 원료"
-        value={source.value}
-        label={source.label}
-        tone={source.tone}
-        text={source.text}
-        help={source.help}
       />
     </div>
   );
@@ -889,7 +954,7 @@ function CategoryRankSection({ ranks }) {
         ))}
       </div>
       <p className="d-analysis-rank-note">
-        등급은 단백질, EAA, BCAA의 평균 상위 백분위로 표시합니다. 1,000원당 값은 등록된 구매링크의 개당 최저가로 계산합니다.
+        등급은 단백질, EAA, 류신, BCAA의 평균 상위 백분위로 표시합니다. 1,000원당 값은 등록된 구매링크의 개당 최저가로 계산합니다.
       </p>
     </AnalysisSection>
   );
@@ -900,8 +965,8 @@ function ProteinSourceSection({ proteinNotes }) {
     <AnalysisSection title="단백질 원료" icon={<IconInfo size={16} />}>
       {proteinNotes.length > 0 ? (
         <div className="d-analysis-ingredients">
-          {proteinNotes.map((p, index) => (
-            <ProteinNoteCard key={p.name} note={p} isPrimary={index === 0} />
+          {proteinNotes.map((p) => (
+            <ProteinNoteCard key={p.name} note={p} />
           ))}
         </div>
       ) : (
@@ -971,9 +1036,21 @@ function OtherNutrientsSection({ foodNutrients }) {
   );
 }
 
-function ProteinDrinkReport({ product, products, nutrition, category, categoryCode, proteinNotes, foodNutrients }) {
+function IngredientRawSection({ ingredients, rawText, annotations }) {
+  return (
+    <IngredientList
+      ingredients={ingredients}
+      rawText={rawText}
+      annotations={annotations}
+      embedded
+      rawOnly
+      title="원재료명"
+    />
+  );
+}
+
+function ProteinDrinkReport({ product, products, nutrition, ingredients, category, categoryCode, proteinNotes, foodNutrients, rawText, annotations }) {
   const proteinVerdict = proteinCriterion(nutrition?.protein ?? 0);
-  const primaryNote = proteinNotes[0] ?? null;
   const ranks = useMemo(
     () => buildCategoryRanks(product, products, categoryCode, category),
     [product, products, categoryCode, category],
@@ -989,11 +1066,11 @@ function ProteinDrinkReport({ product, products, nutrition, category, categoryCo
       <KeyJudgmentSection
         nutrition={nutrition}
         proteinVerdict={proteinVerdict}
-        primaryNote={primaryNote}
       />
       <CategoryRankSection ranks={ranks} />
       <ProteinSourceSection proteinNotes={proteinNotes} />
       <OtherNutrientsSection foodNutrients={foodNutrients} />
+      <IngredientRawSection ingredients={ingredients} rawText={rawText} annotations={annotations} />
     </section>
   );
 }
@@ -1692,12 +1769,9 @@ function ShakeSweetenerSection({ sweetenerNotes }) {
       {sweetenerNotes.length > 0 ? (
         <div className="d-analysis-ingredients">
           {sweetenerNotes.map((note) => (
-            <div key={note.name} className={`d-analysis-ingr-card is-${note.verdict}`}>
+            <div key={note.name} className="d-analysis-ingr-card is-neutral">
               <div className="d-analysis-ingr-head">
                 <span className="d-analysis-ingr-name">{note.name}</span>
-                <Badge variant={note.verdict === 'good' ? 'softGreen' : note.verdict === 'caution' ? 'softOrange' : 'info'}>
-                  {note.verdict === 'good' ? '양호' : note.verdict === 'caution' ? '주의' : '보통'}
-                </Badge>
               </div>
               <p className="d-analysis-ingr-text">{note.text}</p>
             </div>
@@ -1710,7 +1784,7 @@ function ShakeSweetenerSection({ sweetenerNotes }) {
   );
 }
 
-function ShakeReport({ product, products, nutrition, category, categoryCode, proteinNotes, sweetenerNotes, foodNutrients, additionalContent, servingSize, servingUnit }) {
+function ShakeReport({ product, products, nutrition, ingredients, category, categoryCode, proteinNotes, sweetenerNotes, foodNutrients, additionalContent, servingSize, servingUnit, rawText, annotations }) {
   const preparation = getShakePreparation(additionalContent);
   const proteinAmount = nutrientValueIfShown(nutrition, foodNutrients, 'protein', /protein_g|단백질/i);
   const proteinVerdict = proteinCriterion(proteinAmount);
@@ -1744,11 +1818,12 @@ function ShakeReport({ product, products, nutrition, category, categoryCode, pro
       <ProteinSourceSection proteinNotes={proteinNotes} />
       <ShakeSweetenerSection sweetenerNotes={sweetenerNotes} />
       <OtherNutrientsSection foodNutrients={foodNutrients} />
+      <IngredientRawSection ingredients={ingredients} rawText={rawText} annotations={annotations} />
     </section>
   );
 }
 
-export function AnalysisReport({ product, products, nutrition, ingredients, category, categoryCode, foodNutrients, additionalContent, servingSize, servingUnit }) {
+export function AnalysisReport({ product, products, nutrition, ingredients, category, categoryCode, foodNutrients, additionalContent, servingSize, servingUnit, rawText, annotations }) {
   const n = nutrition ?? {};
   const ing = ingredients ?? {};
   const isProteinDrink = categoryCode === 'protein_drink' || category === '단백질 음료';
@@ -1759,28 +1834,24 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
     [n, ing],
   );
 
+  const resolvedProteinSources = useResolvedProteinSources(ing.proteinSources ?? []);
+  const resolvedSweeteners = useResolvedSweeteners(ing.sweeteners ?? []);
   const sweetenerNotes = useMemo(() => {
-    if (!ing.sweeteners?.length) return [];
-    return ing.sweeteners.map((s) => ({
-      name: s,
-      ...(SWEETENER_INFO[s] ?? { verdict: 'neutral', text: '추후 정보가 추가될 예정입니다.' }),
+    return resolvedSweeteners.map((sweetener) => ({
+      name: sweetener.nameKo,
+      type: sweetener.sweetenerType,
+      ...(SWEETENER_INFO[sweetener.nameKo] ?? { verdict: 'neutral', text: '추후 정보가 추가될 예정입니다.' }),
     }));
-  }, [ing.sweeteners]);
+  }, [resolvedSweeteners]);
 
-  const proteinLabels = useMemo(
-    () => [...new Set((ing.proteinSources ?? []).map(cleanProteinLabel).filter(Boolean))],
-    [ing.proteinSources],
-  );
-  const resolveProtein = useProteinResolver(proteinLabels);
-  const proteinNotes = useMemo(() => proteinLabels.map((name) => {
-    const ingr = resolveProtein(name);
+  const proteinNotes = useMemo(() => resolvedProteinSources.map((ingr) => {
     return {
-      name,
+      name: ingr.nameKo,
       abbreviation: ingr?.abbreviation ?? null,
       grade: ingr ? proteinGradeMeta(ingr.qualityGrade) : null,
       displayDescription: ingr?.displayDescription ?? null,
     };
-  }), [proteinLabels, resolveProtein]);
+  }), [resolvedProteinSources]);
 
   if (isProteinDrink) {
     return (
@@ -1788,10 +1859,13 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
         product={product}
         products={products}
         nutrition={n}
+        ingredients={ing}
         category={category}
         categoryCode={categoryCode}
         proteinNotes={proteinNotes}
         foodNutrients={foodNutrients}
+        rawText={rawText}
+        annotations={annotations}
       />
     );
   }
@@ -1802,6 +1876,7 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
         product={product}
         products={products}
         nutrition={n}
+        ingredients={ing}
         category={category}
         categoryCode={categoryCode}
         proteinNotes={proteinNotes}
@@ -1810,6 +1885,8 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
         additionalContent={additionalContent}
         servingSize={servingSize}
         servingUnit={servingUnit}
+        rawText={rawText}
+        annotations={annotations}
       />
     );
   }
@@ -1842,12 +1919,9 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
         <AnalysisSection title="감미료 분석" icon={<IconAlert size={16} />}>
           <div className="d-analysis-ingredients">
             {sweetenerNotes.map((s) => (
-              <div key={s.name} className={`d-analysis-ingr-card is-${s.verdict}`}>
+              <div key={s.name} className="d-analysis-ingr-card is-neutral">
                 <div className="d-analysis-ingr-head">
                   <span className="d-analysis-ingr-name">{s.name}</span>
-                  <Badge variant={s.verdict === 'good' ? 'softGreen' : s.verdict === 'caution' ? 'softOrange' : 'info'}>
-                    {s.verdict === 'good' ? '양호' : s.verdict === 'caution' ? '주의' : '보통'}
-                  </Badge>
                 </div>
                 <p className="d-analysis-ingr-text">{s.text}</p>
               </div>
@@ -1865,6 +1939,7 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
           </div>
         </AnalysisSection>
       )}
+      <IngredientRawSection ingredients={ing} rawText={rawText} annotations={annotations} />
     </section>
   );
 }

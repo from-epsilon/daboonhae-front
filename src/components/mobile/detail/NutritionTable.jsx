@@ -52,9 +52,9 @@ function getEmphasis(code, amount) {
   return null;
 }
 
-function NutritionRow({ label, display, emphasis }) {
+function NutritionRow({ label, display, emphasis, indent = false }) {
   return (
-    <li className="m-detail-nutri-row">
+    <li className={`m-detail-nutri-row${indent ? ' is-indent' : ''}`}>
       <span className="m-detail-nutri-label">{label}</span>
       <span className="m-detail-nutri-value">
         {emphasis && <Badge variant={emphasis.variant}>{emphasis.label}</Badge>}
@@ -64,7 +64,7 @@ function NutritionRow({ label, display, emphasis }) {
   );
 }
 
-export function NutritionTable({ nutrition, serving, foodNutrients, children }) {
+export function NutritionTable({ nutrition, serving, foodNutrients, categoryCode, children }) {
   // 필수 영양소(탄단지당나트륨 등)와 그 외 미량성분(아미노산 등)을 분리
   // - 미량성분은 기본 접힘 → 핵심 지표가 묻히지 않도록
   const { mainRows, extraRows } = useMemo(() => {
@@ -86,11 +86,24 @@ export function NutritionTable({ nutrition, serving, foodNutrients, children }) 
         label: fn.nutrients?.name_ko || spec.code,
         display: formatValue(fn),
         emphasis: getEmphasis(spec.code, fn.amount),
+        indent: spec.indent,
       });
     }
 
+    if (categoryCode === 'protein_drink') {
+      const leucine = byCode.leucine;
+      if (leucine) {
+        mainRows.push({
+          key: 'leucine',
+          label: leucine.nutrients?.name_ko || '류신',
+          display: formatValue(leucine),
+          emphasis: null,
+        });
+      }
+    }
+
     const extraRows = foodNutrients
-      .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code))
+      .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code) && !(categoryCode === 'protein_drink' && fn.nutrient_code === 'leucine'))
       .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999))
       .map(fn => ({
         key: fn.nutrient_code,
@@ -100,7 +113,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, children }) 
       }));
 
     return { mainRows, extraRows };
-  }, [foodNutrients]);
+  }, [categoryCode, foodNutrients]);
 
   const [showExtras, setShowExtras] = useState(false);
   const hasExtras = extraRows.length > 0;
@@ -120,6 +133,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, children }) 
             label={r.label}
             display={r.display}
             emphasis={r.emphasis}
+            indent={r.indent}
           />
         ))}
         {showExtras && extraRows.map((r) => (

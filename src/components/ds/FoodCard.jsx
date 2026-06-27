@@ -350,13 +350,15 @@ function TieredMeta({ sources, sweeteners, showSweeteners = false }) {
 
 function SelectedProteinMetric({ food, metrics, sortKey }) {
   const { base, mode } = splitProteinSortKey(sortKey);
-  const metric = metrics.find((m) => m.key === base);
+  const baseDef = PROTEIN_SORT_BASES.find((b) => b.key === base);
+  const metric = metrics.find((m) => m.key === base) ?? (
+    baseDef ? { key: baseDef.key, label: baseDef.label, unit: baseDef.unit, perKcal: true, perPrice: true, unitInRatio: true } : null
+  );
   if (!metric) return null;
   const values = computeMetricValues(food, metric);
   if (!values) return null;
 
   const modeDef = PROTEIN_SORT_MODES.find((m) => m.key === mode);
-  const baseDef = PROTEIN_SORT_BASES.find((b) => b.key === base);
   const ratioByLabel = {};
   values.ratios.forEach((r) => { ratioByLabel[r.label] = r; });
   const selected = mode === 'kcal'

@@ -121,10 +121,10 @@ export function getTrustBadges(product) {
 export function toMacros(product) {
   const n = product?.nutrition ?? {};
   return {
-    kcal: n.calories ?? 0,
-    protein: n.protein ?? 0,
-    carbs: n.carbs ?? 0,
-    fat: n.fat ?? 0,
+    kcal: n.calories,
+    protein: n.protein,
+    carbs: n.carbs,
+    fat: n.fat,
   };
 }
 
@@ -155,6 +155,10 @@ export function getAdapted(product) {
   // EAA·BCAA는 리스트 정렬과 동일 기준(aminoAcids)으로 산출
   const eaa = computeEaa(n);
   const bcaa = computeBcaa(n);
+  const derivedAminoNutrition = {
+    ...(eaa > 0 ? { eaa } : {}),
+    ...(bcaa > 0 ? { bcaa } : {}),
+  };
 
   return {
     id: product.id,
@@ -186,7 +190,7 @@ export function getAdapted(product) {
       ...product.ingredients,
       proteinSources: cleanProteinSources(product.ingredients?.proteinSources),
     },
-    nutrition: { ...n, eaa, bcaa },
+    nutrition: { ...n, ...derivedAminoNutrition },
     sweeteners: product.ingredients?.sweeteners ?? [],
   };
 }

@@ -56,14 +56,14 @@ function sumKeys(n, keys) {
 
 // 필수아미노산(EAA) — 9종이 모두 있으면 합산, 하나라도 없으면 집계값(src_eaa_mg) 폴백
 export function computeEaa(n) {
-  if (!n) return 0;
+  if (!n) return undefined;
   if (allPresent(n, EAA_KEYS)) return sumKeys(n, EAA_KEYS);
-  return typeof n.eaa === 'number' && n.eaa > 0 ? n.eaa : 0; // src_eaa_mg
+  return typeof n.eaa === 'number' && n.eaa > 0 ? n.eaa : undefined; // src_eaa_mg
 }
 
 // BCAA(류신·이소류신·발린) — 3종이 모두 있으면 합산, 하나라도 없으면 집계값(src_bcaa_mg) 폴백
 export function computeBcaa(n) {
-  if (!n) return 0;
+  if (!n) return undefined;
   if (allPresent(n, BCAA_KEYS)) return sumKeys(n, BCAA_KEYS);
-  return typeof n.bcaa === 'number' && n.bcaa > 0 ? n.bcaa : 0; // src_bcaa_mg
+  return typeof n.bcaa === 'number' && n.bcaa > 0 ? n.bcaa : undefined; // src_bcaa_mg
 }

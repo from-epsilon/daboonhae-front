@@ -248,6 +248,10 @@
   background: var(--gray-50);
 }
 .m-detail-nutri-row:last-child { border-bottom: none; }
+.m-detail-nutri-row.is-indent .m-detail-nutri-label {
+  padding-left: 12px;
+  color: var(--text-primary);
+}
 
 .m-detail-nutri-label {
   font-size: 13px;
@@ -320,6 +324,19 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.m-detail-report > .m-detail-ingr,
+.m-detail-shake-grid > .m-detail-ingr {
+  margin: 0 16px;
+  border: 1px solid var(--border-tertiary);
+}
+
+.m-detail-report > .m-detail-ingr .m-detail-ingr-raw,
+.m-detail-shake-grid > .m-detail-ingr .m-detail-ingr-raw {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .m-detail-report-card {
@@ -617,15 +634,6 @@
   line-height: 1.3;
 }
 .m-detail-protein-name { color: var(--text-secondary); font-weight: 500; }
-.m-detail-protein-abbr {
-  font-family: var(--font-numeric);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  background: var(--gray-100);
-  padding: 1px 4px;
-  border-radius: 3px;
-}
 .m-detail-protein-grade {
   font-size: 10px;
   font-weight: 700;
@@ -642,7 +650,7 @@
   animation: goldShine 3s linear infinite;
 }
 .m-detail-protein-grade.is-good { background: var(--green-500); }
-.m-detail-protein-grade.is-moderate { background: var(--orange-500); }
+.m-detail-protein-grade.is-moderate { background: #F3E8C2; color: #6B4E16; }
 .m-detail-protein-grade.is-low { background: var(--gray-400); }
 @keyframes goldShine {
   to { background-position: -200% 0; }

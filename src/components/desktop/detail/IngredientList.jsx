@@ -3,7 +3,7 @@ import { Badge } from '../../ds/Badge.jsx';
 import { IconAlert } from '../../ds/Icons.jsx';
 import { HelpCircle, ChevronDown } from 'lucide-react';
 import { buildIngredientSegments } from '../../../utils/ingredientHighlight.js';
-import { useProteinResolver, proteinGradeMeta, cleanProteinLabel } from '../../../data/proteinQuality.js';
+import { useResolvedProteinSources, proteinGradeMeta } from '../../../data/proteinQuality.js';
 
 // 원재료명 구간 마킹 색상 클래스 (type → 클래스)
 const MARK_CLASS = {
@@ -68,25 +68,18 @@ function ItemWithTooltip({ label, info }) {
 
 // 단백질 원료 — 원문을 정규 원료로 해석해 약자(WPC 등)·품질 등급 배지 표시
 function ProteinIngrSection({ items, emptyLabel = '정보 없음' }) {
-  // 라벨 정리(분말/숫자 suffix 제거) 후 중복 제거
-  const labels = [...new Set(
-    (Array.isArray(items) ? items : [])
-      .map((it) => cleanProteinLabel(typeof it === 'string' ? it : it.label))
-      .filter(Boolean),
-  )];
-  const resolve = useProteinResolver(labels);
+  const sources = useResolvedProteinSources(items);
   return (
     <div className="d-detail-ingr-col d-detail-ingr-col--protein">
       <div className="d-detail-ingr-col-label">단백질 원료</div>
       <div className="d-detail-ingr-col-values">
-        {labels.length > 0 ? (
-          labels.map((label) => {
-            const ing = resolve(label);
-            const grade = ing ? proteinGradeMeta(ing.qualityGrade) : null;
+        {sources.length > 0 ? (
+          sources.map((source) => {
+            const grade = proteinGradeMeta(source.qualityGrade);
+            const name = source.abbreviation ? `${source.nameKo} (${source.abbreviation})` : source.nameKo;
             return (
-              <span key={label} className="d-detail-protein-chip" title={ing?.qualityBasis || undefined}>
-                <span className="d-detail-protein-name">{label}</span>
-                {ing?.abbreviation && <span className="d-detail-protein-abbr">{ing.abbreviation}</span>}
+              <span key={source.code} className="d-detail-protein-chip" title={source.qualityBasis || undefined}>
+                <span className="d-detail-protein-name">{name}</span>
                 {grade && <span className={`d-detail-protein-grade ${grade.cls}`}>{grade.label}</span>}
               </span>
             );
@@ -157,8 +150,20 @@ function RawTextToggle({ rawText, annotations }) {
   );
 }
 
-export function IngredientList({ ingredients, rawText, annotations }) {
+export function IngredientList({ ingredients, rawText, annotations, embedded = false, rawOnly = false, title = '원재료' }) {
   const ing = ingredients ?? {};
+  const className = `${embedded ? 'd-detail-embedded-section ' : 'd-detail-card '}d-detail-ingr`;
+
+  if (rawOnly) {
+    return (
+      <section className={className}>
+        <header className="d-detail-card-head">
+          <h2 className="d-detail-card-title">{title}</h2>
+        </header>
+        <RawTextToggle rawText={rawText} annotations={annotations} />
+      </section>
+    );
+  }
 
   const otherItems = [];
   if (ing.lactoseFree === true) {
@@ -168,9 +173,9 @@ export function IngredientList({ ingredients, rawText, annotations }) {
   }
 
   return (
-    <section className="d-detail-card d-detail-ingr">
+    <section className={className}>
       <header className="d-detail-card-head">
-        <h2 className="d-detail-card-title">원재료</h2>
+        <h2 className="d-detail-card-title">{title}</h2>
       </header>
       <div className="d-detail-ingr-grid">
         <ProteinIngrSection items={ing.proteinSources} />

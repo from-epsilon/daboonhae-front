@@ -16,7 +16,6 @@ import { MacroRow } from '../components/ds/MacroRow.jsx';
 import { TieredPrimaryTable } from '../components/ds/FoodCard.jsx';
 import { NutritionTable } from '../components/desktop/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
-import { IngredientList } from '../components/desktop/detail/IngredientList.jsx';
 import { ProductNotice } from '../components/desktop/detail/ProductNotice.jsx';
 import { CategoryGuide } from '../components/desktop/detail/CategoryGuide.jsx';
 import { ReviewSection } from '../components/desktop/detail/ReviewSection.jsx';
@@ -62,7 +61,7 @@ function Breadcrumb({ category, categoryCode, productName, onBack }) {
   );
 }
 
-// 핵심 지표 표 — 리스트 카드와 동일한 단백질/EAA/BCAA × 총량·100kcal당·1,000원당
+// 핵심 지표 표 — 리스트 카드와 동일한 단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당
 function PrimaryMetricsSummary({ food, metrics }) {
   const priceBasis = metrics?.some((metric) => metric.pricePer === 'serving') ? '1회분당' : '개당';
   return (
@@ -191,7 +190,7 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
         </div>
       </div>
 
-      {/* 하단: 영양성분(기본 열·탄·단·지) + 펼침 시 전체 성분·원재료 — 같은 박스 내 */}
+      {/* 하단: 영양성분(기본 열·탄·단·지) + 펼침 시 전체 성분·추가 안내 */}
       <div className="d-detail-overview-nutri">
         <NutritionTable
           nutrition={nutrition}
@@ -199,24 +198,18 @@ function ProductOverview({ product, raw, nutrition, inCart, onToggleCompare, det
           foodNutrients={raw?._raw?.foodNutrients}
           servingSize={raw?._raw?.servingSize}
           servingUnit={raw?._raw?.servingUnit}
+          categoryCode={raw?.categoryCode}
           expanded={detailOpen}
           onToggleExpand={onToggleDetail}
         />
         {detailOpen && (
-          <>
-            <IngredientList
-              ingredients={product.ingredients}
-              rawText={raw?._raw?.ingredientsText}
-              annotations={raw?._raw?.ingredientAnnotations}
-            />
-            <ProductNotice
-              additionalContent={raw?._raw?.additionalContent}
-              cautionNotes={raw?._raw?.cautionNotes}
-              crossContamination={raw?._raw?.crossContaminationText}
-              embedded
-              collapsible={false}
-            />
-          </>
+          <ProductNotice
+            additionalContent={raw?._raw?.additionalContent}
+            cautionNotes={raw?._raw?.cautionNotes}
+            crossContamination={raw?._raw?.crossContaminationText}
+            embedded
+            collapsible={false}
+          />
         )}
       </div>
     </section>
@@ -423,6 +416,8 @@ export default function DetailPage() {
                 additionalContent={raw?._raw?.additionalContent}
                 servingSize={raw?._raw?.servingSize}
                 servingUnit={raw?._raw?.servingUnit}
+                rawText={raw?._raw?.ingredientsText}
+                annotations={raw?._raw?.ingredientAnnotations}
               />
             </div>
             <div id="reviews">

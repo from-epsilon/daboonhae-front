@@ -1,21 +1,23 @@
 // 단백질 원료 품질 — 원문 텍스트를 정규 원료로 해석해 약자·품질등급 표시
 // - 해석은 DB 함수 resolve_protein_ingredient_code()(RPC)를 1순위로 사용 → DB 정규화 규칙과 100% 일치
 // - RPC 실패(권한/인자명 불일치 등) 시 클라이언트 정규화 매칭으로 폴백
-// - 원료 메타(약자·등급)는 protein_ingredients를 1회 로드해 code로 조회
+// - 원료 메타는 protein_ingredients, 품질 등급은 protein_ingredient_quality_assessments에서 읽어 code로 합침
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-// ⚠️ DB 함수 resolve_protein_ingredient_code의 인자명. DB 정의와 달라 RPC가 실패하면
-//    자동으로 클라 정규화 폴백으로 동작함(배지는 그대로 표시). 정확한 인자명으로 바꾸면 RPC 사용.
 const RESOLVE_FN = 'resolve_protein_ingredient_code';
-const RESOLVE_ARG = 'text';
+const RESOLVE_ARG = 'value';
 
 // 원문 정규화 — DB normalize_protein_ingredient_alias() 근사(폴백용)
-// (소문자화 → 한글·영문 외 문자 제거 → '분말' 제거)
 export function normalizeProteinAlias(text) {
   return String(text || '')
+    .trim()
     .toLowerCase()
-    .replace(/[^가-힣a-z]/g, '')
+    .replace(/[\s_\-./()[\]{}%,·・:：]+/g, '')
+    .replace(/[0-9]+/g, '')
+    .replace(/([가-힣])[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹ]+$/g, '$1')
+    .replace(/([가-힣])[ivx]+$/g, '$1')
+    .replace(/단백질/g, '단백')
     .replace(/분말/g, '');
 }
 
@@ -38,6 +40,7 @@ export function normalizeSweetenerAlias(text) {
     .toLowerCase()
     .replace(/알룰로오스/g, '알룰로스')
     .replace(/[^가-힣a-z]/g, '')
+    .replace(/^d(?=[가-힣])/, '')
     .replace(/(시럽|액|분말|결정|추출물)/g, '')
     .replace(/[ivx]+$/g, '');
 }
@@ -48,6 +51,7 @@ export function cleanSweetenerLabel(text) {
   const cleaned = original
     .replace(/알룰로오스/g, '알룰로스')
     .replace(/\s*\d+(\.\d+)?\s*%?\s*$/, '')
+    .replace(/^\s*D[-\s]*/i, '')
     .replace(/^\s*결정\s*/, '')
     .replace(/\s*(시럽|액|분말|추출물)\s*$/, '')
     .replace(/\s*[ivx]+\s*$/i, '')
@@ -67,22 +71,36 @@ export function proteinGradeMeta(grade) {
 }
 
 // ── 원료 사전 (code → 메타, byNorm → 폴백 매칭)
-function buildDictionary(ingredients, aliases) {
+function formatQualityBasis(quality) {
+  if (!quality) return null;
+  const method = quality.method ? String(quality.method).toUpperCase() : '';
+  const evidence = quality.evidence_level || '';
+  const score = quality.score_percent != null ? `${Number(quality.score_percent).toLocaleString()}점` : '';
+  return [method, evidence, score, quality.source_title].filter(Boolean).join(' · ') || null;
+}
+
+function buildDictionary(ingredients, aliases, qualities) {
   const byCode = new Map();
   const byNorm = new Map();
+  const qualityByCode = new Map();
+  for (const q of qualities ?? []) {
+    if (q?.protein_ingredient_code) qualityByCode.set(q.protein_ingredient_code, q);
+  }
   const addNorm = (text, ing) => {
     const k = normalizeProteinAlias(text);
     if (k) byNorm.set(k, ing);
   };
   for (const g of ingredients) {
+    const quality = qualityByCode.get(g.code);
     const ing = {
       code: g.code,
       nameKo: g.name_ko ?? '',
       abbreviation: g.abbreviation || null,
-      ingredientType: g.ingredient_type || null,
-      qualityGrade: g.quality_grade || 'unknown',
-      qualityBasis: g.quality_basis || null,
+      ingredientType: null,
+      qualityGrade: quality?.grade || 'unknown',
+      qualityBasis: formatQualityBasis(quality),
       displayDescription: g.display_description || null,
+      quality,
     };
     byCode.set(g.code, ing);
     addNorm(g.name_ko, ing);
@@ -109,15 +127,25 @@ async function loadDictionary() {
       const [ingRes, aliasRes] = await Promise.all([
         supabase
           .from('protein_ingredients')
-          .select('code, name_ko, abbreviation, ingredient_type, quality_grade, quality_basis, display_description')
+          .select('code, name_ko, abbreviation, display_description')
           .eq('is_active', true),
         supabase
           .from('protein_ingredient_aliases')
           .select('protein_ingredient_code, alias'),
       ]);
-      dictCache = ingRes.error
-        ? EMPTY_DICT
-        : buildDictionary(ingRes.data ?? [], aliasRes.error ? [] : (aliasRes.data ?? []));
+      if (ingRes.error) {
+        dictCache = EMPTY_DICT;
+      } else {
+        const qualityRes = await supabase
+          .from('protein_ingredient_quality_assessments')
+          .select('protein_ingredient_code, grade, method, evidence_level, score_percent, source_title, source_url')
+          .eq('is_primary', true);
+        dictCache = buildDictionary(
+          ingRes.data ?? [],
+          aliasRes.error ? [] : (aliasRes.data ?? []),
+          qualityRes.error ? [] : (qualityRes.data ?? []),
+        );
+      }
     } catch {
       dictCache = EMPTY_DICT;
     }
@@ -186,9 +214,45 @@ export function useProteinResolver(texts) {
   return useCallback((text) => map.get(text) ?? null, [map]);
 }
 
+export function useResolvedProteinSources(texts) {
+  const list = Array.isArray(texts)
+    ? texts.map((text) => (typeof text === 'string' ? text : text?.label ?? text?.text ?? '')).filter(Boolean)
+    : [];
+  const key = list.join('');
+  const [sources, setSources] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const dict = await loadDictionary();
+      const entries = await Promise.all(
+        list.map(async (rawText, index) => ({ rawText, index, ingredient: await resolveOne(dict, rawText) })),
+      );
+      const seen = new Set();
+      const resolved = [];
+      for (const entry of entries) {
+        const ingredient = entry.ingredient;
+        if (!ingredient?.code || seen.has(ingredient.code)) continue;
+        seen.add(ingredient.code);
+        resolved.push({
+          ...ingredient,
+          rawText: entry.rawText,
+          order: entry.index,
+        });
+      }
+      if (alive) setSources(resolved);
+    })();
+    return () => { alive = false; };
+    // key로 내용 변화만 감지 (배열 신원 변화 무시)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  return sources;
+}
+
 // ── 대체당 사전/해석
 const SWEETENER_RESOLVE_FN = 'resolve_alternative_sweetener_code';
-const SWEETENER_RESOLVE_ARG = 'text';
+const SWEETENER_RESOLVE_ARG = 'value';
 
 function buildSweetenerDictionary(sweeteners, aliases) {
   const byCode = new Map();
@@ -298,4 +362,40 @@ export function useSweetenerResolver(texts) {
   }, [key]);
 
   return useCallback((text) => map.get(text) ?? null, [map]);
+}
+
+export function useResolvedSweeteners(texts) {
+  const list = Array.isArray(texts)
+    ? texts.map((text) => (typeof text === 'string' ? text : text?.label ?? text?.text ?? '')).filter(Boolean)
+    : [];
+  const key = list.join('');
+  const [sweeteners, setSweeteners] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const dict = await loadSweetenerDictionary();
+      const entries = await Promise.all(
+        list.map(async (rawText, index) => ({ rawText, index, sweetener: await resolveSweetenerOne(dict, rawText) })),
+      );
+      const seen = new Set();
+      const resolved = [];
+      for (const entry of entries) {
+        const sweetener = entry.sweetener;
+        if (!sweetener?.code || seen.has(sweetener.code)) continue;
+        seen.add(sweetener.code);
+        resolved.push({
+          ...sweetener,
+          rawText: entry.rawText,
+          order: entry.index,
+        });
+      }
+      if (alive) setSweeteners(resolved);
+    })();
+    return () => { alive = false; };
+    // key로 내용 변화만 감지 (배열 신원 변화 무시)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  return sweeteners;
 }
