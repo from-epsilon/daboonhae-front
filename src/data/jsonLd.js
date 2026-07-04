@@ -15,7 +15,7 @@ export function organizationLd() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
-    logo: absUrl('/favicon.svg'), // TODO: 전용 라스터 로고(PNG) 준비되면 교체
+    logo: absUrl('/logo.png'), // 512x512 PNG (구글 Organization 로고는 SVG 미지원)
     description: DEFAULT_DESCRIPTION,
   };
 }

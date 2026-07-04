@@ -10,7 +10,6 @@ import { getPurposeRecommendedProducts } from '../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../data/categoryCardMetrics.js';
 
 import Seo from '../components/global/Seo.jsx';
-import { organizationLd, websiteLd } from '../data/jsonLd.js';
 import { productPath } from '../data/productUrl.js';
 import MainBanner from '../components/desktop/home/MainBanner.jsx';
 import CategoryTabsDesktop from '../components/desktop/home/CategoryTabs.jsx';
@@ -102,7 +101,8 @@ export default function MainPage() {
 
   return (
     <div className="d-home">
-      <Seo canonicalPath="/" jsonLd={[organizationLd(), websiteLd()]} />
+      {/* WebSite·Organization JSON-LD는 사이트 이름 확정용으로 index.html에 정적 배치(단일 출처) */}
+      <Seo canonicalPath="/" />
       <MainBanner
         ctaHref="/list"
         onCtaClick={(e) => { e.preventDefault(); navigate('/list'); }}

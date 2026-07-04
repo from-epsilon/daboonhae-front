@@ -20,6 +20,45 @@
     <meta property="og:image" content="https://www.daboonhae.com/assets/banner/grain-protein.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <!-- 구글 서치콘솔 메타 인증 시 여기에 google-site-verification 추가 -->
+    <!--
+      사이트 이름(Site name) 확정용 정적 신호 — 반드시 최초 HTML에 존재해야 함.
+      구글이 검색결과 상단에 'daboonhae.com' 대신 '다분해'를 쓰게 하는 최강 신호.
+      helmet(JS) 주입은 렌더 큐에 의존하므로 사이트 정체성(WebSite/Organization)만은 여기 정적으로 둔다.
+      값 변경 시 src/config/site.js·src/data/jsonLd.js와 함께 갱신할 것(단일 출처는 site.js).
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://www.daboonhae.com/#website",
+            "name": "다분해",
+            "alternateName": "Daboonhae",
+            "url": "https://www.daboonhae.com/",
+            "inLanguage": "ko-KR",
+            "publisher": { "@id": "https://www.daboonhae.com/#organization" },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://www.daboonhae.com/list?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://www.daboonhae.com/#organization",
+            "name": "다분해",
+            "alternateName": "Daboonhae",
+            "url": "https://www.daboonhae.com/",
+            "logo": "https://www.daboonhae.com/logo.png",
+            "description": "다이어트 식품의 영양성분을 분해하고 제품 간 가격·성분을 비교합니다. 식약처 공시 영양정보 기반."
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
