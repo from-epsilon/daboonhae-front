@@ -242,7 +242,7 @@ function basicInfo(p) {
   const n = p.nutrition ?? {};
   return [
     `${p.volume}당 칼로리 ${n.calories ?? '-'}kcal, 단백질 ${n.protein ?? '-'}g, 탄수화물 ${n.carbs ?? '-'}g, 당류 ${n.sugar ?? '-'}g, 지방 ${n.fat ?? '-'}g.`,
-    '상단 목적을 선택하시면 그 기준에 맞춘 상세 해석이 표시됩니다.',
+    '아래 주요 관점에서 목적별로 한 번 더 해석해 볼 수 있어요.',
   ];
 }
 

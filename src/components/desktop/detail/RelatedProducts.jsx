@@ -11,9 +11,9 @@ import { categoryPath } from '../../../data/categoryTabs.js';
 
 export function RelatedProducts({ currentProduct, onNavigate, limit = 3 }) {
   const { products: PRODUCTS } = useProducts();
-  const related = currentProduct?.category
+  const related = currentProduct?.categoryCode
     ? PRODUCTS
-        .filter((p) => p.id !== currentProduct.id && p.category === currentProduct.category)
+        .filter((p) => p.id !== currentProduct.id && p.categoryCode === currentProduct.categoryCode)
         .sort((a, b) => String(a.id).localeCompare(String(b.id)))
         .slice(0, limit)
     : [];

@@ -506,9 +506,81 @@ function PurposeHint({ purposeId }) {
   return (
     <div className="m-detail-report-hint">
       <IconInfo size={14} />
-      <span>상단에서 목적(체중감량/근성장 등)을 선택하면 더 자세한 해석이 표시돼요.</span>
+      <span>기본 리포트는 제품 유형에 맞는 주요 관점을 자동으로 묶어 보여줘요.</span>
     </div>
   );
+}
+
+const BASE_REPORT_SECTIONS = [
+  { id: 'basic_info', title: '기본 영양 정보' },
+  { id: 'calorie_sugar', title: '칼로리·당류 포인트' },
+  { id: 'protein_content', title: '단백질 포인트' },
+];
+
+const CATEGORY_REPORT_SECTIONS = {
+  chicken_breast: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'protein_content', title: '단백질 함량' },
+    { id: 'calorie_sugar', title: '칼로리·당류' },
+    { id: 'post_workout', title: '운동 후 섭취' },
+  ],
+  protein_drink: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'protein_content', title: '단백질 함량·원료' },
+    { id: 'bcaa_profile', title: 'BCAA·아미노산' },
+    { id: 'post_workout', title: '운동 후 섭취' },
+  ],
+  energy_bar: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'meal_balance', title: '한 끼 균형' },
+    { id: 'protein_content', title: '단백질 포인트' },
+    { id: 'satiety', title: '포만감' },
+  ],
+  processed_meat: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'protein_content', title: '단백질 포인트' },
+    { id: 'calorie_sugar', title: '칼로리·당류' },
+    { id: 'meal_balance', title: '식사 균형' },
+  ],
+  ice_cream: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'calorie_sugar', title: '칼로리·당류' },
+    { id: 'sugar_warning', title: '저당 포인트' },
+    { id: 'weight_loss_fit', title: '체중감량 적합도' },
+  ],
+  snack_sweets: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'calorie_sugar', title: '칼로리·당류' },
+    { id: 'carb_fiber', title: '탄수화물·식이섬유' },
+    { id: 'sugar_warning', title: '저당 포인트' },
+  ],
+  zero_drink: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'sugar_warning', title: '당류·대체당' },
+    { id: 'glucose_fit', title: '저당 적합도' },
+  ],
+  rice: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'meal_balance', title: '한 끼 균형' },
+    { id: 'carb_fiber', title: '탄수화물·식이섬유' },
+    { id: 'satiety', title: '포만감' },
+  ],
+  noodle: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'meal_balance', title: '한 끼 균형' },
+    { id: 'carb_fiber', title: '탄수화물·식이섬유' },
+    { id: 'satiety', title: '포만감' },
+  ],
+  cereal_granola_oat: [
+    { id: 'basic_info', title: '기본 영양 정보' },
+    { id: 'meal_balance', title: '한 끼 균형' },
+    { id: 'carb_fiber', title: '탄수화물·식이섬유' },
+    { id: 'satiety', title: '포만감' },
+  ],
+};
+
+function getDefaultReportSections(rawProduct) {
+  return CATEGORY_REPORT_SECTIONS[rawProduct?.categoryCode] ?? BASE_REPORT_SECTIONS;
 }
 
 export function AnalysisCard({ rawProduct, purpose, purposeId, products }) {
@@ -516,25 +588,28 @@ export function AnalysisCard({ rawProduct, purpose, purposeId, products }) {
     return <ShakeReportMobile rawProduct={rawProduct} products={products} />;
   }
 
-  // purpose.reportSections는 항상 배열로 정의됨
-  const sections = purpose?.reportSections ?? [];
+  const isDefaultReport = purposeId === 'all';
+  const sections = isDefaultReport ? getDefaultReportSections(rawProduct) : (purpose?.reportSections ?? []);
+  const reportRows = sections
+    .map((sec) => ({ ...sec, lines: analyzeSection(rawProduct, sec.id) }))
+    .filter((row) => !isDefaultReport || row.lines.length > 0);
 
   return (
     <section className="m-detail-report">
       <header className="m-detail-section-head">
         <h2 className="m-detail-section-title">분석 리포트</h2>
-        {purpose?.label && (
-          <span className="m-detail-section-sub">{purpose.label} 기준</span>
-        )}
+        <span className="m-detail-section-sub">
+          {isDefaultReport ? '기본 리포트' : `${purpose?.label ?? '전체'} 기준`}
+        </span>
       </header>
       <PurposeHint purposeId={purposeId} />
       <div className="m-detail-report-grid">
-        {sections.map((sec, idx) => (
+        {reportRows.map((sec, idx) => (
           <ReportCard
             key={sec.id}
             index={idx}
             title={sec.title}
-            lines={analyzeSection(rawProduct, sec.id)}
+            lines={sec.lines}
           />
         ))}
       </div>

@@ -142,11 +142,11 @@ export default function ComparePageMobile() {
   return (
     <>
       <Seo title="제품 비교" noindex />
+      <h1 className="sr-only">{titleText}</h1>
       <AppBar
         title={titleText}
         onBack={handleBack}
-        // AppBar 우측은 비교함 아이콘 자리 — 이 페이지에선 onCompare 비워 두면 클릭해도 동작 X
-        // 대신 '전체 지우기'를 본문 상단 액션바로 노출 (DS Top bar action 자리는 1개만 허용)
+        // 우측 슬롯은 균형용 spacer. '전체 지우기'는 본문 상단 액션바에 노출.
       />
 
       {isEmpty ? (

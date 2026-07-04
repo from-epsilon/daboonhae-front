@@ -144,7 +144,7 @@ export default function ListPage() {
     setActiveSub('all');
   };
 
-  const clearSearch = () => navigate('/list');
+  const clearSearch = () => { setSearchParams({}); };
 
   const products = useMemo(() => {
     let result = applyListFilters(baseProducts, filterSpecs, filterState, {

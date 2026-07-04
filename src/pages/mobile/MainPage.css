@@ -346,6 +346,21 @@
   color: var(--text-tertiary);
   margin-left: 1px;
 }
+.m-home-rec-offers {
+  margin-top: 4px;
+}
+.m-home-rec-offers.purchase-offers--compact .purchase-offers-list {
+  width: 100%;
+}
+.m-home-rec-offers.purchase-offers--compact .purchase-offer {
+  flex-basis: 100%;
+  width: 100%;
+  min-height: 70px;
+  padding: 8px 9px;
+}
+.m-home-rec-offers.purchase-offers--compact .purchase-offers-affiliate {
+  display: none;
+}
 
 /* ===========================================================================
    2. 카테고리 탭 (nosearch 스타일)

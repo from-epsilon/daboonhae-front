@@ -2,6 +2,7 @@
 // 구조: AppBar(서브) → Hero → MacroRow → 자동 태그 → 영양표 → 분석 리포트 → 원료 → 후기 → sticky CTA bar
 // - 모바일 셸은 디테일에서 BottomNav 숨김 (App.jsx 처리). 본문 하단은 sticky CTA용 padding 확보
 // - AppBar/CTA는 페이지가 직접 렌더
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { productPath, parseProductId } from '../../data/productUrl.js';
 import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
@@ -77,12 +78,77 @@ function EmptyState({ onHome }) {
   );
 }
 
+const SECTIONS = [
+  { id: 'analysis', label: '분석 리포트' },
+  { id: 'reviews', label: '후기' },
+];
+
+function SectionNav({ activeId, navRef }) {
+  const handleClick = (e, id) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    const nav = navRef?.current;
+    if (!el) return;
+    const navH = nav ? nav.offsetHeight : 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - 52 - navH - 8;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
+  return (
+    <nav className="m-detail-section-nav" ref={navRef} aria-label="섹션 이동">
+      {SECTIONS.map((s) => (
+        <a
+          key={s.id}
+          href={`#${s.id}`}
+          onClick={(e) => handleClick(e, s.id)}
+          className={`m-detail-section-nav-item${activeId === s.id ? ' is-active' : ''}`}
+        >
+          {s.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function useActiveSection(productId) {
+  const [activeId, setActiveId] = useState(SECTIONS[0].id);
+
+  useEffect(() => {
+    setActiveId(SECTIONS[0].id);
+
+    const onScroll = () => {
+      const nav = document.querySelector('.m-detail-section-nav');
+      const line = (nav ? nav.getBoundingClientRect().bottom : 100) + 16;
+      let current = SECTIONS[0].id;
+      for (const s of SECTIONS) {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top <= line) current = s.id;
+      }
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      if (atBottom) current = SECTIONS[SECTIONS.length - 1].id;
+      setActiveId(current);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [productId]);
+
+  return activeId;
+}
+
 export default function DetailPageMobile() {
   const { id: routeParam } = useParams();
   const id = parseProductId(routeParam); // 슬러그-ID 또는 순수 ID에서 ID만 추출
   const navigate = useNavigate();
   const { has, toggle, isFull, max, count } = useCompare();
   const { purpose, purposeId } = usePurpose();
+  const activeSection = useActiveSection(id);
+  const navRef = useRef(null);
 
   // raw 제품 → DS 형식 변환 (adapter는 raw도 들고 있어 분석에 그대로 활용 가능)
   const { loading, products: allProducts } = useProducts();
@@ -180,16 +246,13 @@ export default function DetailPageMobile() {
           servingsPerUnit={product.servingsPerUnit}
         />
 
-        {/* 2. 선택 가이드 (본문 최상단 섹션, 토글로 접기 가능) */}
-        <CategoryGuideCard category={raw?.category} />
-
-        {/* 3. 매크로 분포 */}
+        {/* 2. 매크로 분포 */}
         {!detailConfig?.macroBarVariant && <MacroSection macros={product.macros} />}
 
-        {/* 3-1. 핵심 지표 표 (단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당) */}
+        {/* 2-1. 핵심 지표 표 (단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당) */}
         {primaryMetrics && <PrimaryMetricsSection food={product} metrics={primaryMetrics} />}
 
-        {/* 4. 영양성분표 + 펼침 안 추가 안내 */}
+        {/* 3. 영양성분표 + 펼침 안 추가 안내 */}
         <NutritionTable
           nutrition={product.nutrition}
           serving={product.serving}
@@ -204,11 +267,21 @@ export default function DetailPageMobile() {
           />
         </NutritionTable>
 
+        {/* 4. 선택 가이드 — 데스크탑 aside와 같은 보조 정보, 주요 영양 정보 뒤에 배치 */}
+        <CategoryGuideCard category={raw?.category} />
+
+        {/* 4-1. 섹션 앵커 탭 */}
+        <SectionNav activeId={activeSection} navRef={navRef} />
+
         {/* 5. 분석 리포트 (목적별 룰 기반) */}
-        <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} products={allProducts} />
+        <div id="analysis">
+          <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} products={allProducts} />
+        </div>
 
         {/* 6. 후기 */}
-        <ReviewSection productId={product.id} />
+        <div id="reviews">
+          <ReviewSection productId={product.id} />
+        </div>
 
         {/* 7. 같은 카테고리 다른 제품 (가장 아래) */}
         <RelatedProducts currentRaw={raw} allProducts={allProducts} />

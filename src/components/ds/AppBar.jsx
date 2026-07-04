@@ -117,29 +117,32 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, o
           >
             {title}
           </div>
-          {/* 우측 비교함 아이콘 (좌측 Back과 대칭 균형) */}
-          <button
-            type="button"
-            onClick={() => typeof onCompare === 'function' && onCompare()}
-            aria-label="비교함"
-            style={{
-              position: 'relative',
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              color: 'var(--text-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 28,
-              height: 28,
-              flexShrink: 0,
-            }}
-          >
-            <IconCompare />
-            <CompareBadge count={compareCount} />
-          </button>
+          {typeof onCompare === 'function' ? (
+            <button
+              type="button"
+              onClick={onCompare}
+              aria-label="비교함"
+              style={{
+                position: 'relative',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                color: 'var(--text-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 28,
+                height: 28,
+                flexShrink: 0,
+              }}
+            >
+              <IconCompare />
+              <CompareBadge count={compareCount} />
+            </button>
+          ) : (
+            <div aria-hidden="true" style={{ width: 28, height: 28, flexShrink: 0 }} />
+          )}
         </>
       ) : (
         // 메인 모드: 로고 + 검색박스 + 비교함

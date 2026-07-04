@@ -2,7 +2,9 @@
 // - 점수 내림차순 상위 8개의 mini 카드를 horizontal scroll-snap으로 노출
 // - 점수 배지는 노출하지 않음 (홈에서는 정보 밀도를 낮춤)
 // - 작은 폭(약 144px) 미니 카드: 썸네일 + 브랜드 + 이름 + 목적별 핵심 성분
-import { getHighlightValue } from '../../../data/categoryCardMetrics.js';
+import { getCategoryCardConfig, getHighlightValue } from '../../../data/categoryCardMetrics.js';
+import { getFoodTypeByCode } from '../../../data/categoryTabs.js';
+import PurchaseOffers from '../../global/PurchaseOffers.jsx';
 
 // 목적별 핵심 성분 스탯 — 라벨 위 + 수치 아래 정렬 컬럼 (1~3개, 1순위 강조)
 // - 카드 간 같은 위치에 같은 성분이 와서 가로 스캔으로 비교 가능
@@ -37,6 +39,9 @@ function HighlightStats({ food, metrics }) {
 // - rank: 1부터 시작하는 순위 (전달 시 썸네일 좌상단 배지로 표시, 1~3위는 브랜드 그린)
 // - metrics: 목적별 핵심 성분 정의 (없으면 기본 매크로 표시)
 function RecommendCard({ food, rank, metrics, onClick }) {
+  const foodType = getFoodTypeByCode(food.categoryCode);
+  const config = foodType ? getCategoryCardConfig(foodType.tab, foodType.label) : {};
+
   return (
     <article className="m-home-rec-card" onClick={onClick}>
       {/* 썸네일 */}
@@ -57,6 +62,15 @@ function RecommendCard({ food, rank, metrics, onClick }) {
         <div className="m-home-rec-brand">{food.brand}</div>
         <div className="m-home-rec-name">{food.name}</div>
         <HighlightStats food={food} metrics={metrics} />
+        <PurchaseOffers
+          offers={food.purchaseLinks}
+          compact
+          maxItems={1}
+          sortBy="unit-first"
+          pricePer={config.purchasePricePer ?? 'unit'}
+          servingsPerUnit={food.servingsPerUnit}
+          className="m-home-rec-offers"
+        />
       </div>
     </article>
   );
