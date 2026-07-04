@@ -11,7 +11,6 @@ import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import Footer from '../../components/desktop/home/Footer.jsx';
 import Seo from '../../components/global/Seo.jsx';
-import { organizationLd, websiteLd } from '../../data/jsonLd.js';
 import { productPath } from '../../data/productUrl.js';
 import { CATEGORY_TABS } from '../../data/categoryTabs.js';
 import { getPurposeRecommendedProducts } from '../../data/homeRecommendations.js';
@@ -129,7 +128,8 @@ export default function MainPageMobile() {
 
   return (
     <>
-      <Seo canonicalPath="/" jsonLd={[organizationLd(), websiteLd()]} />
+      {/* WebSite·Organization JSON-LD는 사이트 이름 확정용으로 index.html에 정적 배치(단일 출처) */}
+      <Seo canonicalPath="/" />
       <AppBar
         onSearch={handleSearch}
         onCompare={handleCompare}
