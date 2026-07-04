@@ -10,14 +10,13 @@ import { getAdapted } from '../../data/adapters.js';
 import { getFoodTypeByCode } from '../../data/categoryTabs.js';
 import { getCategoryCardConfig, getPrimaryMetricsByCode } from '../../data/categoryCardMetrics.js';
 import { useCompare } from '../../store/CompareContext.jsx';
-import { usePurpose } from '../../store/PurposeContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { Button } from '../../components/ds/Button.jsx';
 import { MacroRow } from '../../components/ds/MacroRow.jsx';
 import { TieredPrimaryTable } from '../../components/ds/FoodCard.jsx';
 import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
 import { NutritionTable } from '../../components/mobile/detail/NutritionTable.jsx';
-import { AnalysisCard } from '../../components/mobile/detail/AnalysisCard.jsx';
+import { AnalysisReport } from '../../components/desktop/detail/AnalysisReport.jsx';
 import { ProductNotice } from '../../components/mobile/detail/ProductNotice.jsx';
 import { ReviewSection } from '../../components/mobile/detail/ReviewSection.jsx';
 import { CategoryGuideCard } from '../../components/mobile/detail/CategoryGuideCard.jsx';
@@ -27,6 +26,7 @@ import PurchaseOffers from '../../components/global/PurchaseOffers.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { productLd, breadcrumbLd } from '../../data/jsonLd.js';
 import { buildProductBreadcrumb } from '../../data/breadcrumb.js';
+import '../DetailPage.css';
 import './DetailPage.css';
 
 // 매크로 분포 카드 — 풀 MacroRow + kcal 별도 노출
@@ -146,7 +146,6 @@ export default function DetailPageMobile() {
   const id = parseProductId(routeParam); // 슬러그-ID 또는 순수 ID에서 ID만 추출
   const navigate = useNavigate();
   const { has, toggle, isFull, max, count } = useCompare();
-  const { purpose, purposeId } = usePurpose();
   const activeSection = useActiveSection(id);
   const navRef = useRef(null);
 
@@ -190,6 +189,7 @@ export default function DetailPageMobile() {
   // 핵심 지표 표 — 1순위 지표가 있는 카테고리(단백질 음료 등)만 노출
   const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
   const detailConfig = getDetailCardConfig(raw?.categoryCode);
+  const showMacroSection = detailConfig?.showMacroBar !== false && !detailConfig?.macroBarVariant;
 
   // 비교함 토글 — 가득 차고 새로 담으려 하면 안내
   const handleToggleCompare = () => {
@@ -247,7 +247,7 @@ export default function DetailPageMobile() {
         />
 
         {/* 2. 매크로 분포 */}
-        {!detailConfig?.macroBarVariant && <MacroSection macros={product.macros} />}
+        {showMacroSection && <MacroSection macros={product.macros} />}
 
         {/* 2-1. 핵심 지표 표 (단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당) */}
         {primaryMetrics && <PrimaryMetricsSection food={product} metrics={primaryMetrics} />}
@@ -273,9 +273,22 @@ export default function DetailPageMobile() {
         {/* 4-1. 섹션 앵커 탭 */}
         <SectionNav activeId={activeSection} navRef={navRef} />
 
-        {/* 5. 분석 리포트 (목적별 룰 기반) */}
+        {/* 5. 분석 리포트 — 데스크탑과 동일한 리포트 컴포넌트 사용 */}
         <div id="analysis">
-          <AnalysisCard rawProduct={raw} purpose={purpose} purposeId={purposeId} products={allProducts} />
+          <AnalysisReport
+            product={product}
+            products={allProducts}
+            nutrition={n}
+            ingredients={product.ingredients}
+            category={raw?.category}
+            categoryCode={raw?.categoryCode}
+            foodNutrients={raw?._raw?.foodNutrients}
+            additionalContent={raw?._raw?.additionalContent}
+            servingSize={raw?._raw?.servingSize}
+            servingUnit={raw?._raw?.servingUnit}
+            rawText={raw?._raw?.ingredientsText}
+            annotations={raw?._raw?.ingredientAnnotations}
+          />
         </div>
 
         {/* 6. 후기 */}

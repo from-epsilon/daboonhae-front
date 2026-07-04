@@ -136,6 +136,32 @@
   scroll-margin-top: 112px;
 }
 
+/* 데스크탑과 동일한 AnalysisReport를 모바일 폭에 맞춰 표시 */
+.m-detail #analysis .d-detail-card.d-detail-report {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+  padding: 20px 16px;
+}
+.m-detail #analysis .d-detail-card-head {
+  margin-bottom: 14px;
+}
+.m-detail #analysis .d-detail-card-title {
+  font-size: 17px;
+}
+.m-detail #analysis .d-analysis-section {
+  padding: 18px 0;
+}
+.m-detail #analysis .d-analysis-section-title {
+  font-size: 14px;
+}
+.m-detail #analysis .d-analysis-quality-panel,
+.m-detail #analysis .d-analysis-judgment-card,
+.m-detail #analysis .d-analysis-summary-col,
+.m-detail #analysis .d-analysis-ingr-card {
+  border-radius: var(--radius-md);
+}
+
 /* ============================================================
    HERO
    ============================================================ */
