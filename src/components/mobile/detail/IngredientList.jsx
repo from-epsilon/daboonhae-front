@@ -1,13 +1,12 @@
 // 모바일 디테일 — 원료/성분 카드
 // - 단백질 원료, 대체당, 알레르겐, 유당 free 여부
 // - 각 항목은 Badge 컬럼으로 표시 (없으면 '-' 또는 '없음')
-// - 말티톨 사용 시 가벼운 info 박스로 안내 (analyzers의 sugar_warning 로직과 톤 일치)
 import { useState } from 'react';
 import { Badge } from '../../ds/Badge.jsx';
 import { IconAlert, IconCheck } from '../../ds/Icons.jsx';
 import { ChevronDown } from 'lucide-react';
 import { buildIngredientSegments } from '../../../utils/ingredientHighlight.js';
-import { useResolvedProteinSources, proteinGradeMeta } from '../../../data/proteinQuality.js';
+import { useResolvedProteinSources, useResolvedSweeteners, proteinGradeMeta } from '../../../data/proteinQuality.js';
 
 // 원재료명 구간 마킹 색상 클래스 (type → 클래스)
 const MARK_CLASS = {
@@ -124,6 +123,24 @@ function ProteinChipRow({ items, emptyLabel = '없음' }) {
   );
 }
 
+function SweetenerChipRow({ items, emptyLabel = '사용 안 함' }) {
+  const sweeteners = useResolvedSweeteners(items);
+  return (
+    <div className="m-detail-ingr-row">
+      <span className="m-detail-ingr-label">대체당</span>
+      <div className="m-detail-ingr-values">
+        {sweeteners.length > 0 ? (
+          sweeteners.map((sweetener) => (
+            <Badge key={sweetener.code} variant="outline">{sweetener.nameKo}</Badge>
+          ))
+        ) : (
+          <span className="m-detail-ingr-empty">{emptyLabel}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // 유당 free 여부 — 라벨 + Yes/No 칩
 function LactoseRow({ lactoseFree }) {
   const isFree = lactoseFree === true;
@@ -141,15 +158,16 @@ function LactoseRow({ lactoseFree }) {
   );
 }
 
-// 말티톨 사용 시 가벼운 안내 박스
 function SweetenerNotice({ sweeteners }) {
-  if (!sweeteners || sweeteners.length === 0) return null;
-  const hasMaltitol = sweeteners.includes('말티톨');
-  if (!hasMaltitol) return null;
+  const resolvedSweeteners = useResolvedSweeteners(sweeteners);
+  const cautions = resolvedSweeteners
+    .map((sweetener) => sweetener.cautionsText)
+    .filter(Boolean);
+  if (cautions.length === 0) return null;
   return (
     <div className="m-detail-ingr-notice">
       <IconAlert size={14} />
-      <span>말티톨은 다른 대체당보다 혈당 영향이 큰 편이에요.</span>
+      <span>{cautions.join(' ')}</span>
     </div>
   );
 }
@@ -176,12 +194,7 @@ export function IngredientList({ ingredients, rawText, annotations, embedded = f
       </header>
       <div className="m-detail-ingr-list">
         <ProteinChipRow items={ing.proteinSources} />
-        <ChipRow
-          label="대체당"
-          items={ing.sweeteners}
-          emptyLabel="사용 안 함"
-          variant="outline"
-        />
+        <SweetenerChipRow items={ing.sweeteners} />
         <ChipRow
           label="알레르겐"
           items={ing.allergens}

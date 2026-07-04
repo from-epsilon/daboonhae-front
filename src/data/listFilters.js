@@ -23,7 +23,7 @@ export function getListFilterSpecs({
   sweetenerLabelOf,
 }) {
   if (!supportsProteinSourceListFilters(activeCode)) {
-    return withFlavorFilter(ALL_FILTERS, products, filterState);
+    return withFlavorFilter(getGeneralFilterSpecs(products, filterState, { sweetenerLabelOf }), products, filterState);
   }
   return withFlavorFilter(getProteinDrinkFilterSpecs(products, filterState, {
     proteinSourceLabelOf,
@@ -60,7 +60,11 @@ export function countActiveFilters(specs, state) {
     if (spec.type === 'range') {
       if (v.min !== undefined || v.max !== undefined) n += 1;
     } else if (spec.type === 'tristate' || spec.type === 'exclude_only') {
-      const has = Object.values(v).some((s) => s === 'include' || s === 'exclude');
+      const allowed = new Set(spec.options ?? []);
+      const has = Object.entries(v).some(([option, s]) => {
+        if (allowed.size > 0 && !allowed.has(option)) return false;
+        return s === 'include' || s === 'exclude';
+      });
       if (has) n += 1;
     } else if (spec.type === 'single') {
       if (v) n += 1;
@@ -73,11 +77,17 @@ export function countActiveFilters(specs, state) {
 
 export function applyListFilters(products, specs, value, context = {}) {
   if (!specs || specs.length === 0) return products;
+  const allowedOptionsByKey = Object.fromEntries(
+    specs
+      .filter((spec) => spec.type === 'tristate' || spec.type === 'exclude_only' || spec.type === 'single')
+      .map((spec) => [spec.key, new Set(spec.options ?? [])]),
+  );
+  const filterContext = { ...context, allowedOptionsByKey };
   return products.filter((p) => {
     for (const spec of specs) {
       const v = value[spec.key];
       if (v === undefined || v === null) continue;
-      if (!passSingleFilter(p, spec, v, context)) return false;
+      if (!passSingleFilter(p, spec, v, filterContext)) return false;
     }
     return true;
   });
@@ -94,10 +104,24 @@ export function formatProteinSourceLabel(source, resolver) {
   return cleanProteinLabel(source);
 }
 
+export function formatResolvedProteinSourceLabel(source, resolver) {
+  const resolved = resolver?.(source);
+  if (!resolved?.nameKo) return null;
+  const name = cleanProteinLabel(resolved.nameKo);
+  const abbr = resolved.abbreviation;
+  if (!abbr || name.includes(`(${abbr})`)) return name;
+  return `${name}(${abbr})`;
+}
+
 export function formatSweetenerLabel(sweetener, resolver) {
   const resolved = resolver?.(sweetener);
-  if (resolved?.nameKo) return cleanSweetenerLabel(resolved.nameKo);
+  if (resolved?.nameKo) return String(resolved.nameKo).trim();
   return cleanSweetenerLabel(sweetener);
+}
+
+export function formatResolvedSweetenerLabel(sweetener, resolver) {
+  const resolved = resolver?.(sweetener);
+  return resolved?.nameKo ? String(resolved.nameKo).trim() : null;
 }
 
 function getProteinDrinkFilterSpecs(
@@ -139,6 +163,26 @@ function getProteinDrinkFilterSpecs(
       note: ALLERGEN_FILTER_NOTE,
     }),
   ].filter(Boolean);
+}
+
+function getGeneralFilterSpecs(
+  products,
+  filterState,
+  {
+    sweetenerLabelOf = defaultSweetenerLabel,
+  } = {},
+) {
+  return ALL_FILTERS.map((spec) => {
+    if (spec.key !== 'sweeteners') return spec;
+    return dynamicOptionSpec({
+      products,
+      filterState,
+      key: 'sweeteners',
+      type: spec.type,
+      label: spec.label,
+      context: { sweetenerLabelOf },
+    });
+  }).filter(Boolean);
 }
 
 function withFlavorFilter(specs, products, filterState) {
@@ -193,6 +237,7 @@ function rankedOptions(products, key, selected = {}, context = {}) {
   }
   if (selected && typeof selected === 'object') {
     for (const option of Object.keys(selected)) {
+      if ((key === 'sweeteners' || key === 'proteinSources') && !counts.has(option)) continue;
       if (selected[option]) counts.set(option, counts.get(option) ?? 0);
     }
   } else if (typeof selected === 'string' && selected) {
@@ -228,7 +273,9 @@ function passRange(product, spec, v) {
 function passTriState(product, key, value, context) {
   if (!value || Object.keys(value).length === 0) return true;
   const items = getIngredientList(product, key, context);
+  const allowed = context.allowedOptionsByKey?.[key];
   for (const [option, state] of Object.entries(value)) {
+    if (allowed && !allowed.has(option)) continue;
     if (state === 'include' && !items.includes(option)) return false;
     if (state === 'exclude' && items.includes(option)) return false;
   }

@@ -571,17 +571,30 @@ select:focus-visible {
 /* 모바일: 카드 폭이 좁아 표 간격·폰트 압축 (가로 오버플로 방지) */
 @media (max-width: 800px) {
   .fc-ptable {
-    grid-template-columns: 58px 48px 66px 66px;
-    gap: 3px 6px;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: 48px repeat(3, minmax(0, 1fr));
+    gap: 3px 4px;
   }
   .fc-ptable-cell {
-    font-size: 14px;
+    min-width: 0;
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
   }
   /* 행/열 라벨은 서로 같은 크기 유지 */
   .fc-ptable-head,
   .fc-ptable-corner,
   .fc-ptable-label {
-    font-size: 10px;
+    min-width: 0;
+    font-size: 9.5px;
+    line-height: 1.2;
+    white-space: normal;
+  }
+  .fc-ptable-label {
+    padding-right: 4px;
+  }
+  .fc-ptable-unit {
+    font-size: 9px;
   }
 }
 /* 우선순위 카드 — 표 위 구조화 블록 (단백질원) */

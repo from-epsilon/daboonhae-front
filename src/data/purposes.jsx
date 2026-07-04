@@ -36,7 +36,7 @@ export const PURPOSES = [
     filters: [
       { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 20 },
       { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 600 },
-      { key: 'sweeteners', type: 'tristate', label: '대체당', options: ['말티톨', '아스파탐', '수크랄로스', '스테비아', '알룰로스'] },
+      { key: 'sweeteners', type: 'tristate', label: '대체당' },
     ],
     reportSections: [
       { id: 'sugar_warning', title: '당류·대체당 분석' },
@@ -78,7 +78,7 @@ export const PURPOSES = [
     filters: [
       { key: 'calories', type: 'range', label: '칼로리(kcal)', min: 0, max: 600 },
       { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 30 },
-      { key: 'sweeteners', type: 'tristate', label: '대체당', options: ['말티톨', '아스파탐', '수크랄로스', '스테비아', '알룰로스'] },
+      { key: 'sweeteners', type: 'tristate', label: '대체당' },
     ],
     reportSections: [
       { id: 'calorie_sugar', title: '칼로리·당류 분석' },
@@ -115,7 +115,7 @@ export const ALL_FILTERS = [
   { key: 'carbs', type: 'range', label: '탄수화물(g)', min: 0, max: 80 },
   { key: 'fat', type: 'range', label: '지방(g)', min: 0, max: 30 },
   { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 30 },
-  { key: 'sweeteners', type: 'tristate', label: '대체당', options: ['말티톨', '아스파탐', '수크랄로스', '스테비아', '알룰로스'] },
+  { key: 'sweeteners', type: 'tristate', label: '대체당' },
   { key: 'proteinSources', type: 'tristate', label: '단백질 원료', options: ['WPI', 'WPC', '카제인', '대두', '닭고기', '계란'] },
   { key: 'allergens', type: 'exclude_only', label: '알레르기 유발 성분', options: ['유당', '대두', '글루텐', '견과류'], note: ALLERGEN_FILTER_NOTE },
   { key: 'lactoseFree', type: 'bool', label: '유당 free' },

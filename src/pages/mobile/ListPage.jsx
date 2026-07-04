@@ -18,8 +18,8 @@ import { applySort } from '../../data/listSort.js';
 import {
   applyListFilters,
   countActiveFilters,
-  formatProteinSourceLabel,
-  formatSweetenerLabel,
+  formatResolvedProteinSourceLabel,
+  formatResolvedSweetenerLabel,
   getListFilterSpecs,
   getProteinSourceTexts,
   getSweetenerTexts,
@@ -162,16 +162,16 @@ export default function ListPageMobile() {
   );
   const resolveProteinSource = useProteinResolver(proteinSourceTexts);
   const proteinSourceLabelOf = useCallback(
-    (source) => formatProteinSourceLabel(source, resolveProteinSource),
+    (source) => formatResolvedProteinSourceLabel(source, resolveProteinSource),
     [resolveProteinSource],
   );
   const sweetenerTexts = useMemo(
-    () => (supportsProteinSourceListFilters(activeCode) ? getSweetenerTexts(baseProducts) : []),
-    [baseProducts, activeCode],
+    () => getSweetenerTexts(baseProducts),
+    [baseProducts],
   );
   const resolveSweetener = useSweetenerResolver(sweetenerTexts);
   const sweetenerLabelOf = useCallback(
-    (sweetener) => formatSweetenerLabel(sweetener, resolveSweetener),
+    (sweetener) => formatResolvedSweetenerLabel(sweetener, resolveSweetener),
     [resolveSweetener],
   );
 

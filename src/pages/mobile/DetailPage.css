@@ -135,6 +135,7 @@
   color: var(--text-primary);
   letter-spacing: -0.02em;
   line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 .m-detail-hero-variant {
   display: inline-block;
@@ -1226,6 +1227,9 @@
   display: flex;
   gap: 10px;
 }
+.m-detail-guide-body {
+  min-width: 0;
+}
 .m-detail-guide-num {
   flex-shrink: 0;
   width: 20px;
@@ -1247,6 +1251,7 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 .m-detail-guide-item-text {
   margin: 0;
@@ -1271,6 +1276,7 @@
   line-height: 1.6;
   color: var(--text-secondary);
   word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 .m-detail-guide-points li::before {
   content: '';

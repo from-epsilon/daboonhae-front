@@ -3,7 +3,7 @@ import { Badge } from '../../ds/Badge.jsx';
 import { IconAlert } from '../../ds/Icons.jsx';
 import { HelpCircle, ChevronDown } from 'lucide-react';
 import { buildIngredientSegments } from '../../../utils/ingredientHighlight.js';
-import { useResolvedProteinSources, proteinGradeMeta } from '../../../data/proteinQuality.js';
+import { useResolvedProteinSources, useResolvedSweeteners, proteinGradeMeta } from '../../../data/proteinQuality.js';
 
 // 원재료명 구간 마킹 색상 클래스 (type → 클래스)
 const MARK_CLASS = {
@@ -50,15 +50,10 @@ function ItemWithTooltip({ label, info }) {
     <span className="d-detail-ingr-item-wrap">
       <Badge variant="outline">
         {label}
-        {info ? (
+        {info && (
           <span className="d-detail-tooltip-wrap d-detail-tooltip-inline">
             <HelpCircle size={11} className="d-detail-tooltip-icon" />
             <span className="d-detail-tooltip">{info}</span>
-          </span>
-        ) : (
-          <span className="d-detail-tooltip-wrap d-detail-tooltip-inline">
-            <HelpCircle size={11} className="d-detail-tooltip-icon" />
-            <span className="d-detail-tooltip">추후 정보가 추가될 예정입니다.</span>
           </span>
         )}
       </Badge>
@@ -110,13 +105,42 @@ function IngrSection({ label, items, emptyLabel = '정보 없음' }) {
   );
 }
 
+function sweetenerInfoText(sweetener) {
+  return [sweetener?.benefitsText, sweetener?.cautionsText].filter(Boolean).join(' ');
+}
+
+function SweetenerIngrSection({ items, emptyLabel = '정보 없음' }) {
+  const sweeteners = useResolvedSweeteners(items);
+  return (
+    <div className="d-detail-ingr-col">
+      <div className="d-detail-ingr-col-label">대체당</div>
+      <div className="d-detail-ingr-col-values">
+        {sweeteners.length > 0 ? (
+          sweeteners.map((sweetener) => (
+            <ItemWithTooltip
+              key={sweetener.code}
+              label={sweetener.nameKo}
+              info={sweetenerInfoText(sweetener)}
+            />
+          ))
+        ) : (
+          <span className="d-detail-ingr-empty">{emptyLabel}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SweetenerNotice({ sweeteners }) {
-  if (!sweeteners || sweeteners.length === 0) return null;
-  if (!sweeteners.some((s) => (typeof s === 'string' ? s : s.label) === '말티톨')) return null;
+  const resolvedSweeteners = useResolvedSweeteners(sweeteners);
+  const cautions = resolvedSweeteners
+    .map((sweetener) => sweetener.cautionsText)
+    .filter(Boolean);
+  if (cautions.length === 0) return null;
   return (
     <div className="d-detail-ingr-notice">
       <IconAlert size={14} />
-      <span>말티톨은 다른 대체당보다 혈당 영향이 큰 편이에요.</span>
+      <span>{cautions.join(' ')}</span>
     </div>
   );
 }
@@ -179,7 +203,7 @@ export function IngredientList({ ingredients, rawText, annotations, embedded = f
       </header>
       <div className="d-detail-ingr-grid">
         <ProteinIngrSection items={ing.proteinSources} />
-        <IngrSection label="대체당" items={ing.sweeteners} />
+        <SweetenerIngrSection items={ing.sweeteners} />
         <IngrSection label="알레르기 유발 성분" items={ing.allergens} />
         <IngrSection label="기타" items={otherItems.length > 0 ? otherItems : null} />
       </div>

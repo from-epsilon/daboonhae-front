@@ -300,14 +300,6 @@ function proteinSourceType(name) {
   return '단백질원';
 }
 
-function sweetenerType(name) {
-  if (/말티톨|에리스리톨|자일리톨|소르비톨/i.test(name)) return '당알코올';
-  if (/알룰로/i.test(name)) return '희소당';
-  if (/수크랄로스|아스파탐|아세설팜/i.test(name)) return '고감미도 감미료';
-  if (/스테비아/i.test(name)) return '스테비아계';
-  return '대체당';
-}
-
 function ShakeMetricCard({ label, value, note, tone }) {
   const isMissingValue = value === '정보 없음' || value === '데이터 없음';
   return (
@@ -351,7 +343,7 @@ function ShakeReportMobile({ rawProduct, products }) {
   const micronutrients = displayedMicronutrients(foodNutrients);
   const displaySources = useResolvedProteinSources(proteinSources)
     .map((source) => source.abbreviation ? `${source.nameKo}(${source.abbreviation})` : source.nameKo);
-  const displaySweeteners = useResolvedSweeteners(sweeteners).map((sweetener) => sweetener.nameKo);
+  const displaySweeteners = useResolvedSweeteners(sweeteners);
   const calorieNote = preparation.body ? (
     <>
       <span className="m-detail-shake-note-line">{preparation.calorieText || '제품 표시 기준 열량입니다.'}</span>
@@ -453,7 +445,12 @@ function ShakeReportMobile({ rawProduct, products }) {
         <ShakeSection title="대체당">
           <div className="m-detail-shake-chip-list">
             {displaySweeteners.length > 0
-              ? displaySweeteners.map((name) => <span key={`s-${name}`}><strong>{name}</strong>{sweetenerType(name)}</span>)
+              ? displaySweeteners.map((sweetener) => (
+                <span key={`s-${sweetener.code}`}>
+                  <strong>{sweetener.nameKo}</strong>
+                  {sweetener.sweetenerType || '대체당'}
+                </span>
+              ))
               : <p className="m-detail-report-empty">추출된 대체당 정보가 아직 없어요.</p>}
           </div>
         </ShakeSection>

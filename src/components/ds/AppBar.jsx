@@ -21,7 +21,7 @@ function CompareBadge({ count }) {
       style={{
         position: 'absolute',
         top: -4,
-        right: -6,
+        right: 0,
         background: 'var(--red-500)',
         color: 'white',
         fontFamily: 'var(--font-numeric)',
@@ -94,6 +94,10 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, o
               color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
+              width: 28,
+              height: 28,
+              flexShrink: 0,
             }}
           >
             <IconBack />
@@ -127,6 +131,10 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, o
               color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
+              width: 28,
+              height: 28,
+              flexShrink: 0,
             }}
           >
             <IconCompare />
@@ -204,6 +212,10 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, o
               color: 'var(--text-primary)',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
+              width: 28,
+              height: 28,
+              flexShrink: 0,
             }}
           >
             <IconCompare />

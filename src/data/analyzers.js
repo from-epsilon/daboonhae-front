@@ -137,8 +137,7 @@ function sugarWarning(p) {
     else lines.push(`당류 ${sugar}g — 혈당 관리 중에는 섭취량을 조절하세요.`);
   }
 
-  if (sweeteners.includes('말티톨')) lines.push('말티톨은 다른 대체당보다 혈당 영향이 큰 편이니 유의하세요.');
-  else if (sweeteners.length > 0) lines.push(`대체당 사용: ${sweeteners.join(', ')}.`);
+  if (sweeteners.length > 0) lines.push(`대체당 사용: ${sweeteners.join(', ')}.`);
   return lines;
 }
 
@@ -167,11 +166,6 @@ function glucoseFit(p) {
     if (fiber >= 5) score += 2;
     else if (fiber >= 2) score += 1;
   }
-  if (sweeteners.length > 0) {
-    total += 1;
-    if (!sweeteners.includes('말티톨')) score += 1;
-  }
-
   if (total === 0) return [];
   const verdict =
     score / total >= 0.8 ? '혈당관리에 적합합니다.'

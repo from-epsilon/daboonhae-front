@@ -251,8 +251,14 @@ export function useResolvedProteinSources(texts) {
 }
 
 // ── 대체당 사전/해석
-const SWEETENER_RESOLVE_FN = 'resolve_alternative_sweetener_code';
-const SWEETENER_RESOLVE_ARG = 'value';
+// 대체당은 nutrients.group_name = 대체당(...) 행을 사전으로 쓰고,
+// ingredient_annotations 원문은 nutrient_aliases.normalized_alias로 canonical 성분에 연결한다.
+function sweetenerGroupType(groupName) {
+  const text = String(groupName || '').trim();
+  const match = text.match(/^대체당\((.+)\)$/);
+  if (match) return match[1];
+  return text.startsWith('대체당') ? text.replace(/^대체당/, '').trim() || '대체당' : null;
+}
 
 function buildSweetenerDictionary(sweeteners, aliases) {
   const byCode = new Map();
@@ -265,14 +271,18 @@ function buildSweetenerDictionary(sweeteners, aliases) {
     const sweetener = {
       code: row.code,
       nameKo: row.name_ko ?? '',
-      sweetenerType: row.sweetener_type || null,
+      groupName: row.group_name || null,
+      sweetenerType: sweetenerGroupType(row.group_name),
+      benefitsText: row.benefits_text || null,
+      cautionsText: row.cautions_text || null,
     };
     byCode.set(row.code, sweetener);
     addNorm(row.name_ko, sweetener);
   }
   for (const alias of aliases) {
-    const sweetener = byCode.get(alias.alternative_sweetener_code);
+    const sweetener = byCode.get(alias.nutrient_code);
     if (!sweetener) continue;
+    if (alias.normalized_alias) byNorm.set(alias.normalized_alias, sweetener);
     if (alias.alias) addNorm(alias.alias, sweetener);
   }
   return { byCode, byNorm };
@@ -290,12 +300,13 @@ async function loadSweetenerDictionary() {
     try {
       const [sweetenerRes, aliasRes] = await Promise.all([
         supabase
-          .from('alternative_sweeteners')
-          .select('code, name_ko, sweetener_type')
-          .eq('is_active', true),
+          .from('nutrients')
+          .select('code, name_ko, group_name, benefits_text, cautions_text')
+          .eq('is_active', true)
+          .like('group_name', '대체당%'),
         supabase
-          .from('alternative_sweetener_aliases')
-          .select('alternative_sweetener_code, alias'),
+          .from('nutrient_aliases')
+          .select('nutrient_code, alias, normalized_alias'),
       ]);
       sweetenerDictCache = sweetenerRes.error
         ? EMPTY_SWEETENER_DICT
@@ -312,26 +323,11 @@ async function loadSweetenerDictionary() {
 }
 
 const sweetenerCodeCache = new Map();
-let sweetenerRpcDisabled = false;
-
-async function rpcResolveSweetenerCode(text) {
-  if (sweetenerRpcDisabled) return undefined;
-  try {
-    const { data, error } = await supabase.rpc(SWEETENER_RESOLVE_FN, { [SWEETENER_RESOLVE_ARG]: text });
-    if (error) {
-      if (['PGRST202', '42883', '42501'].includes(error.code)) sweetenerRpcDisabled = true;
-      return undefined;
-    }
-    return typeof data === 'string' && data ? data : null;
-  } catch {
-    return undefined;
-  }
-}
 
 async function resolveSweetenerOne(dict, text) {
   if (!text) return null;
   if (!sweetenerCodeCache.has(text)) {
-    sweetenerCodeCache.set(text, await rpcResolveSweetenerCode(text));
+    sweetenerCodeCache.set(text, dict.byNorm.get(normalizeSweetenerAlias(text))?.code ?? null);
   }
   const code = sweetenerCodeCache.get(text);
   if (code) {

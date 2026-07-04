@@ -6,18 +6,6 @@ import { cheapestUnitPrice } from '../../../data/categoryCardMetrics.js';
 import { useResolvedProteinSources, useResolvedSweeteners, proteinGradeMeta } from '../../../data/proteinQuality.js';
 import { IngredientList } from './IngredientList.jsx';
 
-// 감미료별 특성 설명
-const SWEETENER_INFO = {
-  '알룰로스': { verdict: 'good', text: '칼로리가 거의 없고 혈당 영향이 적은 천연 감미료입니다. 현재 대체당 중 가장 안전하다고 평가받고 있어요.' },
-  '스테비아': { verdict: 'good', text: '식물 추출 감미료로 칼로리가 0에 가깝습니다. 단, 특유의 뒷맛이 있을 수 있어요.' },
-  '수크랄로스': { verdict: 'neutral', text: '설탕의 600배 단맛을 가진 인공 감미료입니다. 칼로리는 없지만, 장기 섭취에 대한 연구가 진행 중이에요.' },
-  '아스파탐': { verdict: 'caution', text: '칼로리는 없지만, 페닐케톤뇨증 환자는 피해야 합니다. 고온에서 분해되므로 조리용으로는 부적합해요.' },
-  '말티톨': { verdict: 'caution', text: '당알코올 중 혈당 영향이 큰 편입니다 (GI 약 35). 다량 섭취 시 소화 불편을 유발할 수 있어요.' },
-  '에리스리톨': { verdict: 'good', text: '칼로리가 거의 없고 혈당에 영향이 적습니다. 소화 부담도 다른 당알코올보다 적은 편이에요.' },
-  '아세설팜칼륨': { verdict: 'neutral', text: '설탕의 200배 단맛, 칼로리 0입니다. 다른 감미료와 혼합하여 사용되는 경우가 많아요.' },
-  '자일리톨': { verdict: 'neutral', text: '충치 예방에 도움이 되지만, 다량 섭취 시 소화 불편이 있을 수 있어요.' },
-};
-
 const RANK_BASES = [
   { key: 'protein', label: '단백질', unit: 'g' },
   { key: 'eaa', label: 'EAA', unit: 'mg' },
@@ -75,9 +63,6 @@ function generateInsights(nutrition, ingredients) {
   if (n.sodium >= 600) cautions.push(`나트륨 ${n.sodium}mg으로 높은 편이에요. 하루 총 섭취량을 고려하세요.`);
   if (n.saturatedFat >= 7) cautions.push(`포화지방 ${n.saturatedFat}g으로, 하루 권장량의 상당 부분에 해당합니다.`);
   if (n.fat >= 15) cautions.push(`지방 ${n.fat}g으로 높은 편이에요. 칼로리 관리에 영향을 줄 수 있습니다.`);
-  if (ing.sweeteners?.some(s => s === '말티톨')) cautions.push('말티톨이 포함되어 있어 다른 대체당보다 혈당 영향이 클 수 있어요.');
-  if (ing.sweeteners?.some(s => s === '아스파탐')) cautions.push('아스파탐이 포함되어 있습니다. 페닐케톤뇨증 환자는 섭취를 피해야 합니다.');
-
   return { strengths, cautions };
 }
 
@@ -1715,14 +1700,6 @@ function proteinSourceType(name) {
   return '단백질원';
 }
 
-function sweetenerType(name) {
-  if (/말티톨|에리스리톨|자일리톨|소르비톨/i.test(name)) return '당알코올';
-  if (/알룰로/i.test(name)) return '희소당';
-  if (/수크랄로스|아스파탐|아세설팜/i.test(name)) return '고감미도 감미료';
-  if (/스테비아/i.test(name)) return '스테비아계';
-  return '대체당';
-}
-
 function ShakeIngredientSection({ proteinNotes, sweetenerNotes }) {
   const uniqueNotes = uniqueProteinNotes(proteinNotes);
   return (
@@ -1750,7 +1727,7 @@ function ShakeIngredientSection({ proteinNotes, sweetenerNotes }) {
               {sweetenerNotes.map((note) => (
                 <span key={note.name}>
                   <strong>{note.name}</strong>
-                  {sweetenerType(note.name)}
+                  {note.type || '대체당'}
                 </span>
               ))}
             </div>
@@ -1773,7 +1750,7 @@ function ShakeSweetenerSection({ sweetenerNotes }) {
               <div className="d-analysis-ingr-head">
                 <span className="d-analysis-ingr-name">{note.name}</span>
               </div>
-              <p className="d-analysis-ingr-text">{note.text}</p>
+              {note.text && <p className="d-analysis-ingr-text">{note.text}</p>}
             </div>
           ))}
         </div>
@@ -1840,7 +1817,9 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
     return resolvedSweeteners.map((sweetener) => ({
       name: sweetener.nameKo,
       type: sweetener.sweetenerType,
-      ...(SWEETENER_INFO[sweetener.nameKo] ?? { verdict: 'neutral', text: '추후 정보가 추가될 예정입니다.' }),
+      benefitsText: sweetener.benefitsText,
+      cautionsText: sweetener.cautionsText,
+      text: [sweetener.benefitsText, sweetener.cautionsText].filter(Boolean).join(' '),
     }));
   }, [resolvedSweeteners]);
 
