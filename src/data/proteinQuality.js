@@ -1,7 +1,7 @@
 // 단백질 원료 품질 — 원문 텍스트를 정규 원료로 해석해 약자·품질등급 표시
 // - 해석은 DB 함수 resolve_protein_ingredient_code()(RPC)를 1순위로 사용 → DB 정규화 규칙과 100% 일치
 // - RPC 실패(권한/인자명 불일치 등) 시 클라이언트 정규화 매칭으로 폴백
-// - 원료 메타는 protein_ingredients, 품질 등급은 protein_ingredient_quality_assessments에서 읽어 code로 합침
+// - 원료 메타는 ingredients, 품질 등급은 ingredient_protein_quality_assessments에서 읽어 code로 합침
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 
@@ -91,8 +91,8 @@ function buildDictionary(ingredients, aliases, qualities) {
     return Number(a?.id ?? 0) - Number(b?.id ?? 0);
   });
   for (const q of rankedQualities) {
-    if (q?.protein_ingredient_code && !qualityByCode.has(q.protein_ingredient_code)) {
-      qualityByCode.set(q.protein_ingredient_code, q);
+    if (q?.ingredient_code && !qualityByCode.has(q.ingredient_code)) {
+      qualityByCode.set(q.ingredient_code, q);
     }
   }
   const addNorm = (text, ing) => {
@@ -116,7 +116,7 @@ function buildDictionary(ingredients, aliases, qualities) {
     if (g.abbreviation) addNorm(g.abbreviation, ing);
   }
   for (const a of aliases) {
-    const ing = byCode.get(a.protein_ingredient_code);
+    const ing = byCode.get(a.ingredient_code);
     if (!ing) continue;
     if (a.alias) addNorm(a.alias, ing); // 원본 alias도 같은 normalize로 키 등록(폴백 일관성)
   }
@@ -135,19 +135,20 @@ async function loadDictionary() {
     try {
       const [ingRes, aliasRes] = await Promise.all([
         supabase
-          .from('protein_ingredients')
+          .from('ingredients')
           .select('code, name_ko, abbreviation, display_description')
+          .eq('category', 'protein_source')
           .eq('is_active', true),
         supabase
-          .from('protein_ingredient_aliases')
-          .select('protein_ingredient_code, alias'),
+          .from('ingredient_aliases')
+          .select('ingredient_code, alias'),
       ]);
       if (ingRes.error) {
         dictCache = EMPTY_DICT;
       } else {
         const qualityRes = await supabase
-          .from('protein_ingredient_quality_assessments')
-          .select('id, protein_ingredient_code, grade, method, evidence_level, age_basis, source_url');
+          .from('ingredient_protein_quality_assessments')
+          .select('id, ingredient_code, grade, method, evidence_level, age_basis, source_url');
         dictCache = buildDictionary(
           ingRes.data ?? [],
           aliasRes.error ? [] : (aliasRes.data ?? []),
