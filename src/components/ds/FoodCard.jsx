@@ -7,13 +7,13 @@
 //   - onCompare: 비교함 담기 콜백 (미지정 시 + 버튼 미표시)
 import { Fragment } from 'react';
 import { MacroRow } from './MacroRow.jsx';
-import { useMetricColumn } from './MetricColumnContext.jsx';
-import { IconPlus, IconCheck } from './Icons.jsx';
+import { IconPlus, IconCheck, IconCompare, IconHeart } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
 import { getCategoryCardConfig, computeMetricValues, getHighlightValue } from '../../data/categoryCardMetrics.js';
 import { formatProteinSourceLabel, formatSweetenerLabel } from '../../data/listFilters.js';
 import { useProteinResolver, useSweetenerResolver } from '../../data/proteinQuality.js';
 import {
+  getProteinDrinkRecommendScore,
   PROTEIN_SORT_BASES,
   PROTEIN_SORT_MODES,
   PROTEIN_SORT_RECOMMEND,
@@ -290,14 +290,16 @@ function TieredMetricsBlock({ food, config, sortKey }) {
   const sources = config.showProteinSource ? (food.ingredients?.proteinSources ?? []) : [];
   const sweeteners = config.showSweetenerMeta ? (food.ingredients?.sweeteners ?? food.sweeteners ?? []) : [];
   const isProteinMetricSort = isTieredMetricSort(sortKey, primary);
-  const isRecommend = !isProteinMetricSort || sortKey === PROTEIN_SORT_RECOMMEND;
+  const isRecommend = sortKey === PROTEIN_SORT_RECOMMEND;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
       {isRecommend ? (
-        <TieredPrimaryTable food={food} metrics={primary} sortKey={sortKey} />
-      ) : (
+        <RecommendScore food={food} />
+      ) : isProteinMetricSort ? (
         <SelectedProteinMetric food={food} metrics={primary} sortKey={sortKey} />
+      ) : (
+        <TieredPrimaryTable food={food} metrics={primary} sortKey={sortKey} />
       )}
 
       <TieredMeta sources={sources} sweeteners={sweeteners} showSweeteners={config.showSweetenerMeta} />
@@ -310,6 +312,31 @@ function isTieredMetricSort(sortKey, metrics) {
   if (typeof sortKey !== 'string' || !sortKey.includes('_')) return false;
   const { base, mode } = splitProteinSortKey(sortKey);
   return metrics.some((m) => m.key === base) && PROTEIN_SORT_MODES.some((m) => m.key === mode);
+}
+
+function RecommendScore({ food }) {
+  const score = getProteinDrinkRecommendScore(food);
+  if (!Number.isFinite(score)) return null;
+  const protein = formatInlineNumber(food?.nutrition?.protein);
+
+  return (
+    <div className="fc-recommend-summary">
+      <div className="fc-recommend-score">
+        <span className="fc-meta-label fc-recommend-score-label">추천점수</span>
+        <span className="fc-recommend-score-value">
+          {Math.round(score)}<span className="fc-recommend-score-unit">점</span>
+        </span>
+      </div>
+      {protein !== null && (
+        <div className="fc-recommend-protein">
+          <span className="fc-meta-label fc-recommend-score-label">단백질</span>
+          <span className="fc-recommend-protein-value">
+            {protein}<span className="fc-recommend-score-unit">g</span>
+          </span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // 표 위 부가정보 — 단백질원/대체당을 간결하게 표시
@@ -372,12 +399,11 @@ function SelectedProteinMetric({ food, metrics, sortKey }) {
 
   return (
     <div className="fc-selected-metric">
-      <span className="fc-selected-metric-name">{baseDef?.label ?? metric.label}</span>
+      <span className="fc-meta-label fc-selected-metric-name">{baseDef?.label ?? metric.label}</span>
       <span className="fc-selected-metric-value">
         {value.num}<span className="fc-selected-metric-unit">{value.unit}</span>
+        <span className="fc-selected-metric-basis">{modeDef?.label ?? '1회 제공량 기준'}</span>
       </span>
-      <span className="fc-selected-metric-sep">/</span>
-      <span className="fc-selected-metric-basis">{modeDef?.label ?? '총량 기준'}</span>
     </div>
   );
 }
@@ -386,10 +412,7 @@ function SelectedProteinMetric({ food, metrics, sortKey }) {
 // - 세 지표를 같은 비중으로 두되 열로 정렬해 가독성 확보
 // - 100kcal당/1,000원당 열은 데이터(칼로리·구매가) 있을 때만 노출
 // - 리스트 카드 + 상세페이지(핵심 지표 섹션)에서 공용
-export function TieredPrimaryTable({ food, metrics, sortKey }) {
-  // 강조 열 — 카드 간 공유(컨텍스트). 호버 시 모든 제품 같은 열 강조, 풀려도 유지
-  const [hoverCol, setHoverCol] = useMetricColumn();
-
+export function TieredPrimaryTable({ food, metrics, sortKey, priceHelp }) {
   const rows = metrics
     .map((m) => {
       const result = computeMetricValues(food, m);
@@ -410,7 +433,7 @@ export function TieredPrimaryTable({ food, metrics, sortKey }) {
 
   // 값 열은 항상 고정. 행은 숨기더라도 카드 간 열 위치가 흔들리지 않게 한다.
   const cols = [
-    { key: 'total', head: '총량 기준', variant: 'total', pick: (r) => r.total },
+    { key: 'total', head: '1회 제공량 기준', variant: 'total', pick: (r) => r.total },
     { key: 'kcal', head: '100kcal 기준', variant: 'ratio', pick: (r) => r.perKcal },
     { key: 'price', head: '1,000원 기준', variant: 'ratio', pick: (r) => r.perPrice },
   ];
@@ -422,18 +445,12 @@ export function TieredPrimaryTable({ food, metrics, sortKey }) {
     : null;
   const sortMode = !!hl;
 
-  const cellActive = (rKey, cKey) =>
-    (sortMode ? (hl.base === rKey && hl.mode === cKey) : (hoverCol === cKey));
-  const headActive = (cKey) =>
-    (sortMode ? (hl.mode === cKey) : (hoverCol === cKey));
-  const focused = sortMode || !!hoverCol;
-
-  // 호버 핸들러 — 조합 정렬 중엔 미부착(호버 강조 비활성), 추천순일 때만 동작
-  const colHandlers = (key) => (sortMode ? {} : { onMouseEnter: () => setHoverCol(key) });
+  const cellActive = (rKey, cKey) => sortMode && hl.base === rKey && hl.mode === cKey;
+  const headActive = (cKey) => sortMode && hl.mode === cKey;
 
   return (
     <div
-      className={`fc-ptable${focused ? ' is-focused' : ''}`}
+      className={`fc-ptable${sortMode ? ' is-focused' : ''}`}
     >
       {/* 헤더 — 라인 없이 타이포(작고 연함)로 구분 */}
       <span className="fc-ptable-corner" />
@@ -441,9 +458,14 @@ export function TieredPrimaryTable({ food, metrics, sortKey }) {
         <span
           key={c.key}
           className={`fc-ptable-head${headActive(c.key) ? ' is-active' : ''}`}
-          {...colHandlers(c.key)}
         >
-          {c.head}
+          <span className="fc-ptable-head-text">{c.head}</span>
+          {c.key === 'price' && priceHelp && (
+            <span className="fc-ptable-help" aria-label={priceHelp} tabIndex={0}>
+              ?
+              <span className="fc-ptable-help-bubble" role="tooltip">{priceHelp}</span>
+            </span>
+          )}
         </span>
       ))}
       {/* 지표 행 */}
@@ -456,7 +478,6 @@ export function TieredPrimaryTable({ food, metrics, sortKey }) {
               value={c.pick(r)}
               variant={c.variant}
               active={cellActive(r.key, c.key)}
-              {...colHandlers(c.key)}
             />
           ))}
         </Fragment>
@@ -560,8 +581,46 @@ function IngredientDetails({ ingredients, hide = [] }) {
   );
 }
 
+// wide 카드 우측 상단 액션 버튼
+function WideCompareButton({ food, onCompare, inCompare }) {
+  if (!onCompare) return null;
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onCompare(food);
+      }}
+      aria-pressed={inCompare}
+      aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
+      title={inCompare ? '비교함에서 빼기' : '비교함에 담기'}
+      className={`d-foodcard-wide-action d-foodcard-wide-action--compare${inCompare ? ' is-in' : ''}`}
+    >
+      <IconCompare size={16} stroke={1.8} />
+    </button>
+  );
+}
+
+function WideLikeButton({ food, onWishlist, inWishlist }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onWishlist?.(food);
+      }}
+      aria-pressed={inWishlist}
+      aria-label={inWishlist ? `${food.name} 찜함에서 빼기` : `${food.name} 찜하기`}
+      title={inWishlist ? '찜함에서 빼기' : '찜하기'}
+      className={`d-foodcard-wide-action d-foodcard-wide-action--like${inWishlist ? ' is-in' : ''}`}
+    >
+      <IconHeart size={16} stroke={1.8} />
+    </button>
+  );
+}
+
 // wide 레이아웃: 가로형 (데스크톱 리스트 전용)
-function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, sortKey }) {
+function FoodCardWide({ food, onClick, onCompare, inCompare, onWishlist, inWishlist, tabId, subLabel, sortKey }) {
   // 카테고리별 카드 구성 (탄단지 비율바·원재료 섹션 노출 여부)
   const config = getCategoryCardConfig(tabId, subLabel);
   return (
@@ -570,95 +629,88 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, tabId, subLabel, so
       className="d-foodcard-wide"
       style={{
         display: 'flex',
-        gap: 20,
+        flexDirection: 'column',
+        gap: 0,
         padding: '20px 0',
         cursor: 'pointer',
-        alignItems: 'flex-start',
+        position: 'relative',
       }}
     >
-      {/* 썸네일 + 비교함 */}
-      <div className="d-foodcard-wide-media">
-        <div className="d-foodcard-wide-thumb">
-          <ThumbImage src={food.thumb} alt={food.name} />
+      <div className="d-foodcard-wide-actions">
+        <WideLikeButton food={food} onWishlist={onWishlist} inWishlist={inWishlist} />
+        <WideCompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+      </div>
+
+      <div className="d-foodcard-wide-main">
+        {/* 썸네일 */}
+        <div className="d-foodcard-wide-media">
+          <div className="d-foodcard-wide-thumb">
+            <ThumbImage src={food.thumb} alt={food.name} />
+          </div>
         </div>
-        {onCompare && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCompare(food);
+
+        {/* 상세 정보 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{food.brand}</div>
+
+          {/* 상품명 — 크롤 가능한 상세 링크 */}
+          <a
+            href={productHref(food)}
+            onClick={(e) => handleNameClick(e, onClick)}
+            style={{
+              fontSize: 18,
+              color: 'var(--text-primary)',
+              fontWeight: 600,
+              lineHeight: 1.4,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textDecoration: 'none',
             }}
-            aria-pressed={inCompare}
-            aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
-            className={`d-foodcard-wide-compare${inCompare ? ' is-in' : ''}`}
           >
-            {inCompare ? <IconCheck size={12} stroke={2} /> : <IconPlus size={12} stroke={2} />}
-            <span>비교함</span>
-          </button>
-        )}
+            <ProductNameContent food={food} config={config} />
+          </a>
+
+          <ServingMeta
+            food={food}
+            showCalories={Boolean(config.primaryMetrics) || config.showServingCalories === true}
+            variant={config.servingMetaVariant}
+          />
+
+          {/* 셰이크형 미니 탄단지 — 원료 상세보다 먼저 보이도록 배치 */}
+          {config.showMacroBar !== false && config.macroBarVariant && (
+            <MacroRow {...food.macros} wide ratioOnly variant={config.macroBarVariant} />
+          )}
+
+          {/* 카테고리별 강조 지표 — 모바일 리스트 카드와 동일(CategoryMetricsBlock) */}
+          <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
+
+          {/* 탄단지 비율 막대 — 카테고리 설정에서 끌 수 있음(showMacroBar=false) */}
+          {config.showMacroBar !== false && !config.macroBarVariant && (
+            <MacroRow {...food.macros} wide ratioOnly />
+          )}
+
+          {/* 나머지 영양성분 — 카테고리 설정에서 끌 수 있음(showSubNutrients=false) */}
+          {config.showSubNutrients !== false && (
+            <SubNutrients nutrition={food.nutrition} category={food.category} />
+          )}
+
+          {/* 원재료·성분 상세 — 카테고리별로 일부 섹션 숨김 가능(hideIngredients)
+              tiered 카드(단백질 음료)는 상단 구조화 블록에서 표시하므로 생략 */}
+          {config.showIngredientDetails !== false && (
+            <IngredientDetails ingredients={food.ingredients} hide={config.hideIngredients} />
+          )}
+        </div>
       </div>
-
-      {/* 상세 정보 */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
-
-        {/* 상품명 — 크롤 가능한 상세 링크 */}
-        <a
-          href={productHref(food)}
-          onClick={(e) => handleNameClick(e, onClick)}
-          style={{
-            fontSize: 15,
-            color: 'var(--text-primary)',
-            fontWeight: 600,
-            lineHeight: 1.4,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textDecoration: 'none',
-          }}
-        >
-          <ProductNameContent food={food} config={config} />
-        </a>
-
-        <ServingMeta
-          food={food}
-          showCalories={Boolean(config.primaryMetrics) || config.showServingCalories === true}
-          variant={config.servingMetaVariant}
-        />
-
-        {/* 셰이크형 미니 탄단지 — 원료 상세보다 먼저 보이도록 배치 */}
-        {config.showMacroBar !== false && config.macroBarVariant && (
-          <MacroRow {...food.macros} wide ratioOnly variant={config.macroBarVariant} />
-        )}
-
-        {/* 카테고리별 강조 지표 — 모바일 리스트 카드와 동일(CategoryMetricsBlock) */}
-        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
-
-        {/* 탄단지 비율 막대 — 카테고리 설정에서 끌 수 있음(showMacroBar=false) */}
-        {config.showMacroBar !== false && !config.macroBarVariant && (
-          <MacroRow {...food.macros} wide ratioOnly />
-        )}
-
-        {/* 나머지 영양성분 — 카테고리 설정에서 끌 수 있음(showSubNutrients=false) */}
-        {config.showSubNutrients !== false && (
-          <SubNutrients nutrition={food.nutrition} category={food.category} />
-        )}
-
-        {/* 원재료·성분 상세 — 카테고리별로 일부 섹션 숨김 가능(hideIngredients)
-            tiered 카드(단백질 음료)는 상단 구조화 블록에서 표시하므로 생략 */}
-        {config.showIngredientDetails !== false && (
-          <IngredientDetails ingredients={food.ingredients} hide={config.hideIngredients} />
-        )}
-        <PurchaseOffers
-          offers={food.purchaseLinks}
-          compact
-          sortBy="unit-first"
-          pricePer={config.purchasePricePer ?? 'unit'}
-          servingsPerUnit={food.servingsPerUnit}
-          className="fc-card-offers"
-        />
-      </div>
+      <PurchaseOffers
+        offers={food.purchaseLinks}
+        compact
+        sortBy="unit-first"
+        pricePer={config.purchasePricePer ?? 'unit'}
+        servingsPerUnit={food.servingsPerUnit}
+        className="fc-card-offers"
+      />
     </div>
   );
 }
@@ -783,13 +835,13 @@ function ReviewMeta({ reviewCount }) {
   );
 }
 
-export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, sortKey, tabId, subLabel, showPurchase = false, metrics }) {
+export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, onWishlist, inWishlist, sortKey, tabId, subLabel, showPurchase = false, metrics }) {
   if (!food) return null;
   if (layout === 'list') {
     return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;
   }
   if (layout === 'wide') {
-    return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;
+    return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} onWishlist={onWishlist} inWishlist={inWishlist} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;
   }
   return <FoodCardGrid food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} sortKey={sortKey} showPurchase={showPurchase} metrics={metrics} />;
 }

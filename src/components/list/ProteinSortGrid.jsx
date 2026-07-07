@@ -60,7 +60,7 @@ export function ProteinSortGrid({ value, onChange }) {
           disabled={recommendActive}
         />
         <SortSegment
-          head="높은 순"
+          head="성분"
           options={PROTEIN_SORT_BASES}
           activeKey={current.base}
           onPick={pickBase}

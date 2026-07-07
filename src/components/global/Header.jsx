@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { IconSearch } from '../ds/Icons.jsx';
+import { IconCompare, IconHeart, IconSearch } from '../ds/Icons.jsx';
+import { useCompare } from '../../store/CompareContext.jsx';
+import { useWishlist } from '../../store/WishlistContext.jsx';
 
 const HIDE_SEARCH_PATHS = ['/about', '/faq', '/contact', '/terms', '/privacy'];
 
@@ -45,6 +47,8 @@ function HeaderSearchBar() {
 export default function Header() {
   const { pathname } = useLocation();
   const hideSearch = HIDE_SEARCH_PATHS.includes(pathname);
+  const compare = useCompare();
+  const wishlist = useWishlist();
 
   return (
     <header className="header">
@@ -59,12 +63,33 @@ export default function Header() {
 
         {!hideSearch && <HeaderSearchBar />}
 
-        <nav className="header-nav" aria-label="주요 메뉴">
+        <nav className="header-nav" aria-label="바로가기">
           <Link
-            to="/about"
-            className={`header-about-link${pathname === '/about' ? ' is-active' : ''}`}
+            to="/compare"
+            className={`header-shortcut${pathname === '/compare' ? ' is-active' : ''}`}
+            aria-label={`비교함${compare.count > 0 ? ` ${compare.count}개` : ''}`}
           >
-            About us
+            <span className="header-shortcut-icon" aria-hidden="true">
+              <IconCompare size={17} stroke={1.8} />
+              {compare.count > 0 && (
+                <span className="header-shortcut-badge">{compare.count}</span>
+              )}
+            </span>
+            <span>비교함</span>
+          </Link>
+          <Link
+            to="/wishlist"
+            className={`header-shortcut${pathname === '/wishlist' ? ' is-active' : ''}`}
+            aria-label={`찜함${wishlist.count > 0 ? ` ${wishlist.count}개` : ''}`}
+            title="찜함"
+          >
+            <span className="header-shortcut-icon" aria-hidden="true">
+              <IconHeart size={17} stroke={1.8} />
+              {wishlist.count > 0 && (
+                <span className="header-shortcut-badge">{wishlist.count}</span>
+              )}
+            </span>
+            <span>찜함</span>
           </Link>
         </nav>
       </div>

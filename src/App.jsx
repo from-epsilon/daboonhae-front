@@ -17,6 +17,7 @@ const MainPage = lazy(() => import('./pages/MainPage.jsx'));
 const ListPage = lazy(() => import('./pages/ListPage.jsx'));
 const DetailPage = lazy(() => import('./pages/DetailPage.jsx'));
 const ComparePage = lazy(() => import('./pages/ComparePage.jsx'));
+const WishlistPage = lazy(() => import('./pages/WishlistPage.jsx'));
 const AboutPage = lazy(() => import('./pages/AboutPage.jsx'));
 const FaqPage = lazy(() => import('./pages/FaqPage.jsx'));
 const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
@@ -55,6 +56,7 @@ function DesktopShell() {
                     <Route path="/category/:categorySlug" element={<ListPage />} />
                     <Route path="/product/:id" element={<DetailPage />} />
                     <Route path="/compare" element={<ComparePage />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/contact" element={<ContactPage />} />
@@ -94,6 +96,7 @@ function MobileShell() {
                     <Route path="/category/:categorySlug" element={<ListPageMobile />} />
                     <Route path="/product/:id" element={<DetailPageMobile />} />
                     <Route path="/compare" element={<ComparePageMobile />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/contact" element={<ContactPage />} />

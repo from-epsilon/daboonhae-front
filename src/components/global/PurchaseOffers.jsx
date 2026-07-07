@@ -177,7 +177,12 @@ export default function PurchaseOffers({
   return (
     <section className={rootClass}>
       {compact ? (
-        <div className="purchase-offers-compact-title">{title}</div>
+        <div className="purchase-offers-head">
+          <div className="purchase-offers-compact-title">{title}</div>
+          <p className="purchase-offers-affiliate">
+            ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
+          </p>
+        </div>
       ) : (
         <h2 className="purchase-offers-title">{title}</h2>
       )}
@@ -238,12 +243,14 @@ export default function PurchaseOffers({
       </div>
       {updatedLabel && (
         <p className="purchase-offers-updated">
-          가격 정보 기준 {updatedLabel} · 실제 가격과 다를 수 있어 구매 전 확인해 주세요
+          가격 정보 기준 {updatedLabel} · 실제 가격과 다를 수 있습니다
         </p>
       )}
-      <p className="purchase-offers-affiliate">
-        ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
-      </p>
+      {!compact && (
+        <p className="purchase-offers-affiliate">
+          ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
+        </p>
+      )}
     </section>
   );
 }

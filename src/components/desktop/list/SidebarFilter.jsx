@@ -1,17 +1,15 @@
-import { AlertTriangle, X, RotateCcw, Check } from 'lucide-react';
+import { AlertTriangle, X, Check } from 'lucide-react';
 import { splitLabelUnit } from '../../../utils/format.js';
 
 // 데스크탑 좌측 사이드바 필터
 // - 280px 고정 폭, sticky 상단 고정
-// - 필터 타이틀 + 활성 개수 + 초기화 버튼
+// - 활성 개수 + 초기화 버튼
 // - 세부 카테고리(라디오 리스트) + 목적별 필터(range/tristate/bool)
 // - 부모(ListPage)가 모든 상태를 관리, 여기서는 입력만 전달
 export default function SidebarFilter({
   specs,
   value,
   onChange,
-  onReset,
-  activeCount,
 }) {
   const updateField = (key, next) => {
     onChange({ ...value, [key]: next });
@@ -19,8 +17,6 @@ export default function SidebarFilter({
 
   return (
     <aside className="d-list-sidebar">
-      <SidebarHeader activeCount={activeCount} onReset={onReset} />
-
       {specs && specs.length > 0 ? (
         specs.map((spec) => (
           <FilterSection key={spec.key} spec={spec} value={value[spec.key]} onChange={(next) => updateField(spec.key, next)} />
@@ -29,24 +25,6 @@ export default function SidebarFilter({
         <div className="d-list-sidebar-empty">목적을 선택하면 세부 필터가 표시됩니다.</div>
       )}
     </aside>
-  );
-}
-
-// 사이드바 상단 헤더 — "필터" + 활성 개수 뱃지 + 초기화
-function SidebarHeader({ activeCount, onReset }) {
-  return (
-    <div className="d-list-sidebar-header">
-      <div className="d-list-sidebar-title">
-        필터
-        {activeCount > 0 && <span className="d-list-sidebar-count">{activeCount}</span>}
-      </div>
-      {activeCount > 0 && (
-        <button type="button" className="d-list-sidebar-reset" onClick={onReset}>
-          <RotateCcw size={12} aria-hidden />
-          <span>초기화</span>
-        </button>
-      )}
-    </div>
   );
 }
 
@@ -69,9 +47,10 @@ function SubCategorySection({ subCategories, value, onChange }) {
 // - range는 단위를 인풋 내부 suffix로 표시하므로 섹션 라벨에서는 괄호 단위 제거
 function FilterSection({ spec, value, onChange }) {
   const typeClass = spec.type !== 'range' ? ` d-list-filter-section--${spec.type}` : '';
+  const keyClass = spec.key ? ` d-list-filter-section--${spec.key}` : '';
   const label = spec.type === 'range' ? splitLabelUnit(spec.label).name : spec.label;
   return (
-    <div className={`d-list-filter-section${typeClass}`}>
+    <div className={`d-list-filter-section${typeClass}${keyClass}`}>
       <FilterLabel label={label} note={spec.note} />
       {renderControl(spec, value, onChange)}
     </div>
@@ -122,19 +101,18 @@ function RangeControl({ spec, value, onChange }) {
   const handleMax = (e) => onChange({ ...value, max: e.target.value === '' ? undefined : Number(e.target.value) });
   return (
     <div className="d-list-range">
-      <div className="d-list-range-field">
+      <div className="d-list-range-field d-list-range-field--min">
         <input
           type="number"
-          className="d-list-range-input"
+          className="d-list-range-input d-list-range-input--plain"
           placeholder="0"
           value={min}
           onChange={handleMin}
           aria-label={`${spec.label} 최솟값`}
         />
-        {unit && <span className="d-list-range-unit" aria-hidden="true">{unit}</span>}
       </div>
       <span className="d-list-range-sep">~</span>
-      <div className="d-list-range-field">
+      <div className="d-list-range-field d-list-range-field--max">
         <input
           type="number"
           className="d-list-range-input"

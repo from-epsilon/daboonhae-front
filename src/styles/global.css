@@ -35,7 +35,7 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  font-family: var(--font-body); /* DS 본문 폰트: Noto Sans KR 우선 */
+  font-family: var(--font-body); /* DS 본문 폰트: Pretendard */
   background: var(--c-surface);
   color: var(--c-text);
   line-height: 1.5;
@@ -117,22 +117,52 @@ select:focus-visible {
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  gap: 6px;
 }
-.header-about-link {
+.header-shortcut {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 36px;
-  padding: 0 10px;
+  padding: 0 12px;
+  border: 0;
   border-radius: var(--radius-pill);
+  background: transparent;
+  font-family: var(--font-body);
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--c-text-sub);
+  cursor: pointer;
+  white-space: nowrap;
   transition: color 0.15s, background-color 0.15s;
 }
-.header-about-link:hover,
-.header-about-link.is-active {
+.header-shortcut:hover,
+.header-shortcut.is-active {
   color: var(--green-700);
   background: var(--c-bg);
+}
+.header-shortcut-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.header-shortcut-badge {
+  position: absolute;
+  top: -8px;
+  right: -9px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--red-500);
+  color: var(--white);
+  font-family: var(--font-numeric);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
 }
 .purpose-toggle { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
 .purpose-chip {
@@ -491,6 +521,10 @@ select:focus-visible {
   justify-content: start;
 }
 .fc-ptable-head {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 400;
@@ -500,6 +534,60 @@ select:focus-visible {
   cursor: default;
   /* 라인 대신 간격으로 헤더-데이터 분리 */
   padding-bottom: 3px;
+}
+.fc-ptable-help {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-pill);
+  color: var(--text-tertiary);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+.fc-ptable-help:hover,
+.fc-ptable-help:focus-visible {
+  border-color: var(--brand-green);
+  color: var(--green-700);
+  outline: none;
+}
+.fc-ptable-help-bubble {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  width: 220px;
+  transform: translateX(-50%);
+  padding: 9px 11px;
+  border-radius: var(--radius-md);
+  background: var(--gray-900);
+  color: var(--white);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: normal;
+  z-index: var(--z-dropdown);
+  pointer-events: none;
+}
+.fc-ptable-help-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--gray-900);
+}
+.fc-ptable-help:hover .fc-ptable-help-bubble,
+.fc-ptable-help:focus-visible .fc-ptable-help-bubble {
+  display: block;
 }
 /* 열 호버 — 헤더 강조 */
 .fc-ptable-head.is-active {
@@ -605,6 +693,7 @@ select:focus-visible {
 }
 .fc-meta-row {
   display: flex;
+  align-items: baseline;
   gap: 8px;
   font-family: var(--font-body);
   font-size: 11px;
@@ -612,8 +701,9 @@ select:focus-visible {
 }
 .fc-meta-label {
   flex-shrink: 0;
-  width: 48px;
+  width: 64px;
   color: var(--text-tertiary);
+  white-space: nowrap;
 }
 .fc-meta-value {
   min-width: 0;
@@ -635,6 +725,10 @@ select:focus-visible {
   font-size: 11px;
   color: var(--text-tertiary);
   line-height: 1.35;
+}
+
+.d-foodcard-wide .fc-serving-meta {
+  font-size: 12px;
 }
 
 .fc-title-variant {
@@ -726,25 +820,25 @@ select:focus-visible {
 }
 
 .fc-selected-metric {
-  display: inline-flex;
+  display: flex;
   align-items: baseline;
-  gap: 5px;
-  width: fit-content;
+  gap: 8px;
   max-width: 100%;
   margin-top: 1px;
   font-family: var(--font-body);
-  line-height: 1.25;
+  font-size: 11px;
+  line-height: 1.45;
 }
 .fc-selected-metric-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
 }
 .fc-selected-metric-value {
   flex-shrink: 0;
   font-family: var(--font-numeric);
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text-primary);
   line-height: 1.15;
   white-space: nowrap;
@@ -755,11 +849,57 @@ select:focus-visible {
   font-weight: 500;
   color: var(--text-tertiary);
 }
-.fc-selected-metric-sep,
 .fc-selected-metric-basis {
+  margin-left: 5px;
   font-size: 11px;
   font-weight: 400;
   color: var(--text-tertiary);
+}
+
+.fc-recommend-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 1px;
+}
+.fc-recommend-score,
+.fc-recommend-protein {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 100%;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.fc-recommend-score-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+.fc-recommend-score-value {
+  flex-shrink: 0;
+  font-family: var(--font-numeric);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--green-700);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.fc-recommend-score-unit {
+  margin-left: 1px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.fc-recommend-protein-value {
+  flex-shrink: 0;
+  font-family: var(--font-numeric);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 /* 홈 그리드 카드 — 제품명 길이에 상관없이 내부 기준선을 맞춤 */
@@ -1259,7 +1399,6 @@ img.product-thumb { object-fit: cover; }
   border-radius: 2px;
 }
 
-.d-foodcard-wide-compare,
 .m-foodcard-store {
   display: inline-flex;
   align-items: center;
@@ -1279,20 +1418,19 @@ img.product-thumb { object-fit: cover; }
     box-shadow 150ms ease;
 }
 
-.d-foodcard-wide-compare {
-  gap: 5px;
-  min-height: 30px;
-  padding: 0 11px;
-  border-radius: var(--radius-pill);
-  font-size: 12px;
-}
-
 .d-foodcard-wide-media {
   width: 140px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.d-foodcard-wide-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding-right: 76px;
 }
 
 .d-foodcard-wide-thumb {
@@ -1303,21 +1441,56 @@ img.product-thumb { object-fit: cover; }
   background: #fff;
 }
 
-.d-foodcard-wide-media .d-foodcard-wide-compare {
-  width: 100%;
+.d-foodcard-wide-actions {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.d-foodcard-wide-compare:hover {
+.d-foodcard-wide-action {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-pill);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.d-foodcard-wide-action:hover {
   border-color: var(--brand-green);
   color: var(--green-700);
   background: var(--green-50);
 }
 
-.d-foodcard-wide-compare.is-in {
-  border-color: var(--brand-green);
-  background: var(--brand-green);
-  color: var(--white);
-  box-shadow: 0 4px 10px rgba(0, 134, 0, 0.16);
+.d-foodcard-wide-action.is-in {
+  border-color: #8eea8a;
+  background: var(--green-50);
+  color: var(--green-700);
+  box-shadow: 0 4px 10px rgba(0, 134, 0, 0.12);
+}
+
+.d-foodcard-wide-action--like:hover {
+  border-color: #f4a6b8;
+  color: #e11d48;
+  background: #fff1f4;
+}
+.d-foodcard-wide-action--like.is-in {
+  border-color: #f4a6b8;
+  color: #e11d48;
+  background: #fff1f4;
+  box-shadow: 0 4px 10px rgba(225, 29, 72, 0.12);
 }
 
 .m-foodcard-store {
@@ -1385,6 +1558,13 @@ img.product-thumb { object-fit: cover; }
   color: var(--text-primary);
 }
 
+.purchase-offers-head {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  min-width: 0;
+}
+
 .purchase-offers-list {
   display: flex;
   flex-direction: row;
@@ -1444,7 +1624,7 @@ img.product-thumb { object-fit: cover; }
 }
 
 .purchase-offer-logo {
-  height: 17px;
+  height: 15px;
   width: auto;
   display: block;
   flex-shrink: 0;
@@ -1503,7 +1683,7 @@ img.product-thumb { object-fit: cover; }
 }
 .purchase-offer-price-value {
   font-size: 21px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.05;
   color: inherit;
   white-space: nowrap;
@@ -1533,6 +1713,7 @@ img.product-thumb { object-fit: cover; }
   font-size: 11px;
   line-height: 1.5;
   color: var(--text-tertiary);
+  min-width: 0;
 }
 
 /* 가격 정보 기준일 안내 (최신 정보 아닐 수 있음) */
@@ -1579,6 +1760,7 @@ img.product-thumb { object-fit: cover; }
 }
 
 .purchase-offers-compact-title {
+  flex-shrink: 0;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -1594,15 +1776,23 @@ img.product-thumb { object-fit: cover; }
   min-height: 82px;
   padding: 10px 10px 11px;
   border-radius: var(--radius-sm);
-  background: var(--gray-50);
+  background: var(--bg-white);
 }
 
 .purchase-offers--compact .purchase-offer-vendor {
   font-size: 12px;
 }
 
+.purchase-offers--compact .purchase-offer-logo {
+  height: 14px;
+}
+
 .purchase-offers--compact .purchase-offer-price-value {
   font-size: 16px;
+}
+
+.purchase-offers--compact .purchase-offer-price-label {
+  font-weight: 400;
 }
 
 .purchase-offers--compact .purchase-offer-meta {

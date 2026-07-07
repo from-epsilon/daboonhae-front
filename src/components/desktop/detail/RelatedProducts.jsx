@@ -20,7 +20,7 @@ export function RelatedProducts({ currentProduct, onNavigate, limit = 3 }) {
   if (related.length === 0) return null;
 
   return (
-    <section className="d-detail-related" aria-label="관련 제품">
+    <section className="d-detail-section-block d-detail-related" aria-label="관련 제품">
       <div className="d-detail-related-header">
         <h2 className="d-detail-related-title">같은 카테고리 제품</h2>
         <Link

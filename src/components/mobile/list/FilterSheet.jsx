@@ -97,45 +97,32 @@ function FilterRange({ spec, value, onChange }) {
           </button>
         ))}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="m-filter-range">
         <input
           type="number"
           value={min ?? ''}
           min={spec.min}
           max={spec.max}
-          placeholder={`최소 (${spec.min})`}
+          placeholder={String(spec.min)}
           onChange={(e) => handleInput('min', e.target.value)}
-          style={rangeInputStyle}
+          className="m-filter-range-input m-filter-range-input--min"
+          aria-label={`${spec.label} 최솟값`}
         />
-        <span style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>~</span>
+        <span className="m-filter-range-sep">~</span>
         <input
           type="number"
           value={max ?? ''}
           min={spec.min}
           max={spec.max}
-          placeholder={`최대 (${spec.max})`}
+          placeholder={String(spec.max)}
           onChange={(e) => handleInput('max', e.target.value)}
-          style={rangeInputStyle}
+          className="m-filter-range-input"
+          aria-label={`${spec.label} 최댓값`}
         />
       </div>
     </div>
   );
 }
-
-const rangeInputStyle = {
-  flex: 1,
-  padding: '10px 12px',
-  borderRadius: 8,
-  border: '1px solid var(--border-tertiary)',
-  background: 'white',
-  fontSize: 14,
-  fontFamily: 'var(--font-body)',
-  color: 'var(--text-primary)',
-  outline: 'none',
-  minWidth: 0,
-  // 모바일 number input 화살표 숨김 처리는 input은 그대로 두고 시각적으로만 단순화
-  WebkitAppearance: 'none',
-};
 
 // ============================================================ Tristate 필터
 // 옵션별로 3상태 토글: neutral(없음) → include(체크) → exclude(X)

@@ -19,6 +19,27 @@ const RANK_MODES = [
   { key: 'price', label: '1,000원당' },
 ];
 
+const FAO_EAA_PATTERN = [
+  { key: 'leucine', label: '류신', standard: 61, keys: ['leucine'] },
+  { key: 'isoleucine', label: '이소류신', standard: 30, keys: ['isoleucine'] },
+  { key: 'valine', label: '발린', standard: 40, keys: ['valine'] },
+  { key: 'histidine', label: '히스티딘', standard: 16, keys: ['histidine'] },
+  { key: 'lysine', label: '라이신', standard: 48, keys: ['lysine'] },
+  { key: 'sulfur', label: 'SAA', standard: 23, keys: ['methionine', 'cysteine'] },
+  { key: 'aromatic', label: 'AAA', standard: 41, keys: ['phenylalanine', 'tyrosine'] },
+  { key: 'threonine', label: '트레오닌', standard: 25, keys: ['threonine'] },
+  { key: 'tryptophan', label: '트립토판', standard: 6.6, keys: ['tryptophan'] },
+];
+
+const AMINO_PATTERN_SCALE_MAX = 180;
+const AMINO_PATTERN_TRACK_HEIGHT = 136;
+const AMINO_PATTERN_VALUE_HEIGHT = 18;
+const AMINO_PATTERN_ROW_GAP = 5;
+const AMINO_PATTERN_BASELINE_TOP =
+  AMINO_PATTERN_VALUE_HEIGHT +
+  AMINO_PATTERN_ROW_GAP +
+  AMINO_PATTERN_TRACK_HEIGHT * (1 - 100 / AMINO_PATTERN_SCALE_MAX);
+
 const NUTRIENT_COLORS = {
   carbs: {
     main: '#fb923c',
@@ -131,6 +152,124 @@ function aminoRatio(value, protein) {
   return Math.round((value / 1000 / protein) * 100);
 }
 
+function aminoPatternAmount(nutrition, keys) {
+  const values = keys
+    .map((key) => nutrition?.[key])
+    .filter((value) => typeof value === 'number' && Number.isFinite(value) && value > 0);
+  if (values.length === 0) return null;
+  return {
+    amount: values.reduce((sum, value) => sum + value, 0),
+    presentCount: values.length,
+  };
+}
+
+function buildAminoPatternRows(nutrition) {
+  const protein = nutrition?.protein;
+  if (!(protein > 0)) return [];
+
+  return FAO_EAA_PATTERN.map((item) => {
+    const amountInfo = aminoPatternAmount(nutrition, item.keys);
+    if (!amountInfo) {
+      return {
+        ...item,
+        value: null,
+        ratio: null,
+        delta: null,
+        barPercent: 0,
+        partial: false,
+        tone: 'missing',
+      };
+    }
+
+    const value = amountInfo.amount / protein;
+    const ratio = (value / item.standard) * 100;
+    return {
+      ...item,
+      value,
+      ratio,
+      delta: ratio - 100,
+      barPercent: Math.min((ratio / AMINO_PATTERN_SCALE_MAX) * 100, 100),
+      partial: amountInfo.presentCount < item.keys.length,
+      tone: ratio >= 100 ? 'enough' : 'low',
+    };
+  });
+}
+
+function AminoPatternSection({ nutrition }) {
+  const rows = buildAminoPatternRows(nutrition);
+  if (rows.length === 0) return null;
+
+  const visibleRows = rows.filter((row) => row.value != null);
+  if (visibleRows.length === 0) return null;
+
+  const hasPartial = visibleRows.some((row) => row.partial);
+
+  return (
+    <AnalysisSection title="필수아미노산 구성" icon={<IconInfo size={16} />}>
+      <div className="d-analysis-amino-pattern">
+        <div
+          className="d-analysis-amino-pattern-body"
+          style={{ '--baseline-top': `${AMINO_PATTERN_BASELINE_TOP}px` }}
+        >
+          <div className="d-analysis-amino-pattern-rail">
+            <span className="d-analysis-amino-pattern-legend d-analysis-amino-pattern-legend--fao">
+              <i aria-hidden="true" />
+              FAO 기준
+            </span>
+            <span className="d-analysis-amino-pattern-legend d-analysis-amino-pattern-legend--bcaa">
+              <i aria-hidden="true" />
+              BCAA
+            </span>
+          </div>
+          <div className="d-analysis-amino-pattern-chart">
+            {rows.map((row) => (
+              <div
+                className={[
+                  'd-analysis-amino-pattern-row',
+                  `is-${row.tone}`,
+                  ['leucine', 'isoleucine', 'valine'].includes(row.key) ? 'is-bcaa' : '',
+                  row.partial ? 'is-partial' : '',
+                ].filter(Boolean).join(' ')}
+                key={row.key}
+              >
+                <span className="d-analysis-amino-pattern-label">
+                  <span>{row.label}</span>
+                </span>
+                <div className="d-analysis-amino-pattern-track">
+                  {row.value != null ? (
+                    <span
+                      className="d-analysis-amino-pattern-bar"
+                      style={{ height: `${row.barPercent}%` }}
+                    />
+                  ) : (
+                    <span className="d-analysis-amino-pattern-missing" />
+                  )}
+                </div>
+                <span className="d-analysis-amino-pattern-value">
+                  {row.value != null ? (
+                    <>
+                      <strong>{Math.round(row.ratio)}%</strong>
+                      {row.partial && <b>부분</b>}
+                    </>
+                  ) : (
+                    '—'
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {hasPartial && (
+          <p className="d-analysis-amino-pattern-note">
+            부분 표시는 묶음 기준 중 일부 아미노산만 개별 수치가 있는 경우예요.
+          </p>
+        )}
+      </div>
+    </AnalysisSection>
+  );
+}
+
 function allPositive(n, keys) {
   return keys.every((key) => typeof n?.[key] === 'number' && n[key] > 0);
 }
@@ -140,68 +279,103 @@ function countPositive(n, keys) {
 }
 
 function proteinCriterion(protein) {
-  if (!(protein > 0)) {
+  if (!Number.isFinite(protein)) {
     return {
       tone: 'neutral',
+      grade: '-',
       label: '단백질 정보 없음',
       summary: '단백질 총량이 없어 1회 섭취량 판단은 제외했어요.',
-      basis: '운동용 1회 단백질 20g 이상',
+      quickText: '단백질 총량 데이터가 필요해요.',
+      basis: 'ISSN 운동 직후 1회 보충 컷 20~40g',
+    };
+  }
+  if (protein < 5) {
+    return {
+      tone: 'poor',
+      grade: 'D',
+      label: '매우 낮음',
+      summary: `단백질 ${formatG(protein)}입니다. 단백질 보충을 기대하기엔 부족한 함량입니다.`,
+      quickText: '단백질 보충을 기대하기엔 부족한 함량입니다.',
+      basis: '0~4.9g',
     };
   }
   if (protein < 10) {
     return {
-      tone: 'poor',
-      label: '보충용으론 낮음',
-      summary: `단백질 ${formatG(protein)}입니다. 단백질 보충용으로 보기엔 낮고, 일반 음료에 가까운 함량이에요.`,
-      basis: '운동용 1회 단백질 20g 이상',
+      tone: 'light',
+      grade: 'C',
+      label: '낮음',
+      summary: `단백질 ${formatG(protein)}입니다. 일반 식품보다는 보탬이 되지만, 단백질 보충용으로는 낮은 편입니다.`,
+      quickText: '일반 식품보다는 보탬이 되지만, 단백질 보충용으로는 낮은 편입니다.',
+      basis: '5~9.9g',
     };
   }
-  if (protein < 15) {
+  if (protein < 16) {
     return {
-      tone: 'light',
-      label: '가벼운 간식 수준',
-      summary: `단백질 ${formatG(protein)}입니다. 보충용 메인 제품보다는 가볍게 단백질을 더하는 수준으로 보는 게 좋아요.`,
-      basis: '운동용 1회 단백질 20g 이상',
+      tone: 'near',
+      grade: 'B',
+      label: '보조 수준',
+      summary: `단백질 ${formatG(protein)}입니다. 식사에 단백질을 가볍게 더하는 용도로 적합합니다.`,
+      quickText: '식사에 단백질을 가볍게 더하는 용도로 적합합니다.',
+      basis: '10~15.9g',
     };
   }
   if (protein < 20) {
-    const diff = round1(20 - protein);
-    return {
-      tone: 'near',
-      label: '20g 기준 근접',
-      summary: `단백질 ${formatG(protein)}입니다. 운동용 1회 기준으로 자주 보는 20g보다 ${diff}g 낮아요.`,
-      basis: '운동용 1회 단백질 20g 이상',
-    };
-  }
-  if (protein < 25) {
     return {
       tone: 'solid',
-      label: '양호',
-      summary: `단백질 ${formatG(protein)}입니다. 운동용 단백질 제품에서 자주 보는 20g 기준을 넘는 양호한 함량이에요.`,
-      basis: '운동용 1회 단백질 20g 이상',
+      grade: 'B+',
+      label: '기준 근접',
+      summary: `단백질 ${formatG(protein)}입니다. 1회 보충 기준에 거의 근접한 함량입니다.`,
+      quickText: '1회 보충 기준에 거의 근접한 함량입니다.',
+      basis: '16~19.9g',
     };
   }
-  if (protein < 35) {
+  if (protein < 24) {
     return {
       tone: 'strong',
-      label: '넉넉한 함량',
-      summary: `단백질 ${formatG(protein)}입니다. 한 번에 단백질을 꽤 채울 수 있는 넉넉한 함량이에요.`,
-      basis: '운동용 1회 단백질 20-40g',
+      grade: 'A-',
+      label: '기준 충족',
+      summary: `단백질 ${formatG(protein)}입니다. 운동 후 1회 보충용으로 볼 수 있는 기본 함량을 충족합니다.`,
+      quickText: '운동 후 1회 보충용으로 볼 수 있는 기본 함량을 충족합니다.',
+      basis: '20~23.9g',
     };
   }
-  if (protein <= 40) {
+  if (protein < 28) {
     return {
       tone: 'high',
-      label: '고함량',
-      summary: `단백질 ${formatG(protein)}입니다. 1회 기준 상단에 가까운 고함량 제품이에요.`,
-      basis: '운동용 1회 단백질 20-40g',
+      grade: 'A',
+      label: '충분함',
+      summary: `단백질 ${formatG(protein)}입니다. 1회 단백질 보충용으로 충분한 함량입니다.`,
+      quickText: '1회 단백질 보충용으로 충분한 함량입니다.',
+      basis: '24~27.9g',
+    };
+  }
+  if (protein < 32) {
+    return {
+      tone: 'very-high',
+      grade: 'A+',
+      label: '높은 편',
+      summary: `단백질 ${formatG(protein)}입니다. 일반적인 1회 보충 기준에서 높은 편에 속합니다.`,
+      quickText: '일반적인 1회 보충 기준에서 높은 편에 속합니다.',
+      basis: '28~31.9g',
+    };
+  }
+  if (protein < 40) {
+    return {
+      tone: 'very-high',
+      grade: 'S',
+      label: '매우 높음',
+      summary: `단백질 ${formatG(protein)}입니다. 1회 섭취 기준으로 상당히 높은 단백질 함량입니다.`,
+      quickText: '1회 섭취 기준으로 상당히 높은 단백질 함량입니다.',
+      basis: '32~39.9g',
     };
   }
   return {
     tone: 'very-high',
-    label: '매우 높음',
-    summary: `단백질 ${formatG(protein)}입니다. 1회 기준 상단으로 자주 보는 40g을 넘으니 하루 총 섭취량과 함께 보세요.`,
-    basis: '운동용 1회 단백질 20-40g',
+    grade: 'S+',
+    label: '초고함량',
+    summary: `단백질 ${formatG(protein)}입니다. 운동 후 보충 권장 범위의 상단을 넘는 고용량입니다.`,
+    quickText: '운동 후 보충 권장 범위의 상단을 넘는 고용량입니다.',
+    basis: '40g 이상',
   };
 }
 
@@ -835,41 +1009,124 @@ function leucineJudgment(nutrition) {
   };
 }
 
+function gradeForTone(tone) {
+  if (tone === 'very-high') return 'A+';
+  if (tone === 'high') return 'A';
+  if (tone === 'strong') return 'A-';
+  if (tone === 'solid') return 'B+';
+  if (tone === 'near') return 'B';
+  if (tone === 'light') return 'C';
+  if (tone === 'poor') return 'D';
+  if (tone === 'caution') return 'N/A';
+  if (tone === 'neutral') return '-';
+  return '-';
+}
+
+const PROTEIN_GRADE_ROWS = [
+  { range: '0~4.9g', grade: 'D', label: '매우 낮음' },
+  { range: '5~9.9g', grade: 'C', label: '낮음' },
+  { range: '10~15.9g', grade: 'B', label: '보조 수준' },
+  { range: '16~19.9g', grade: 'B+', label: '기준 근접' },
+  { range: '20~23.9g', grade: 'A-', label: '기준 충족' },
+  { range: '24~27.9g', grade: 'A', label: '충분함' },
+  { range: '28~31.9g', grade: 'A+', label: '높은 편' },
+  { range: '32~39.9g', grade: 'S', label: '매우 높음' },
+  { range: '40g 이상', grade: 'S+', label: '초고함량' },
+];
+
+function ProteinGradeTooltip() {
+  return (
+    <span className="d-analysis-protein-grade-table" role="table" aria-label="단백질 총량 등급 기준">
+      <span className="d-analysis-protein-grade-row is-head" role="row">
+        <span role="columnheader">함량</span>
+        <span role="columnheader">등급</span>
+        <span role="columnheader">라벨</span>
+      </span>
+      {PROTEIN_GRADE_ROWS.map((row) => (
+        <span key={row.grade} className="d-analysis-protein-grade-row" role="row">
+          <span role="cell">{row.range}</span>
+          <strong role="cell">{row.grade}</strong>
+          <span role="cell">{row.label}</span>
+        </span>
+      ))}
+      <span className="d-analysis-protein-grade-note">
+        ISSN(국제스포츠영양학회)은 운동 직후 1회 단백질 보충량으로 20~40g 범위를 제시합니다.
+      </span>
+    </span>
+  );
+}
+
+function SummaryGradeRow({ title, value, tone, grade: gradeProp, text, help, helpLabel, helpContent }) {
+  const isMissingValue = value === '정보 없음' || value === '데이터 없음' || value == null;
+  const grade = gradeProp ?? gradeForTone(tone);
+  const gradeClass = String(grade).toLowerCase().replace(/\+/g, 'plus').replace(/-/g, 'minus').replace(/[^a-z0-9]/g, '');
+  const valueMatch = typeof value === 'string' ? value.match(/^(.+?)(g|mg)$/) : null;
+  const tooltipLabel = helpLabel ?? help;
+
+  return (
+    <div className={`d-analysis-grade-row is-${tone} is-grade-${gradeClass}`}>
+      <div className="d-analysis-grade-mark" aria-label={`${title} 등급 ${grade}`}>
+        {grade}
+      </div>
+      <div className="d-analysis-grade-main">
+        <div className="d-analysis-grade-head">
+          <span className="d-analysis-grade-title">{title}</span>
+          {(help || helpContent) && (
+            <span className="d-analysis-help d-analysis-grade-help" tabIndex="0" aria-label={tooltipLabel}>
+              ?
+              <span className={`d-analysis-help-bubble${helpContent ? ' is-rich' : ''}`} role="tooltip">{helpContent ?? help}</span>
+            </span>
+          )}
+        </div>
+        <p className="d-analysis-grade-text">{text}</p>
+      </div>
+      <strong className={`d-analysis-grade-value${isMissingValue ? ' is-missing' : ''}`}>
+        {valueMatch ? (
+          <>
+            {valueMatch[1]}
+            <span className="d-analysis-grade-unit">{valueMatch[2]}</span>
+          </>
+        ) : (
+          value ?? '정보 없음'
+        )}
+      </strong>
+    </div>
+  );
+}
+
 function KeyJudgmentSection({ nutrition, proteinVerdict }) {
   const eaa = eaaJudgment(nutrition);
   const leucine = leucineJudgment(nutrition);
   const bcaa = bcaaJudgment(nutrition);
 
   return (
-    <div className="d-analysis-judgment-grid" aria-label="핵심 판단">
-      <JudgmentCard
-        title="단백질 양"
+    <div className="d-analysis-grade-summary" aria-label="핵심 판단 요약">
+      <SummaryGradeRow
+        title="단백질 총량"
         value={formatG(nutrition?.protein)}
-        label={proteinVerdict.label}
         tone={proteinVerdict.tone}
-        text={proteinQuickText(proteinVerdict.tone)}
-        help={`${proteinVerdict.basis}. ${proteinVerdict.summary}`}
+        grade={proteinVerdict.grade}
+        text={proteinVerdict.quickText ?? proteinQuickText(proteinVerdict.tone)}
+        helpLabel="단백질 총량 등급 기준"
+        helpContent={<ProteinGradeTooltip />}
       />
-      <JudgmentCard
+      <SummaryGradeRow
         title="필수아미노산"
         value={eaa.value}
-        label={eaa.label}
         tone={eaa.tone}
         text={eaa.text}
         help={eaa.help}
       />
-      <JudgmentCard
+      <SummaryGradeRow
         title="류신"
         value={leucine.value}
-        label={leucine.label}
         tone={leucine.tone}
         text={leucine.text}
         help={leucine.help}
       />
-      <JudgmentCard
+      <SummaryGradeRow
         title="BCAA"
         value={bcaa.value}
-        label={bcaa.label}
         tone={bcaa.tone}
         text={bcaa.text}
         help={bcaa.help}
@@ -1045,13 +1302,12 @@ function ProteinDrinkReport({ product, products, nutrition, ingredients, categor
     <section className="d-detail-card d-detail-report">
       <header className="d-detail-card-head">
         <h2 className="d-detail-card-title">분석 리포트</h2>
-        <span className="d-detail-card-sub">{category}</span>
       </header>
-      <ProteinQualityChart nutrition={nutrition} />
       <KeyJudgmentSection
         nutrition={nutrition}
         proteinVerdict={proteinVerdict}
       />
+      <AminoPatternSection nutrition={nutrition} />
       <CategoryRankSection ranks={ranks} />
       <ProteinSourceSection proteinNotes={proteinNotes} />
       <OtherNutrientsSection foodNutrients={foodNutrients} />
@@ -1774,7 +2030,6 @@ function ShakeReport({ product, products, nutrition, ingredients, category, cate
     <section className="d-detail-card d-detail-report">
       <header className="d-detail-card-head">
         <h2 className="d-detail-card-title">분석 리포트</h2>
-        <span className="d-detail-card-sub">{category}</span>
       </header>
 
       <ShakeMacroPie
@@ -1874,7 +2129,6 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
     <section className="d-detail-card d-detail-report">
       <header className="d-detail-card-head">
         <h2 className="d-detail-card-title">분석 리포트</h2>
-        <span className="d-detail-card-sub">{category}</span>
       </header>
 
       <AnalysisSection title="종합 평가" icon={<IconInfo size={16} />}>

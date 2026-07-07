@@ -75,16 +75,25 @@ function formatQualityBasis(quality) {
   if (!quality) return null;
   const method = quality.method ? String(quality.method).toUpperCase() : '';
   const evidence = quality.evidence_level || '';
-  const score = quality.score_percent != null ? `${Number(quality.score_percent).toLocaleString()}점` : '';
-  return [method, evidence, score, quality.source_title].filter(Boolean).join(' · ') || null;
+  const ageBasis = quality.age_basis || '';
+  return [method, evidence, ageBasis].filter(Boolean).join(' · ') || null;
 }
 
 function buildDictionary(ingredients, aliases, qualities) {
   const byCode = new Map();
   const byNorm = new Map();
   const qualityByCode = new Map();
-  for (const q of qualities ?? []) {
-    if (q?.protein_ingredient_code) qualityByCode.set(q.protein_ingredient_code, q);
+  const evidenceRank = { direct: 1, proxy: 2, estimated: 3 };
+  const rankedQualities = [...(qualities ?? [])].sort((a, b) => {
+    const ar = evidenceRank[a?.evidence_level] ?? 99;
+    const br = evidenceRank[b?.evidence_level] ?? 99;
+    if (ar !== br) return ar - br;
+    return Number(a?.id ?? 0) - Number(b?.id ?? 0);
+  });
+  for (const q of rankedQualities) {
+    if (q?.protein_ingredient_code && !qualityByCode.has(q.protein_ingredient_code)) {
+      qualityByCode.set(q.protein_ingredient_code, q);
+    }
   }
   const addNorm = (text, ing) => {
     const k = normalizeProteinAlias(text);
@@ -138,8 +147,7 @@ async function loadDictionary() {
       } else {
         const qualityRes = await supabase
           .from('protein_ingredient_quality_assessments')
-          .select('protein_ingredient_code, grade, method, evidence_level, score_percent, source_title, source_url')
-          .eq('is_primary', true);
+          .select('id, protein_ingredient_code, grade, method, evidence_level, age_basis, source_url');
         dictCache = buildDictionary(
           ingRes.data ?? [],
           aliasRes.error ? [] : (aliasRes.data ?? []),

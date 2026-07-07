@@ -3,7 +3,7 @@
 const OPTIONS = [
   { key: 'ranking', label: '인기순' },
   { key: 'calories_asc', label: '칼로리 낮은 순' },
-  { key: 'protein_desc', label: '단백질 높은 순' },
+  { key: 'protein_desc', label: '단백질순' },
   { key: 'sugar_asc', label: '당류 낮은 순' },
 ];
 

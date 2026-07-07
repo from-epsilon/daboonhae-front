@@ -104,8 +104,10 @@ export default function MainPage() {
       {/* WebSite·Organization JSON-LD는 사이트 이름 확정용으로 index.html에 정적 배치(단일 출처) */}
       <Seo canonicalPath="/" />
       <MainBanner
-        ctaHref="/list"
-        onCtaClick={(e) => { e.preventDefault(); navigate('/list'); }}
+        onCtaClick={(e, category) => {
+          e.preventDefault();
+          navigate(category?.href ?? '/list');
+        }}
       />
 
       <CategoryTabsDesktop products={PRODUCTS} />

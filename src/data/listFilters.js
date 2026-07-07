@@ -245,6 +245,10 @@ function rankedOptions(products, key, selected = {}, context = {}) {
   }
   return [...counts.entries()]
     .sort((a, b) => {
+      if (key === 'flavor') {
+        if (a[0] === FLAVOR_OTHER_LABEL && b[0] !== FLAVOR_OTHER_LABEL) return 1;
+        if (b[0] === FLAVOR_OTHER_LABEL && a[0] !== FLAVOR_OTHER_LABEL) return -1;
+      }
       if (b[1] !== a[1]) return b[1] - a[1];
       return a[0].localeCompare(b[0], 'ko');
     })

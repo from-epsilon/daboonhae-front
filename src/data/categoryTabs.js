@@ -59,9 +59,9 @@ export const CATEGORY_TABS = [
 // ※ 에너지바·기타 가공육은 노출 대상에서 제외
 // slug: 카테고리 경로형 URL(/category/:slug)용 — 한글 키워드 슬러그(안정성 위해 명시)
 export const FOOD_TYPES = [
-  { label: '닭가슴살', code: 'chicken_breast', tab: 'protein', slug: '닭가슴살' },
   { label: '단백질 음료', code: 'protein_drink', tab: 'protein', slug: '단백질-음료' },
   { label: '셰이크', code: 'shake', tab: 'meal', slug: '셰이크' },
+  { label: '닭가슴살', code: 'chicken_breast', tab: 'protein', slug: '닭가슴살' },
   { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar', slug: '아이스크림' },
   { label: '과자/초콜릿/젤리', code: 'snack_sweets', tab: 'low_sugar', slug: '과자-초콜릿-젤리' },
   { label: '제로 음료', code: 'zero_drink', tab: 'low_sugar', slug: '제로-음료', disabled: true },

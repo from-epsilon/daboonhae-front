@@ -5,6 +5,7 @@ import { MetricColumnProvider, useMetricColumn } from '../../ds/MetricColumnCont
 import { getAdapted } from '../../../data/adapters.js';
 import { getFoodTypeByCode } from '../../../data/categoryTabs.js';
 import { useCompare } from '../../../store/CompareContext.jsx';
+import { useWishlist } from '../../../store/WishlistContext.jsx';
 
 export default function ResultGrid({
   products,
@@ -15,6 +16,7 @@ export default function ResultGrid({
   sortKey,
 }) {
   const { has } = useCompare();
+  const wishlist = useWishlist();
   if (isLoading) {
     return (
       <div className="d-list-wide">
@@ -42,6 +44,8 @@ export default function ResultGrid({
                 onClick={() => onCardClick(p)}
                 onCompare={() => onCompare(p.id)}
                 inCompare={has(p.id)}
+                onWishlist={() => wishlist.toggle(p.id)}
+                inWishlist={wishlist.has(p.id)}
                 sortKey={sortKey}
                 tabId={ft?.tab}
                 subLabel={ft?.label}

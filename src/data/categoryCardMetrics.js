@@ -15,8 +15,8 @@ const PROTEIN_COMMON = [
 const PROTEIN_DRINK_PRIMARY = [
   { key: 'protein', label: '단백질', unit: 'g', perKcal: true, perPrice: true, unitInRatio: true },
   { key: 'eaa', label: '필수아미노산', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
-  { key: 'leucine', label: '류신', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
   { key: 'bcaa', label: 'BCAA', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
+  { key: 'leucine', label: '류신', unit: 'mg', perKcal: true, perPrice: true, unitInRatio: true },
 ];
 
 // 3순위: 보조 영양 (작게, 총량만)

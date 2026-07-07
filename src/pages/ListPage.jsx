@@ -278,8 +278,6 @@ export default function ListPage() {
             specs={filterSpecs}
             value={filterState}
             onChange={setFilterState}
-            onReset={resetFilters}
-            activeCount={activeFilterCount}
           />
 
           <section className="d-list-main">
@@ -296,6 +294,7 @@ export default function ListPage() {
               specs={filterSpecs}
               value={filterState}
               onChange={setFilterState}
+              onReset={resetFilters}
             />
 
             {products.length === 0 ? (

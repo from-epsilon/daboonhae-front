@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { RotateCcw, X } from 'lucide-react';
 import { splitLabelUnit } from '../../../utils/format.js';
 
 // 활성 필터/세부 카테고리를 칩으로 노출 (각 칩 X로 개별 해제)
@@ -9,6 +9,7 @@ export default function ActiveFilterChips({
   specs,
   value,
   onChange,
+  onReset,
 }) {
   const chips = collectChips({ specs, value, onChange });
   if (chips.length === 0) return null;
@@ -28,6 +29,16 @@ export default function ActiveFilterChips({
           <X size={12} aria-hidden />
         </button>
       ))}
+      {onReset && (
+        <button
+          type="button"
+          className="d-list-active-reset"
+          onClick={onReset}
+        >
+          <RotateCcw size={12} aria-hidden />
+          <span>초기화</span>
+        </button>
+      )}
     </div>
   );
 }

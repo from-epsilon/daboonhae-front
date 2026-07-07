@@ -184,6 +184,8 @@ export function getAdapted(product) {
     trustBadges: getTrustBadges(product),
     purposeCategories: product.purposeCategories ?? [],
     purchaseLinks: product.purchaseLinks ?? [],
+    scoreSnapshots: product.scoreSnapshots ?? [],
+    recommendationScores: product.recommendationScores ?? {},
     foodNutrients: product._raw?.foodNutrients ?? [],
     purposesFit: product.purposesFit,
     ingredients: {

@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { NUTRIENT_GROUP, isNutrientGroup } from '../../../data/nutrientGroups.js';
 
-// 접힘 기본 표시 영양소 — 열·탄·단·지
-const BASE_CODES = ['energy_kcal', 'carbohydrate_g', 'protein_g', 'fat_g'];
+// 접힘 기본 표시 영양소 — 열·탄·당·지
+const BASE_CODES = ['energy_kcal', 'carbohydrate_g', 'sugars_g', 'fat_g'];
 
 const NUTRIENT_ORDER = [
   { code: 'energy_kcal',     indent: false },
@@ -115,21 +115,34 @@ function nutrientInfo(fn) {
   return [benefits, cautions].filter(Boolean).join(' ') || null;
 }
 
+function splitDisplayValue(display) {
+  const text = String(display ?? '').trim();
+  const match = text.match(/^(-?\d[\d,]*(?:\.\d+)?)(.*)$/);
+  if (!match) return { num: text, unit: '' };
+  return {
+    num: match[1],
+    unit: match[2].trim(),
+  };
+}
+
 function NutritionCell({ label, display, info, depth = 0, muted = false, extra = false }) {
   const cls = [
     'd-detail-nutri-cell',
     depth >= 1 ? 'is-indent' : '',
     depth >= 2 ? 'is-indent-2' : '',
+    depth >= 3 ? 'is-indent-3' : '',
     muted ? 'is-muted' : '',
     extra ? 'is-extra' : '',
   ].filter(Boolean).join(' ');
+  const value = splitDisplayValue(display);
   return (
     <li className={cls} title={info || undefined}>
       <div className="d-detail-nutri-cell-label">
         <span>{label}</span>
       </div>
       <div className="d-detail-nutri-cell-value">
-        <span className="d-detail-nutri-cell-num">{display}</span>
+        <span className="d-detail-nutri-cell-num">{value.num}</span>
+        {value.unit && <span className="d-detail-nutri-cell-unit">{value.unit}</span>}
       </div>
     </li>
   );
@@ -169,9 +182,9 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
 
   const unit = servingUnit?.includes('ml') ? 'ml' : 'g';
 
-  const { mandatoryRows, optionalRows, micronutrientRows } = useMemo(() => {
+  const { mandatoryRows, optionalRows, micronutrientRows, proteinRow } = useMemo(() => {
     if (!foodNutrients || foodNutrients.length === 0) {
-      return { mandatoryRows: [], optionalRows: [], micronutrientRows: [] };
+      return { mandatoryRows: [], optionalRows: [], micronutrientRows: [], proteinRow: null };
     }
 
     const byCode = {};
@@ -182,6 +195,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
     const mandatory = [];
     const optional = [];
     const micronutrients = [];
+    let protein = null;
 
     for (const spec of NUTRIENT_ORDER) {
       const fn = byCode[spec.code];
@@ -193,6 +207,10 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
         info: nutrientInfo(fn),
         indent: spec.indent,
       };
+      if (spec.code === 'protein_g') {
+        protein = { ...row, depth: 0 };
+        continue;
+      }
       if (MANDATORY_CODES.has(spec.code)) mandatory.push(row);
       else optional.push(row);
     }
@@ -217,7 +235,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
       }
     }
 
-    return { mandatoryRows: mandatory, optionalRows: optional, micronutrientRows: micronutrients };
+    return { mandatoryRows: mandatory, optionalRows: optional, micronutrientRows: micronutrients, proteinRow: protein };
   }, [foodNutrients, isShake, ratio]);
 
   // 아미노산 계층 트리 — EAA > (BCAA > 3종) + 비BCAA 필수아미노산 6종
@@ -289,21 +307,21 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
     });
 
     const rows = [];
-    // EAA (필수아미노산) — 최상위
-    rows.push(aminoRow('eaa', '필수 아미노산(EAA)', eaaTotal, 0, infoOf(EAA_AGG_CODES)));
+    // EAA (필수아미노산) — 단백질 하위
+    rows.push(aminoRow('eaa', '필수 아미노산(EAA)', eaaTotal, 1, infoOf(EAA_AGG_CODES)));
     // BCAA — EAA 하위
-    rows.push(aminoRow('bcaa', 'BCAA', bcaaTotal, 1, infoOf(BCAA_AGG_CODES)));
+    rows.push(aminoRow('bcaa', 'BCAA', bcaaTotal, 2, infoOf(BCAA_AGG_CODES)));
     // BCAA 3종 — BCAA 하위
-    for (const k of BCAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 2, nutrientInfo(byCode[k.code])));
+    for (const k of BCAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 3, nutrientInfo(byCode[k.code])));
     // 비BCAA 필수아미노산 6종 — EAA 하위(BCAA와 동위)
-    for (const k of NON_BCAA_EAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 1, nutrientInfo(byCode[k.code])));
-    // 비필수 아미노산 — EAA와 동위(depth 0)
+    for (const k of NON_BCAA_EAA_KEYS) rows.push(aminoRow(k.code, k.label, amountOf(k.code), 2, nutrientInfo(byCode[k.code])));
+    // 비필수 아미노산 — 단백질 하위(depth 1)
     for (const fn of nonEssential) {
       rows.push({
         key: fn.nutrient_code,
         label: fn.nutrients?.name_ko || fn.nutrient_code,
         display: formatValue(fn, ratio),
-        depth: 0,
+        depth: 1,
         info: nutrientInfo(fn),
         muted: fn.amount == null,
       });
@@ -318,9 +336,10 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
   const isAminoExtra = (key) => key !== 'eaa' && key !== 'bcaa' && !(isProteinDrink && key === 'leucine');
   const vitaminRows = isShake ? micronutrientRows.filter((r) => r.microType === 'vitamin') : [];
   const mineralRows = isShake ? micronutrientRows.filter((r) => r.microType === 'mineral') : [];
+  const rightRows = proteinRow ? [{ ...proteinRow, key: 'protein_g' }, ...aminoTree] : aminoTree;
   const showRightColumn = isShake
-    ? micronutrientRows.length > 0 || aminoTree.length > 0
-    : aminoTree.length > 0;
+    ? micronutrientRows.length > 0 || rightRows.length > 0
+    : rightRows.length > 0;
 
   return (
     <section className="d-detail-card d-detail-nutri">
@@ -407,7 +426,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
                     ))}
                   </>
                 )}
-                {micronutrientRows.length === 0 && aminoTree.map((r) => (
+                {micronutrientRows.length === 0 && rightRows.map((r) => (
                   <NutritionCell
                     key={r.key}
                     label={r.label}
@@ -415,12 +434,12 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
                     info={r.info}
                     depth={r.depth}
                     muted={r.muted}
-                    extra={isAminoExtra(r.key)}
+                    extra={r.key !== 'protein_g' && isAminoExtra(r.key)}
                   />
                 ))}
-                {micronutrientRows.length > 0 && aminoTree.length > 0 && (
+                {micronutrientRows.length > 0 && rightRows.length > 0 && (
                   <>
-                    {aminoTree.map((r) => (
+                    {rightRows.map((r) => (
                       <NutritionCell
                         key={r.key}
                         label={r.label}
@@ -428,7 +447,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
                         info={r.info}
                         depth={r.depth}
                         muted={r.muted}
-                        extra
+                        extra={r.key !== 'protein_g'}
                       />
                     ))}
                   </>
@@ -436,7 +455,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
               </ul>
             ) : (
               <ul className="d-detail-nutri-list">
-                {aminoTree.map((r) => (
+                {rightRows.map((r) => (
                   <NutritionCell
                     key={r.key}
                     label={r.label}
@@ -444,7 +463,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
                     info={r.info}
                     depth={r.depth}
                     muted={r.muted}
-                    extra={isAminoExtra(r.key)}
+                    extra={r.key !== 'protein_g' && isAminoExtra(r.key)}
                   />
                 ))}
               </ul>

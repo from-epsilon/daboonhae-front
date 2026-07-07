@@ -53,6 +53,48 @@
   -moz-appearance: textfield;
 }
 
+.m-filter-range {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid var(--border-tertiary);
+  border-radius: 8px;
+  background: white;
+  transition: border-color 150ms ease;
+}
+
+.m-filter-range:focus-within {
+  border-color: var(--border-active);
+}
+
+.m-filter-range-input {
+  flex: 1.1 1 0;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.m-filter-range-input--min {
+  flex: 0.9 1 0;
+  text-align: right;
+}
+
+.m-filter-range-sep {
+  flex: 0 0 auto;
+  padding: 0 2px;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+}
+
 .m-filter-group-label {
   display: inline-flex;
   align-items: center;

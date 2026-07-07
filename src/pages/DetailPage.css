@@ -28,8 +28,21 @@
   gap: 16px;
 }
 .d-detail-aside .purchase-offer-price-value {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.05;
+}
+.d-detail-aside .purchase-offer-price {
+  gap: 6px;
+}
+.d-detail-aside .purchase-offer-price-label {
+  font-weight: 400;
+}
+.d-detail-aside .purchase-offers,
+.d-detail-aside .d-detail-guide {
+  border: 0;
+}
+.d-detail-aside .purchase-offers {
+  padding: 18px 0 18px 40px;
 }
 /* 좁은 데스크톱/태블릿: 단일 컬럼으로 스택, 가격 패널은 본문 위로 */
 @media (max-width: 960px) {
@@ -106,33 +119,19 @@
 
 /* ───────── 제품 요약 영역 ───────── */
 .d-detail-overview {
+  position: relative;
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-lg);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 /* 상단 그리드 — 이미지 + 제목·핵심지표 */
 .d-detail-overview-grid {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
   gap: 24px;
-}
-/* 하단 영양성분·원재료 — 같은 박스 내, 상단과 구분선으로 분리 */
-.d-detail-overview-nutri {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-tertiary);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-/* 박스 안에 들어온 영양성분·원재료 카드 — 자체 테두리/패딩 제거 */
-.d-detail-overview-nutri .d-detail-card {
-  border: none;
-  border-radius: 0;
-  padding: 0;
 }
 .d-detail-overview-media {
   width: 100%;
@@ -143,9 +142,9 @@
 .d-detail-overview-thumb {
   width: 100%;
   aspect-ratio: 1;
-  background: var(--gray-50);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -170,6 +169,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
+  padding-right: 88px;
 }
 .d-detail-overview-title {
   min-width: 0;
@@ -195,11 +195,11 @@
 .d-detail-facts {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md);
-  background: var(--gray-50);
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 .d-detail-facts .d-detail-header-serving {
   display: block;
@@ -213,26 +213,42 @@
 .d-detail-facts-meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 2px;
+  gap: 4px;
+  padding-top: 0;
 }
 .d-detail-facts-meta-row {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
   font-size: 12px;
   line-height: 1.45;
 }
 .d-detail-facts-meta-label {
-  flex: 0 0 auto;
+  flex: 0 0 56px;
   color: var(--text-tertiary);
-  font-weight: 600;
+  font-weight: 400;
 }
 .d-detail-facts-meta-value {
   min-width: 0;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   overflow-wrap: anywhere;
+}
+.d-detail-recommend-score-value {
+  flex-shrink: 0;
+  font-family: var(--font-numeric);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--green-700);
+  white-space: nowrap;
+}
+.d-detail-recommend-score-unit {
+  margin-left: 1px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
 }
 /* #2 Quick Glance */
 .d-detail-quick {
@@ -283,56 +299,283 @@
 .d-detail-nutri-expand:hover { color: var(--text-secondary); }
 .d-detail-nutri-expand svg { color: var(--text-tertiary); transition: transform 0.18s ease; }
 .d-detail-nutri-expand svg.is-open { transform: rotate(180deg); }
-/* 핵심 지표 표 — 리스트 카드 표(.fc-ptable)를 그대로 재사용 + 섹션 박스 */
-.d-detail-metrics {
+.d-detail-card-nutri {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-md);
-  background: var(--gray-50);
-  /* 본문 열 맨 아래로 붙여 비교함 버튼과 아랫변 정렬 */
-  margin-top: auto;
+  gap: 8px;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border-tertiary);
+  margin-top: 12px;
 }
-.d-detail-metrics-title {
+.d-detail-card-nutri-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.d-detail-card-nutri-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.d-detail-card-nutri-title {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
 }
-.d-detail-metrics-note {
-  margin: 0;
-  max-width: 520px;
+.d-detail-card-nutri-toggle {
+  border-radius: var(--radius-sm);
+  border-color: var(--border-tertiary);
+  background: transparent;
+  overflow: visible;
+}
+.d-detail-card-nutri-toggle .d-detail-nutri-toggle-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: transparent;
+  overflow: visible;
+}
+.d-detail-card-nutri-toggle .d-detail-nutri-toggle-btn:not(:last-child) {
+  border-right-color: var(--border-tertiary);
+}
+.d-detail-card-nutri-toggle .d-detail-nutri-toggle-btn.is-active {
+  background: var(--gray-200);
+  color: var(--text-primary);
+  font-weight: 650;
+}
+.d-detail-card-nutri-toggle .d-detail-nutri-toggle-btn:hover:not(.is-active) {
+  background: var(--gray-50);
+  color: var(--text-secondary);
+}
+.d-detail-card-nutri-price-help {
+  position: relative;
+  width: 11px;
+  height: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-pill);
+  color: var(--text-tertiary);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+.d-detail-card-nutri-price-help:hover,
+.d-detail-card-nutri-price-help:focus-visible {
+  border-color: var(--gray-500);
+  color: var(--text-secondary);
+  outline: none;
+}
+.d-detail-card-nutri-price-help-bubble {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  width: 218px;
+  transform: translateX(-50%);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: var(--gray-900);
+  color: var(--white);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
   font-size: 11px;
+  font-weight: 400;
   line-height: 1.5;
+  white-space: normal;
+  z-index: var(--z-dropdown);
+  pointer-events: none;
+}
+.d-detail-card-nutri-price-help-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--gray-900);
+}
+.d-detail-card-nutri-price-help:hover .d-detail-card-nutri-price-help-bubble,
+.d-detail-card-nutri-price-help:focus-visible .d-detail-card-nutri-price-help-bubble {
+  display: block;
+}
+.d-detail-card-nutri-expand {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.d-detail-card-nutri-expand > span {
+  min-width: 44px;
+}
+.d-detail-card-nutri-table {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  align-items: start;
+  justify-content: start;
+}
+.d-detail-card-nutri-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.d-detail-card-nutri-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+.d-detail-card-nutri-row.is-extra {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height .28s ease, padding .28s ease, opacity .2s ease;
+}
+.d-detail-card-nutri-table.is-open .d-detail-card-nutri-row.is-extra {
+  max-height: 44px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-bottom-width: 1px;
+  opacity: 1;
+}
+.d-detail-card-nutri-row:last-child {
+  border-bottom: 0;
+}
+.d-detail-card-nutri-label {
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.d-detail-card-nutri-label.is-depth-1 {
+  padding-left: 12px;
+}
+.d-detail-card-nutri-label.is-depth-2 {
+  padding-left: 24px;
+}
+.d-detail-card-nutri-label.is-depth-3 {
+  padding-left: 36px;
+}
+.d-detail-card-nutri-value {
+  width: 72px;
+  flex-shrink: 0;
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  font-family: var(--font-numeric);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.d-detail-card-nutri-unit {
+  margin-left: 1px;
+  font-size: 10px;
+  font-weight: 400;
   color: var(--text-tertiary);
 }
-
-/* 헤더 액션 */
-.d-detail-header-actions {
-  flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; align-items: stretch;
+/* 우측 상단 액션 */
+.d-detail-overview-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-
-/* #5 비교함 버튼 + 피드백 */
-.d-detail-compare-btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px 18px; min-width: 140px; border-radius: var(--radius-md);
-  border: 1px solid var(--border-tertiary); background: var(--bg-white);
-  font-size: 13px; font-weight: 600; color: var(--text-primary);
-  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+.d-detail-overview-action {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-pill);
+  background: var(--bg-white);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
 }
-/* 이미지 아래 배치 — 폭을 이미지에 맞추고, 열 맨 아래로 붙여 핵심 지표와 아랫변 정렬 */
-.d-detail-overview-media .d-detail-compare-btn { width: 100%; margin-top: auto; }
-.d-detail-compare-btn:hover { border-color: var(--brand-green); color: var(--brand-green); }
-.d-detail-compare-btn.is-active {
-  background: var(--green-50); border-color: var(--brand-green); color: var(--brand-green);
+.d-detail-overview-action-tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: var(--z-dropdown);
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-900);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(3px);
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+}
+.d-detail-overview-action:hover .d-detail-overview-action-tooltip,
+.d-detail-overview-action:focus-visible .d-detail-overview-action-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.d-detail-overview-action:hover {
+  border-color: var(--brand-green);
+  color: var(--green-700);
+  background: var(--green-50);
+}
+.d-detail-overview-action--like:hover {
+  border-color: #f4a6b8;
+  color: #e11d48;
+  background: #fff1f4;
+}
+.d-detail-overview-action--like.is-active {
+  border-color: #f4a6b8;
+  color: #e11d48;
+  background: #fff1f4;
+  box-shadow: 0 4px 10px rgba(225, 29, 72, 0.12);
+}
+.d-detail-overview-action--compare.is-active {
+  border-color: #8eea8a;
+  color: var(--green-700);
+  background: var(--green-50);
+  box-shadow: 0 4px 10px rgba(0, 134, 0, 0.12);
 }
 @keyframes compare-flash {
   0% { transform: scale(1); }
   30% { transform: scale(1.06); }
   100% { transform: scale(1); }
 }
-.d-detail-compare-btn.is-flash { animation: compare-flash 0.4s ease; }
+.d-detail-overview-action.is-flash { animation: compare-flash 0.4s ease; }
 
 /* ───────── #3 섹션 앵커 탭 (sticky) ───────── */
 .d-detail-section-nav {
@@ -342,25 +585,38 @@
   border-bottom: 1px solid var(--border-tertiary);
   padding: 0;
 }
-#nutrition, #analysis, #ingredients, #reviews {
+#analysis, #ingredients, #reviews {
   scroll-margin-top: 190px;
 }
 .d-detail-section-nav-item {
-  padding: 12px 18px; font-size: 14px; font-weight: 500;
+  padding: 12px 0; font-size: 14px; font-weight: 500;
   color: var(--text-tertiary); position: relative;
   transition: color 0.15s; white-space: nowrap;
+}
+.d-detail-section-nav-item + .d-detail-section-nav-item {
+  margin-left: 36px;
 }
 .d-detail-section-nav-item:hover { color: var(--text-primary); }
 .d-detail-section-nav-item.is-active {
   color: var(--text-primary); font-weight: 700;
 }
 .d-detail-section-nav-item.is-active::after {
-  content: ''; position: absolute; bottom: -1px; left: 12px; right: 12px;
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
   height: 2px; background: var(--gray-900); border-radius: 2px;
 }
 
 /* ───────── 섹션 컨테이너 ───────── */
-.d-detail-sections { display: flex; flex-direction: column; gap: 24px; }
+.d-detail-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.d-detail-section-nav + .d-detail-sections {
+  margin-top: 40px;
+}
+.d-detail-section-block + .d-detail-section-block {
+  margin-top: 72px;
+}
 
 /* 공용 카드 */
 .d-detail-card {
@@ -376,9 +632,44 @@
   display: inline-flex; align-items: center; gap: 8px;
 }
 .d-detail-card-sub { font-size: 13px; color: var(--text-tertiary); font-family: var(--font-numeric); }
-.d-detail-guide .d-detail-card-title,
-.d-review .d-detail-card-title {
+.d-detail-guide .d-detail-card-title {
   font-size: 16px;
+}
+.d-detail-report,
+.d-review {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.d-detail-report > .d-detail-card-head,
+.d-review > .d-detail-card-head {
+  margin-bottom: 24px;
+}
+#analysis > .d-detail-report > .d-detail-card-head,
+#reviews > .d-review > .d-detail-card-head,
+.d-detail-related.d-detail-section-block > .d-detail-related-header {
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+#analysis > .d-detail-report > .d-detail-card-head .d-detail-card-title,
+#reviews > .d-review > .d-detail-card-head .d-detail-card-title,
+.d-detail-related.d-detail-section-block > .d-detail-related-header .d-detail-related-title {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 20px;
+  line-height: 1.25;
+}
+#analysis > .d-detail-report > .d-detail-card-head .d-detail-card-title::after,
+#reviews > .d-review > .d-detail-card-head .d-detail-card-title::after,
+.d-detail-related.d-detail-section-block > .d-detail-related-header .d-detail-related-title::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-400);
 }
 
 /* 선택 가이드 토글 헤더 — 접힘 시 헤더 아래 여백 제거 */
@@ -403,7 +694,7 @@
   transform: rotate(180deg);
 }
 .d-detail-aside .d-detail-guide {
-  padding: 16px 18px;
+  padding: 16px 0 16px 36px;
 }
 .d-detail-aside .d-detail-guide-item {
   grid-template-columns: 26px minmax(0, 1fr);
@@ -449,6 +740,9 @@
   background: var(--gray-900); color: white;
 }
 .d-detail-nutri-toggle-btn:hover:not(.is-active) { background: var(--gray-50); }
+.d-detail-card-nutri .d-detail-card-nutri-toggle {
+  overflow: visible;
+}
 
 .d-detail-nutri-columns {
   display: grid;
@@ -515,6 +809,9 @@
 .d-detail-nutri-cell.is-indent-2 {
   padding-left: 38px;
 }
+.d-detail-nutri-cell.is-indent-3 {
+  padding-left: 56px;
+}
 .d-detail-nutri-cell.is-indent .d-detail-nutri-cell-label { color: var(--text-primary); }
 /* 데이터 없음(-) — 색은 검정 유지, 굵기만 약하게 구분 */
 .d-detail-nutri-cell.is-muted .d-detail-nutri-cell-label,
@@ -540,10 +837,21 @@
 }
 .d-detail-nutri-cell-num {
   min-width: 50px;
-  font-family: var(--font-numeric); font-size: 14px; font-weight: 700; color: var(--text-primary);
+  font-family: var(--font-numeric);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
   text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
-.d-detail-nutri-cell-unit { font-size: 12px; color: var(--text-secondary); margin-left: 2px; }
+.d-detail-nutri-cell-unit {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 1px;
+  white-space: nowrap;
+}
 
 /* ───────── #4 분석 리포트 (접이식) ───────── */
 .d-detail-report-head {
@@ -813,6 +1121,370 @@
   font-size: 10px;
   vertical-align: middle;
 }
+.d-analysis-amino-pattern {
+  --amino-pattern-track-height: 136px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+.d-analysis-amino-pattern-body {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+.d-analysis-amino-pattern-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+}
+.d-analysis-amino-pattern-legend {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+.d-analysis-amino-pattern-legend i {
+  flex: 0 0 auto;
+  display: block;
+  justify-self: center;
+}
+.d-analysis-amino-pattern-legend--fao {
+  color: var(--text-tertiary);
+}
+.d-analysis-amino-pattern-legend--fao i {
+  width: 11px;
+  height: 1px;
+  background: var(--gray-400);
+  opacity: 0.72;
+}
+.d-analysis-amino-pattern-legend--bcaa i {
+  width: 16px;
+  height: 8px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent 0 42%,
+    rgba(165, 244, 160, 0.78) 42% 88%,
+    transparent 88% 100%
+  );
+}
+.d-analysis-amino-pattern-chart {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 4px;
+  align-items: end;
+  width: 100%;
+  min-width: 0;
+}
+.d-analysis-amino-pattern-chart::after {
+  content: '';
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  top: var(--baseline-top);
+  height: 1px;
+  background: var(--gray-400);
+  opacity: 0.72;
+}
+.d-analysis-amino-pattern-row {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.d-analysis-amino-pattern-label {
+  order: 3;
+  min-width: 0;
+  width: 100%;
+  min-height: 30px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.d-analysis-amino-pattern-label > span {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.d-analysis-amino-pattern-row.is-bcaa .d-analysis-amino-pattern-label > span {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    transparent 0 48%,
+    rgba(165, 244, 160, 0.78) 48% 88%,
+    transparent 88% 100%
+  );
+}
+.d-analysis-amino-pattern-track {
+  order: 2;
+  position: relative;
+  width: 100%;
+  height: var(--amino-pattern-track-height);
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.d-analysis-amino-pattern-bar {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 44%;
+  max-height: 100%;
+  transform: translateX(-50%);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background-image: linear-gradient(
+    0deg,
+    #f4a261 0%,
+    #f6c177 36%,
+    #a7d979 52%,
+    #72cf8a 62.5%,
+    #8fbde8 82%,
+    #b7a7df 100%
+  );
+  background-size: 100% var(--amino-pattern-track-height);
+  background-position: bottom;
+  background-repeat: no-repeat;
+  z-index: 2;
+}
+.d-analysis-amino-pattern-row.is-partial .d-analysis-amino-pattern-bar {
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.26) 0,
+      rgba(255, 255, 255, 0.26) 5px,
+      transparent 5px,
+      transparent 10px
+    ),
+    linear-gradient(
+      0deg,
+      #f4a261 0%,
+      #f6c177 36%,
+      #a7d979 52%,
+      #72cf8a 62.5%,
+      #8fbde8 82%,
+      #b7a7df 100%
+    );
+  background-size: auto, 100% var(--amino-pattern-track-height);
+  background-position: 0 0, bottom;
+  background-repeat: repeat, no-repeat;
+}
+.d-analysis-amino-pattern-missing {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.d-analysis-amino-pattern-value {
+  order: 1;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  min-height: 18px;
+  min-width: 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.d-analysis-amino-pattern-value strong {
+  font-family: var(--font-numeric);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.d-analysis-amino-pattern-value em {
+  margin-left: 5px;
+  font-style: normal;
+  font-weight: 800;
+  color: var(--green-700);
+}
+.d-analysis-amino-pattern-row.is-low .d-analysis-amino-pattern-value em {
+  color: var(--orange-700);
+}
+.d-analysis-amino-pattern-value b {
+  margin-left: 4px;
+  padding: 1px 5px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-200);
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.d-analysis-amino-pattern-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+.d-analysis-grade-summary {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 22px;
+  border-top: 1px solid var(--border-secondary);
+  border-bottom: 1px solid var(--border-secondary);
+}
+.d-analysis-grade-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: 16px;
+  min-height: 64px;
+  padding: 12px 0;
+}
+.d-analysis-grade-row + .d-analysis-grade-row {
+  border-top: 1px solid var(--border-tertiary);
+}
+.d-analysis-grade-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  color: var(--text-tertiary);
+  font-family: var(--font-numeric);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.d-analysis-grade-row.is-poor .d-analysis-grade-mark {
+  background: var(--rating-poor-tag-bg);
+  color: var(--rating-poor-text);
+}
+.d-analysis-grade-row.is-light .d-analysis-grade-mark {
+  background: var(--rating-light-tag-bg);
+  color: var(--rating-light-text);
+}
+.d-analysis-grade-row.is-near .d-analysis-grade-mark {
+  background: var(--rating-near-tag-bg);
+  color: var(--rating-near-text);
+}
+.d-analysis-grade-row.is-solid .d-analysis-grade-mark {
+  background: var(--rating-solid-tag-bg);
+  color: var(--rating-solid-text);
+}
+.d-analysis-grade-row.is-strong .d-analysis-grade-mark {
+  background: var(--rating-strong-tag-bg);
+  color: var(--rating-strong-text);
+}
+.d-analysis-grade-row.is-high .d-analysis-grade-mark {
+  background: var(--rating-high-tag-bg);
+  color: var(--rating-high-text);
+}
+.d-analysis-grade-row.is-very-high .d-analysis-grade-mark {
+  background: var(--rating-very-high-tag-bg);
+  color: var(--rating-very-high-text);
+}
+.d-analysis-grade-row.is-caution .d-analysis-grade-mark,
+.d-analysis-grade-row.is-neutral .d-analysis-grade-mark {
+  background: var(--gray-100);
+  color: var(--text-tertiary);
+}
+.d-analysis-grade-row.is-grade-d .d-analysis-grade-mark {
+  background: #fff0df;
+  color: #c65a12;
+}
+.d-analysis-grade-row.is-grade-c .d-analysis-grade-mark {
+  background: #fff6d6;
+  color: #a66b00;
+}
+.d-analysis-grade-row.is-grade-b .d-analysis-grade-mark {
+  background: #edf9d7;
+  color: #668a12;
+}
+.d-analysis-grade-row.is-grade-bplus .d-analysis-grade-mark {
+  background: #e5f8dc;
+  color: #408319;
+}
+.d-analysis-grade-row.is-grade-aminus .d-analysis-grade-mark {
+  background: #dff7e7;
+  color: #16834b;
+}
+.d-analysis-grade-row.is-grade-a .d-analysis-grade-mark {
+  background: #dcf6ee;
+  color: #08775f;
+}
+.d-analysis-grade-row.is-grade-aplus .d-analysis-grade-mark {
+  background: #e4f1ff;
+  color: #326eb7;
+}
+.d-analysis-grade-row.is-grade-s .d-analysis-grade-mark {
+  background: #eee8ff;
+  color: #6843c4;
+}
+.d-analysis-grade-row.is-grade-splus .d-analysis-grade-mark {
+  background: #f3e8ff;
+  color: #8a35c8;
+}
+.d-analysis-grade-main {
+  min-width: 0;
+}
+.d-analysis-grade-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.d-analysis-grade-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.d-analysis-grade-help {
+  position: relative;
+  flex-shrink: 0;
+}
+.d-analysis-grade-text {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  word-break: keep-all;
+}
+.d-analysis-grade-value {
+  justify-self: end;
+  font-family: var(--font-numeric);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.d-analysis-grade-unit {
+  margin-left: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+.d-analysis-grade-value.is-missing {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
 .d-analysis-judgment-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -961,7 +1633,7 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  z-index: 20;
+  z-index: var(--z-dropdown);
   display: block;
   width: min(280px, calc(100vw - 48px));
   padding: 10px 12px;
@@ -984,6 +1656,55 @@
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+.d-analysis-grade-help .d-analysis-help-bubble {
+  top: auto;
+  bottom: calc(100% + 8px);
+  right: auto;
+  left: calc(100% + 8px);
+}
+.d-analysis-grade-help .d-analysis-help-bubble.is-rich {
+  width: min(380px, calc(100vw - 48px));
+  padding: 10px;
+}
+.d-analysis-protein-grade-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  color: #fff;
+}
+.d-analysis-protein-grade-row {
+  display: grid;
+  grid-template-columns: 86px 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 11px;
+  line-height: 1.25;
+}
+.d-analysis-protein-grade-row.is-head {
+  padding-top: 2px;
+  border-top: 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 10px;
+  font-weight: 600;
+}
+.d-analysis-protein-grade-row strong {
+  color: #fff;
+  font-family: var(--font-numeric);
+  font-size: 12px;
+  font-weight: 800;
+}
+.d-analysis-protein-grade-note {
+  margin-top: 6px;
+  padding: 8px 4px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 10.5px;
+  font-weight: 400;
+  line-height: 1.45;
+  word-break: keep-all;
 }
 .d-analysis-rank-table {
   border: 1px solid var(--border-tertiary);
@@ -2086,9 +2807,11 @@
   position: relative;
   min-height: 220px;
   overflow: hidden;
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-lg);
-  background: var(--bg-white);
+  border: 0;
+  border-top: 1px solid var(--border-tertiary);
+  border-bottom: 1px solid var(--border-tertiary);
+  border-radius: 0;
+  background: transparent;
 }
 .d-review-disabled-preview {
   display: flex;
@@ -2171,7 +2894,7 @@
   padding: 30px 24px;
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.9) 60%, var(--bg-white) 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.9) 60%, var(--c-surface) 100%);
   backdrop-filter: blur(2px);
 }
 .d-review-disabled-badge {
@@ -2207,13 +2930,14 @@
 }
 
 /* #7 관련 제품 hover */
-.d-detail-related { display: flex; flex-direction: column; gap: 12px; }
+.d-detail-related { display: flex; flex-direction: column; gap: 0; }
 .d-detail-related-header {
   display: flex; justify-content: space-between; align-items: center;
 }
 .d-detail-related-title {
   font-family: var(--font-display); font-size: 15px; font-weight: 700;
   color: var(--text-primary); margin: 0;
+  display: inline-flex;
 }
 .d-detail-related-more {
   display: inline-flex; align-items: center; gap: 4px;
@@ -2237,10 +2961,12 @@
   .d-detail-overview-grid {
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 22px;
+    padding-top: 52px;
   }
   .d-detail-overview-titlebar {
     flex-direction: column;
     gap: 14px;
+    padding-right: 0;
   }
   .d-detail-quick {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2251,6 +2977,7 @@
 @media (max-width: 720px) {
   .d-detail-overview-grid {
     grid-template-columns: 1fr;
+    padding-top: 52px;
   }
   .d-detail-overview-media {
     max-width: 280px;
@@ -2267,5 +2994,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .d-detail-compare-btn.is-flash { animation: none; }
+  .d-detail-overview-action.is-flash { animation: none; }
 }

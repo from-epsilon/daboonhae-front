@@ -11,7 +11,7 @@ const PROTEIN_DRINK_CATEGORY = '단백질 음료';
 const DEFAULT_SORT_OPTIONS = [
   { key: 'default', label: '기본 정렬', short: '기본 정렬' },
   { key: 'calories_asc', label: '칼로리 낮은 순', short: '저칼로리순' },
-  { key: 'protein_desc', label: '단백질 높은 순', short: '고단백순' },
+  { key: 'protein_desc', label: '단백질순', short: '단백질순' },
   { key: 'carbs_asc', label: '탄수화물 낮은 순', short: '저탄수순' },
   { key: 'sugar_asc', label: '당류 낮은 순', short: '저당순' },
 ];
@@ -29,7 +29,7 @@ export const PROTEIN_SORT_RECOMMEND = 'recommend';
 // 단백질 음료 전용 2축 — 정렬 키는 `${base}_${mode}` 조합 (예: eaa_kcal)
 // - 성분(base) × 기준(mode)을 각각 한 개씩 골라 조합 (UI: 2열 단일선택 그리드)
 export const PROTEIN_SORT_MODES = [
-  { key: 'total', label: '총량 기준' },
+  { key: 'total', label: '1회 제공량 기준' },
   { key: 'kcal', label: '100kcal 기준' },
   { key: 'price', label: '1,000원 기준' },
 ];
@@ -39,6 +39,12 @@ export const PROTEIN_SORT_BASES = [
   { key: 'leucine', label: '류신', unit: 'mg' },
   { key: 'bcaa', label: 'BCAA', unit: 'mg' },
 ];
+
+const PROTEIN_MODE_LABEL_SUFFIX = {
+  total: '',
+  kcal: '(칼로리대비)',
+  price: '(가격대비)',
+};
 
 export function isProteinDrinkCategory(category) {
   return category === PROTEIN_DRINK_CATEGORY;
@@ -68,14 +74,14 @@ export function getProteinSortParts(sortKey) {
 }
 
 // 단백질 음료 전용 정렬 옵션 — 추천순 + (기준 × 성분)
-// 라벨 형식: "{기준} {성분} 높은 순" (예: 100kcal당 BCAA 높은 순)
+// 라벨 형식: "{성분}순" + 선택 기준 (예: BCAA순(칼로리대비))
 export const PROTEIN_DRINK_SORT_OPTIONS = [
   { key: PROTEIN_SORT_RECOMMEND, label: '추천순', short: '추천순' },
   ...PROTEIN_SORT_BASES.flatMap((b) =>
     PROTEIN_SORT_MODES.map((m) => ({
       key: makeProteinSortKey(b.key, m.key),
-      label: `${m.label} ${b.label} 높은 순`,
-      short: `${m.label} ${b.label}`,
+      label: `${b.label}순${PROTEIN_MODE_LABEL_SUFFIX[m.key] ?? ''}`,
+      short: `${b.label}${PROTEIN_MODE_LABEL_SUFFIX[m.key] ?? ''}`,
     }))),
 ];
 
