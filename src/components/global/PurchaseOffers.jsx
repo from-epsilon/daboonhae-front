@@ -141,6 +141,7 @@ export default function PurchaseOffers({
   pricePer = 'unit',  // 'unit' 개당가 강조 | 'serving' 1회분당 강조 | 'total' 총액 강조
   sortBy = 'total',   // 'total' 총액순 | 'unit' 개당순 | 'unit-first' 개당 최저가 먼저+나머지 총액순
   servingsPerUnit,
+  affiliatePlacement = 'header', // compact 카드에서만 'header' | 'below'
 }) {
   const isUnitLike = pricePer === 'unit' || pricePer === 'serving';
   const basisPriceOf = pricePer === 'serving'
@@ -179,9 +180,11 @@ export default function PurchaseOffers({
       {compact ? (
         <div className="purchase-offers-head">
           <div className="purchase-offers-compact-title">{title}</div>
-          <p className="purchase-offers-affiliate">
-            ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
-          </p>
+          {affiliatePlacement !== 'below' && (
+            <p className="purchase-offers-affiliate">
+              ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
+            </p>
+          )}
         </div>
       ) : (
         <h2 className="purchase-offers-title">{title}</h2>
@@ -246,7 +249,7 @@ export default function PurchaseOffers({
           가격 정보 기준 {updatedLabel} · 실제 가격과 다를 수 있습니다
         </p>
       )}
-      {!compact && (
+      {(!compact || affiliatePlacement === 'below') && (
         <p className="purchase-offers-affiliate">
           ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.
         </p>

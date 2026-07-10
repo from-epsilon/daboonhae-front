@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { productPath, parseProductId } from '../../data/productUrl.js';
-import { useProductById, useProducts } from '../../store/ProductsContext.jsx';
+import { useCategoryProducts, useProductDetail } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { getFoodTypeByCode } from '../../data/categoryTabs.js';
 import { getCategoryCardConfig, getPrimaryMetricsByCode } from '../../data/categoryCardMetrics.js';
@@ -74,6 +74,15 @@ function EmptyState({ onHome }) {
     <div className="m-detail-empty">
       <p className="m-detail-empty-msg">존재하지 않는 제품이에요.</p>
       <Button variant="brand" onClick={onHome}>메인으로 가기</Button>
+    </div>
+  );
+}
+
+function LoadErrorState({ onRetry }) {
+  return (
+    <div className="m-detail-empty">
+      <p className="m-detail-empty-msg">제품 정보를 불러오지 못했어요.</p>
+      <Button variant="brand" onClick={onRetry}>다시 시도</Button>
     </div>
   );
 }
@@ -150,8 +159,8 @@ export default function DetailPageMobile() {
   const navRef = useRef(null);
 
   // raw 제품 → DS 형식 변환 (adapter는 raw도 들고 있어 분석에 그대로 활용 가능)
-  const { loading, products: allProducts } = useProducts();
-  const raw = useProductById(id);
+  const { product: raw, loading, error } = useProductDetail(id);
+  const { products: categoryProducts } = useCategoryProducts(raw?.categoryCode);
   const product = raw ? getAdapted(raw) : null;
 
   if (loading) return (
@@ -169,6 +178,14 @@ export default function DetailPageMobile() {
       </div>
     </>
   );
+  if (error) {
+    return (
+      <>
+        <AppBar onBack={() => navigate(-1)} title="제품 정보" />
+        <LoadErrorState onRetry={() => window.location.reload()} />
+      </>
+    );
+  }
   if (!product) {
     return (
       <>
@@ -277,7 +294,7 @@ export default function DetailPageMobile() {
         <div id="analysis">
           <AnalysisReport
             product={product}
-            products={allProducts}
+            products={categoryProducts}
             nutrition={n}
             ingredients={product.ingredients}
             category={raw?.category}
@@ -297,7 +314,7 @@ export default function DetailPageMobile() {
         </div>
 
         {/* 7. 같은 카테고리 다른 제품 (가장 아래) */}
-        <RelatedProducts currentRaw={raw} allProducts={allProducts} />
+        <RelatedProducts currentRaw={raw} allProducts={categoryProducts} />
       </div>
 
       {/* 7. 하단 sticky CTA */}

@@ -30,7 +30,7 @@ function saveToStorage(ids) {
 
 export function WishlistProvider({ children }) {
   const [ids, setIds] = useState(() => loadFromStorage());
-  const { products, loading } = useProducts();
+  const { products, loaded } = useProducts({ autoLoad: false });
   const validIds = useMemo(
     () => new Set(products.map((p) => normalizeId(p.id))),
     [products],
@@ -41,16 +41,16 @@ export function WishlistProvider({ children }) {
   }, [ids]);
 
   useEffect(() => {
-    if (loading) return;
+    if (!loaded) return;
     setIds((prev) => prev.filter((id) => validIds.has(normalizeId(id))));
-  }, [loading, validIds]);
+  }, [loaded, validIds]);
 
   const add = useCallback((productId) => {
     const id = normalizeId(productId);
-    if (!id || !validIds.has(id)) return false;
+    if (!id || (loaded && !validIds.has(id))) return false;
     setIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
     return true;
-  }, [validIds]);
+  }, [loaded, validIds]);
 
   const remove = useCallback((productId) => {
     const id = normalizeId(productId);
@@ -59,12 +59,12 @@ export function WishlistProvider({ children }) {
 
   const toggle = useCallback((productId) => {
     const id = normalizeId(productId);
-    if (!id || !validIds.has(id)) return false;
+    if (!id || (loaded && !validIds.has(id))) return false;
     setIds((prev) => (prev.includes(id)
       ? prev.filter((item) => item !== id)
       : [...prev, id]));
     return true;
-  }, [validIds]);
+  }, [loaded, validIds]);
 
   const clear = useCallback(() => {
     setIds([]);

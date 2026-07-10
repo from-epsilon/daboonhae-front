@@ -13,8 +13,8 @@ const ITEMS = [
   { label: '단백질 음료', code: 'protein_drink', img: `${IMG}/protein-drink.jpg`, tab: 'protein', imgScale: 1.12 },
   { label: '셰이크', code: 'shake', img: `${IMG}/shake.jpg`, tab: 'protein' },
   { label: '닭가슴살', code: 'chicken_breast', img: `${IMG}/chicken-breast.jpg`, tab: 'protein' },
-  { label: '아이스크림', code: 'ice_cream', img: `${IMG}/ice-cream.jpg`, tab: 'low_sugar' },
-  { label: '과자/초콜릿/젤리', code: 'snack_sweets', img: `${IMG}/snack-sweets.jpg`, tab: 'low_sugar', imgScale: 0.9 },
+  { label: '아이스크림', code: 'ice_cream', img: `${IMG}/ice-cream.jpg`, tab: 'low_sugar', disabled: true },
+  { label: '과자/초콜릿/젤리', code: 'snack_sweets', img: `${IMG}/snack-sweets.jpg`, tab: 'low_sugar', imgScale: 0.9, disabled: true },
 ];
 
 // 목적별 그룹 제목 없이 카테고리 아이콘을 한 그리드로 노출
@@ -38,8 +38,8 @@ export function CategoryTabs({ products = [] }) {
             type="button"
             className={`m-cat-item${item.disabled ? ' is-disabled' : ''}`}
             onClick={() => !item.disabled && handleItemClick(item)}
-            disabled={item.disabled}
             aria-disabled={item.disabled || undefined}
+            aria-label={item.disabled ? `${item.label}, 준비중` : undefined}
           >
             <span className="m-cat-icon">
               <img
@@ -49,7 +49,7 @@ export function CategoryTabs({ products = [] }) {
                 loading="lazy"
                 style={item.imgScale ? { transform: `scale(${item.imgScale})` } : undefined}
               />
-              {item.disabled && <span className="m-cat-soon">분석 준비중</span>}
+              {item.disabled && <span className="m-cat-soon">준비중</span>}
             </span>
             <span className="m-cat-label">{item.label}</span>
           </button>

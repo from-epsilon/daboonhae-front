@@ -54,6 +54,7 @@
 }
 /* 분석 준비중 — 비활성: 흐린 회색 + 클릭 불가 */
 .d-list-sub-chip.is-disabled {
+  position: relative;
   background: var(--gray-100);
   border-color: var(--border-tertiary);
   color: var(--text-tertiary);
@@ -62,6 +63,30 @@
 .d-list-sub-chip.is-disabled:hover {
   border-color: var(--border-tertiary);
   color: var(--text-tertiary);
+}
+.d-list-sub-chip.is-disabled::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 7px);
+  z-index: 10;
+  transform: translateX(-50%);
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s, visibility 0.15s;
+}
+.d-list-sub-chip.is-disabled:hover::after,
+.d-list-sub-chip.is-disabled:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ---------- 2단 본문 ---------- */

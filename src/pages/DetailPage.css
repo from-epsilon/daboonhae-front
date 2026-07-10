@@ -1180,6 +1180,20 @@
     transparent 88% 100%
   );
 }
+.d-analysis-amino-pattern-legend--fallback i {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.45) 0,
+      rgba(255, 255, 255, 0.45) 3px,
+      transparent 3px,
+      transparent 6px
+    ),
+    linear-gradient(180deg, #a7d979 0%, #72cf8a 100%);
+}
 .d-analysis-amino-pattern-chart {
   position: relative;
   display: grid;
@@ -1275,6 +1289,28 @@
       rgba(255, 255, 255, 0.26) 5px,
       transparent 5px,
       transparent 10px
+    ),
+    linear-gradient(
+      0deg,
+      #f4a261 0%,
+      #f6c177 36%,
+      #a7d979 52%,
+      #72cf8a 62.5%,
+      #8fbde8 82%,
+      #b7a7df 100%
+    );
+  background-size: auto, 100% var(--amino-pattern-track-height);
+  background-position: 0 0, bottom;
+  background-repeat: repeat, no-repeat;
+}
+.d-analysis-amino-pattern-row.is-fallback .d-analysis-amino-pattern-bar {
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.34) 0,
+      rgba(255, 255, 255, 0.34) 4px,
+      transparent 4px,
+      transparent 8px
     ),
     linear-gradient(
       0deg,
@@ -1401,6 +1437,10 @@
 .d-analysis-grade-row.is-neutral .d-analysis-grade-mark {
   background: var(--gray-100);
   color: var(--text-tertiary);
+}
+.d-analysis-grade-row.is-grade-f .d-analysis-grade-mark {
+  background: #fee2e2;
+  color: #b91c1c;
 }
 .d-analysis-grade-row.is-grade-d .d-analysis-grade-mark {
   background: #fff0df;

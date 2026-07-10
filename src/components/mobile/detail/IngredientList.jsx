@@ -143,15 +143,16 @@ function SweetenerChipRow({ items, emptyLabel = '사용 안 함' }) {
 
 // 유당 free 여부 — 라벨 + Yes/No 칩
 function LactoseRow({ lactoseFree }) {
-  const isFree = lactoseFree === true;
   return (
     <div className="m-detail-ingr-row">
       <span className="m-detail-ingr-label">유당</span>
       <div className="m-detail-ingr-values">
-        {isFree ? (
+        {lactoseFree === true ? (
           <Badge variant="softGreen">유당 free</Badge>
-        ) : (
+        ) : lactoseFree === false ? (
           <Badge variant="outline">유당 포함 가능</Badge>
+        ) : (
+          <span className="m-detail-ingr-empty">정보 없음</span>
         )}
       </div>
     </div>
@@ -198,6 +199,7 @@ export function IngredientList({ ingredients, rawText, annotations, embedded = f
         <ChipRow
           label="알레르겐"
           items={ing.allergens}
+          emptyLabel={ing.allergensKnown === false ? '정보 없음' : '없음'}
           variant="outline"
         />
         <LactoseRow lactoseFree={ing.lactoseFree} />

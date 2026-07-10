@@ -204,7 +204,11 @@ export function IngredientList({ ingredients, rawText, annotations, embedded = f
       <div className="d-detail-ingr-grid">
         <ProteinIngrSection items={ing.proteinSources} />
         <SweetenerIngrSection items={ing.sweeteners} />
-        <IngrSection label="알레르기 유발 성분" items={ing.allergens} />
+        <IngrSection
+          label="알레르기 유발 성분"
+          items={ing.allergens}
+          emptyLabel={ing.allergensKnown === false ? '정보 없음' : '없음'}
+        />
         <IngrSection label="기타" items={otherItems.length > 0 ? otherItems : null} />
       </div>
       <SweetenerNotice sweeteners={ing.sweeteners} />

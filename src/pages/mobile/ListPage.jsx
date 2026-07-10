@@ -11,7 +11,7 @@ import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import { Pagination } from '../../components/ds/Pagination.jsx';
-import { useProducts } from '../../store/ProductsContext.jsx';
+import { useProductSearch, useProducts } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
 import { applySort } from '../../data/listSort.js';
@@ -32,7 +32,7 @@ import {
   saveListViewState,
   setListPageSearchParam,
 } from '../../data/listViewState.js';
-import { getFoodTypeByLabel, getFoodTypeByCode, getFoodTypeBySlug, getVisibleFoodTypes, categoryPath } from '../../data/categoryTabs.js';
+import { getFoodTypeByLabel, getFoodTypeByCode, getFoodTypeBySlug, getVisibleFoodTypes, isListProductVisible, categoryPath } from '../../data/categoryTabs.js';
 import NotFoundPage from '../NotFoundPage.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
 import Seo from '../../components/global/Seo.jsx';
@@ -72,6 +72,8 @@ export default function ListPageMobile() {
   const { categorySlug } = useParams();
   const routeFoodType = categorySlug ? getFoodTypeBySlug(categorySlug) : null;
   const q = searchParams.get('q') ?? '';
+  const remoteSearch = useProductSearch(q);
+  const listLoading = loading || remoteSearch.loading;
   const subParam = searchParams.get('sub') ?? '';
   const pageParam = getListPageFromSearchParams(searchParams);
   const initialListStateRef = useRef(null);
@@ -112,11 +114,11 @@ export default function ListPageMobile() {
   }, [pageParam, page]);
 
   useEffect(() => {
-    if (loading || activeSub === 'all') return;
+    if (listLoading || activeSub === 'all') return;
     if (!visibleFoodTypes.some((ft) => ft.label === activeSub)) {
       setActiveSub('all');
     }
-  }, [loading, activeSub, visibleFoodTypes]);
+  }, [listLoading, activeSub, visibleFoodTypes]);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -148,13 +150,19 @@ export default function ListPageMobile() {
   const goCompare = () => navigate('/compare');
 
   const baseProducts = useMemo(() => {
-    let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
+    const visibleProducts = PRODUCTS.filter(isListProductVisible);
+    let result = visibleProducts;
+    if (q) {
+      result = remoteSearch.error
+        ? searchProducts(q, visibleProducts)
+        : remoteSearch.products.filter(isListProductVisible);
+    }
     // 식품유형 칩 선택 시: 식품유형 코드 정확 매칭 / '전체'면 전 제품
     if (activeCode) {
       result = result.filter((p) => p.categoryCode === activeCode);
     }
     return result;
-  }, [q, PRODUCTS, activeCode]);
+  }, [q, PRODUCTS, remoteSearch.products, remoteSearch.error, activeCode]);
 
   const proteinSourceTexts = useMemo(
     () => (supportsProteinSourceListFilters(activeCode) ? getProteinSourceTexts(baseProducts) : []),
@@ -221,11 +229,11 @@ export default function ListPageMobile() {
   useEffect(() => {
     // 로딩 중엔 products가 비어 pageCount=1이 되므로 clamp 금지
     // (직접 /list?page=2 진입 시 1로 리셋되어 딥 페이지가 크롤/표시 안 되는 버그 방지)
-    if (loading) return;
+    if (listLoading) return;
     if (page > pageCount) {
       setListPage(pageCount, { replace: true });
     }
-  }, [loading, page, pageCount, setListPage]);
+  }, [listLoading, page, pageCount, setListPage]);
 
   const pageProducts = useMemo(
     () => products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
@@ -294,7 +302,7 @@ export default function ListPageMobile() {
         />
       </div>
 
-      {loading ? (
+      {listLoading ? (
         <ListSkeleton />
       ) : products.length === 0 ? (
         <div className="m-list-empty-wrap">

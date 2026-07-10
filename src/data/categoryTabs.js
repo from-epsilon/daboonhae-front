@@ -53,6 +53,11 @@ export const CATEGORY_TABS = [
   },
 ];
 
+// 메인 목적별 추천 노출 순서 — 준비중인 저당 간식은 마지막에 둔다.
+export const HOME_PURPOSE_TABS = ['protein', 'meal', 'low_sugar']
+  .map((id) => CATEGORY_TABS.find((tab) => tab.id === id))
+  .filter(Boolean);
+
 // 식품유형(food_type_categories) 전체 — 리스트에서 목적 탭 없이 칩으로 한 번에 노출
 // - tab: 리스트 카드 메트릭(categoryCardMetrics) 결정용 목적 키
 // - disabled: 분석 준비중(데이터 미제공) → 칩 비활성화
@@ -62,8 +67,8 @@ export const FOOD_TYPES = [
   { label: '단백질 음료', code: 'protein_drink', tab: 'protein', slug: '단백질-음료' },
   { label: '셰이크', code: 'shake', tab: 'meal', slug: '셰이크' },
   { label: '닭가슴살', code: 'chicken_breast', tab: 'protein', slug: '닭가슴살' },
-  { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar', slug: '아이스크림' },
-  { label: '과자/초콜릿/젤리', code: 'snack_sweets', tab: 'low_sugar', slug: '과자-초콜릿-젤리' },
+  { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar', slug: '아이스크림', disabled: true, showDisabledChip: true },
+  { label: '과자/초콜릿/젤리', code: 'snack_sweets', tab: 'low_sugar', slug: '과자-초콜릿-젤리', disabled: true, showDisabledChip: true },
   { label: '제로 음료', code: 'zero_drink', tab: 'low_sugar', slug: '제로-음료', disabled: true },
   { label: '밥', code: 'rice', tab: 'meal', slug: '밥', disabled: true },
   { label: '면', code: 'noodle', tab: 'meal', slug: '면', disabled: true },
@@ -72,8 +77,16 @@ export const FOOD_TYPES = [
 
 // 분석 완료(활성) 식품유형만 — 리스트 칩 노출용 (준비중 제외)
 export const ACTIVE_FOOD_TYPES = FOOD_TYPES.filter((ft) => !ft.disabled);
+export const LIST_FOOD_TYPES = FOOD_TYPES.filter((ft) => !ft.disabled || ft.showDisabledChip);
 
-export function getVisibleFoodTypes(products, foodTypes = ACTIVE_FOOD_TYPES) {
+// 준비중 카테고리 중 리스트 전체·검색 결과에서도 상품을 숨길 대상.
+const HIDDEN_LIST_PRODUCT_CODES = new Set(['ice_cream', 'snack_sweets']);
+
+export function isListProductVisible(product) {
+  return !HIDDEN_LIST_PRODUCT_CODES.has(product?.categoryCode);
+}
+
+export function getVisibleFoodTypes(products, foodTypes = LIST_FOOD_TYPES) {
   const visibleCodes = new Set(
     (products ?? [])
       .map((p) => p?.categoryCode)

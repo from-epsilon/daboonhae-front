@@ -1,6 +1,6 @@
 // Supabase 제품 데이터 조회 + mock shape 변환
 // - foods 테이블 기준, food_type_categories / food_nutrients 조인
-// - food_families / food_purpose_category_links / food_aliases는 RLS가 허용되면 함께 조회,
+// - food_families / food_purpose_category_links / food_aliases는 기본적으로 함께 조회,
 //   anon 권한이 막혀 있으면(permission denied) 자동으로 빼고 재조회(폴백)
 // - 기존 mockProducts.js와 동일한 shape으로 변환하여 adapters/analyzers 호환 유지
 // - 컬럼은 SUPABASE_PRODUCT_QUERY_GUIDE 기준 신규 스키마만 사용(레거시 컬럼 사용 금지)
@@ -255,11 +255,17 @@ function deriveRankingScore(n) {
 
 // ── 알레르기 텍스트 → 배열
 function parseAllergens(text) {
-  if (!text) return [];
+  if (text == null) return null;
   return text
     .split(/[,，、\s]+/)
     .map(s => s.trim())
     .filter((s) => s && s !== '함유');
+}
+
+function deriveLactoseFreeFromAllergens(allergens) {
+  if (!Array.isArray(allergens)) return null;
+  if (allergens.some(a => a.includes('우유') || a.includes('유당'))) return false;
+  return null;
 }
 
 // ── ingredient_annotations → 단백질원료/대체당 배열
@@ -292,7 +298,7 @@ function parseIngredientAnnotations(anns) {
 function transformProduct(food) {
   const nutrition = parseNutrition(food.food_nutrients);
   const allergens = parseAllergens(food.allergens_text);
-  const lactoseFree = !allergens.some(a => a.includes('우유') || a.includes('유당'));
+  const lactoseFree = deriveLactoseFreeFromAllergens(allergens);
   const purposeCategories = parsePurposeCategories(food.food_purpose_category_links);
   const basis = nutritionBasisOf(food);
   const servingsPerUnit = servingsPerUnitOf(food);
@@ -325,7 +331,8 @@ function transformProduct(food) {
     ingredients: {
       sweeteners,
       proteinSources,
-      allergens,
+      allergens: allergens ?? [],
+      allergensKnown: allergens !== null,
       lactoseFree,
     },
     description: '',
@@ -392,16 +399,15 @@ const FLAVOR_JOIN = `
   food_flavors ( code, name_ko, display_order, is_active ),
 `;
 
-// ── 목록 select 절 (목록/검색 공통). optional=true면 family/purpose 조인 포함
+// ── 목록 select 절 (목록/검색/카테고리 순위 공통)
+// 상세 전용 원문·주의사항·출처 메타는 제외하여 전체 카탈로그 응답을 줄인다.
 const LIST_SELECT_BASE = (optional) => `
-  id, name, brand, barcode, image_url, storage_image_path,
-  is_mfds_official_source, source_url, source_food_code,
+  id, name, brand, image_url, storage_image_path,
   flavor_code,
   net_content_amount, net_content_unit,
   package_unit_count, package_unit_name, package_unit_amount,
-  serving_amount, serving_description, nutrition_basis_type,
-  ingredients_text, allergens_text, cross_contamination_text,
-  caution_notes, additional_content, ingredient_annotations,
+  serving_amount, nutrition_basis_type,
+  allergens_text, ingredient_annotations,
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories!inner ( code, name_ko, is_active ),
   ${FLAVOR_JOIN}
@@ -411,7 +417,7 @@ const LIST_SELECT_BASE = (optional) => `
   ${SCORE_JOIN}
   food_nutrients (
     nutrient_code, amount, unit, amount_text,
-    nutrients ( code, name_ko, default_unit, group_name, display_order, benefits_text, cautions_text )
+    nutrients ( code, name_ko, default_unit, group_name, display_order )
   )
 `;
 
@@ -439,8 +445,14 @@ const DETAIL_SELECT_BASE = (optional) => `
   ${optional ? ALIAS_JOIN.trim().replace(/,$/, '') : ''}
 `;
 
-// 선택 조인(food_families/purpose_links/aliases) RLS가 막혀있으면 한 번 false로 떨어뜨리고 재시도 안 함
-let optionalJoinsAvailable = true;
+// 선택 조인은 기본 사용한다. 운영 DB 정책이 아직 닫혀 있으면 자동 폴백한다.
+// 임시로 끄고 싶을 때만 VITE_SUPABASE_OPTIONAL_JOINS=false를 지정한다.
+let optionalJoinsAvailable = import.meta.env.VITE_SUPABASE_OPTIONAL_JOINS !== 'false';
+
+// StrictMode 재실행과 같은 경로의 반복 진입에서 동일 요청을 합친다.
+let productsRequest = null;
+const productDetailRequests = new Map();
+const categoryProductRequests = new Map();
 
 // 선택 조인 권한/관계 에러인지 판정 (이 경우 폴백)
 function isOptionalJoinError(error) {
@@ -520,6 +532,64 @@ async function searchAliasProductIds(query) {
   return [...new Set((data ?? []).map((row) => row.food_id).filter((id) => id != null))];
 }
 
+async function searchFoodTypeCodes(query) {
+  const escaped = query.replaceAll('%', '\\%').replaceAll('_', '\\_');
+  const { data, error } = await supabase
+    .from('food_type_categories')
+    .select('code')
+    .eq('is_active', true)
+    .or(`code.ilike.%${escaped}%,name_ko.ilike.%${escaped}%`)
+    .limit(20);
+
+  if (error) throw error;
+  return [...new Set((data ?? []).map((row) => row.code).filter(Boolean))];
+}
+
+async function searchFlavorCodes(query) {
+  const escaped = query.replaceAll('%', '\\%').replaceAll('_', '\\_');
+  const { data, error } = await supabase
+    .from('food_flavors')
+    .select('code')
+    .eq('is_active', true)
+    .or(`code.ilike.%${escaped}%,name_ko.ilike.%${escaped}%`)
+    .limit(20);
+
+  if (error) throw error;
+  return [...new Set((data ?? []).map((row) => row.code).filter(Boolean))];
+}
+
+async function fetchProductsByValues(column, values) {
+  const uniqueValues = [...new Set((values ?? []).filter(Boolean))];
+  if (uniqueValues.length === 0) return [];
+
+  if (optionalJoinsAvailable) {
+    const { data, error } = await supabase
+      .from('foods')
+      .select(LIST_SELECT_BASE(true))
+      .eq('is_active', true)
+      .eq('food_type_categories.is_active', true)
+      .in(column, uniqueValues)
+      .order('updated_at', { ascending: false })
+      .limit(50);
+
+    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
+    if (!isOptionalJoinError(error)) throw error;
+    optionalJoinsAvailable = false;
+  }
+
+  const { data, error } = await supabase
+    .from('foods')
+    .select(LIST_SELECT_BASE(false))
+    .eq('is_active', true)
+    .eq('food_type_categories.is_active', true)
+    .in(column, uniqueValues)
+    .order('updated_at', { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+  return onlyActiveCategoryRows(data).map(transformProduct);
+}
+
 async function searchProductsByFilter(orFilter) {
   if (optionalJoinsAvailable) {
     const { data, error } = await supabase
@@ -550,7 +620,7 @@ async function searchProductsByFilter(orFilter) {
 }
 
 // ── 제품 목록 전체 조회
-export async function fetchProducts() {
+async function fetchProductsUncached() {
   if (optionalJoinsAvailable) {
     const { data, error } = await supabase
       .from('foods')
@@ -576,8 +646,19 @@ export async function fetchProducts() {
   return onlyActiveCategoryRows(data).map(transformProduct);
 }
 
+export function fetchProducts({ force = false } = {}) {
+  if (!force && productsRequest) return productsRequest;
+
+  const request = fetchProductsUncached().catch((error) => {
+    if (productsRequest === request) productsRequest = null;
+    throw error;
+  });
+  productsRequest = request;
+  return request;
+}
+
 // ── 단건 상세 조회
-export async function fetchProductById(id) {
+async function fetchProductByIdUncached(id) {
   if (optionalJoinsAvailable) {
     const { data, error } = await supabase
       .from('foods')
@@ -606,13 +687,76 @@ export async function fetchProductById(id) {
   return data?.food_type_categories?.is_active === true ? transformProduct(data) : null;
 }
 
+export function fetchProductById(id, { force = false } = {}) {
+  const key = String(id ?? '');
+  if (!key) return Promise.resolve(null);
+  if (!force && productDetailRequests.has(key)) return productDetailRequests.get(key);
+
+  const request = fetchProductByIdUncached(id).catch((error) => {
+    if (productDetailRequests.get(key) === request) productDetailRequests.delete(key);
+    throw error;
+  });
+  productDetailRequests.set(key, request);
+  return request;
+}
+
+// ── 상세의 카테고리 순위/관련 제품용 목록 조회
+async function fetchProductsByCategoryUncached(categoryCode) {
+  if (optionalJoinsAvailable) {
+    const { data, error } = await supabase
+      .from('foods')
+      .select(LIST_SELECT_BASE(true))
+      .eq('is_active', true)
+      .eq('food_type_categories.is_active', true)
+      .eq('food_type_category_code', categoryCode)
+      .order('updated_at', { ascending: false });
+
+    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
+    if (!isOptionalJoinError(error)) throw error;
+    optionalJoinsAvailable = false;
+  }
+
+  const { data, error } = await supabase
+    .from('foods')
+    .select(LIST_SELECT_BASE(false))
+    .eq('is_active', true)
+    .eq('food_type_categories.is_active', true)
+    .eq('food_type_category_code', categoryCode)
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+  return onlyActiveCategoryRows(data).map(transformProduct);
+}
+
+export function fetchProductsByCategory(categoryCode, { force = false } = {}) {
+  const key = String(categoryCode ?? '');
+  if (!key) return Promise.resolve([]);
+  if (!force && categoryProductRequests.has(key)) return categoryProductRequests.get(key);
+
+  const request = fetchProductsByCategoryUncached(categoryCode).catch((error) => {
+    if (categoryProductRequests.get(key) === request) categoryProductRequests.delete(key);
+    throw error;
+  });
+  categoryProductRequests.set(key, request);
+  return request;
+}
+
 // ── 텍스트 검색 (이름/브랜드/식품유형코드/바코드/원천코드)
 export async function searchProductsRemote(query) {
   const escaped = query.replaceAll('%', '\\%').replaceAll('_', '\\_');
-  const orFilter = `name.ilike.%${escaped}%,brand.ilike.%${escaped}%,food_type_category_code.ilike.%${escaped}%,barcode.ilike.%${escaped}%,source_food_code.ilike.%${escaped}%`;
+  const orFilter = `name.ilike.%${escaped}%,brand.ilike.%${escaped}%,food_type_category_code.ilike.%${escaped}%,flavor_code.ilike.%${escaped}%,barcode.ilike.%${escaped}%,source_food_code.ilike.%${escaped}%`;
 
-  const direct = await searchProductsByFilter(orFilter);
-  const aliasIds = await searchAliasProductIds(query);
-  const aliasMatches = await fetchProductsByIds(aliasIds);
-  return mergeProducts(direct, aliasMatches);
+  const [direct, foodTypeCodes, flavorCodes, aliasIds] = await Promise.all([
+    searchProductsByFilter(orFilter),
+    searchFoodTypeCodes(query),
+    searchFlavorCodes(query),
+    searchAliasProductIds(query),
+  ]);
+  const [foodTypeMatches, flavorMatches, aliasMatches] = await Promise.all([
+    fetchProductsByValues('food_type_category_code', foodTypeCodes),
+    fetchProductsByValues('flavor_code', flavorCodes),
+    fetchProductsByIds(aliasIds),
+  ]);
+
+  return mergeProducts(direct, [...foodTypeMatches, ...flavorMatches, ...aliasMatches]);
 }

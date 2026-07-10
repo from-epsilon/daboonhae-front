@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useCompare } from '../store/CompareContext.jsx';
-import { useProducts } from '../store/ProductsContext.jsx';
+import { useProductSearch, useProducts } from '../store/ProductsContext.jsx';
 import { searchProducts } from '../data/searchIndex.js';
 import { applySort } from '../data/listSort.js';
 import {
@@ -21,7 +21,7 @@ import {
   saveListViewState,
   setListPageSearchParam,
 } from '../data/listViewState.js';
-import { ACTIVE_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeBySlug, getVisibleFoodTypes, categoryPath } from '../data/categoryTabs.js';
+import { LIST_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeBySlug, getVisibleFoodTypes, isListProductVisible, categoryPath } from '../data/categoryTabs.js';
 import NotFoundPage from './NotFoundPage.jsx';
 import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
@@ -45,6 +45,8 @@ export default function ListPage() {
   const { categorySlug } = useParams();
   const routeFoodType = categorySlug ? getFoodTypeBySlug(categorySlug) : null;
   const q = searchParams.get('q') ?? '';
+  const remoteSearch = useProductSearch(q);
+  const listLoading = loading || remoteSearch.loading;
   const subParam = searchParams.get('sub') ?? '';
   const pageParam = getListPageFromSearchParams(searchParams);
   const initialListStateRef = useRef(null);
@@ -86,11 +88,11 @@ export default function ListPage() {
   }, [pageParam, page]);
 
   useEffect(() => {
-    if (loading || activeSub === 'all') return;
+    if (listLoading || activeSub === 'all') return;
     if (!visibleFoodTypes.some((ft) => ft.label === activeSub)) {
       setActiveSub('all');
     }
-  }, [loading, activeSub, visibleFoodTypes]);
+  }, [listLoading, activeSub, visibleFoodTypes]);
 
   // 식품유형 칩 라벨 → 식품유형 코드(food_type_category_code)
   const activeCode = useMemo(() => {
@@ -99,12 +101,18 @@ export default function ListPage() {
   }, [activeSub]);
 
   const baseProducts = useMemo(() => {
-    let result = q ? searchProducts(q, PRODUCTS) : [...PRODUCTS];
+    const visibleProducts = PRODUCTS.filter(isListProductVisible);
+    let result = visibleProducts;
+    if (q) {
+      result = remoteSearch.error
+        ? searchProducts(q, visibleProducts)
+        : remoteSearch.products.filter(isListProductVisible);
+    }
     if (activeCode) {
       result = result.filter((p) => p.categoryCode === activeCode);
     }
     return result;
-  }, [q, PRODUCTS, activeCode]);
+  }, [q, PRODUCTS, remoteSearch.products, remoteSearch.error, activeCode]);
 
   const proteinSourceTexts = useMemo(
     () => (supportsProteinSourceListFilters(activeCode) ? getProteinSourceTexts(baseProducts) : []),
@@ -176,11 +184,11 @@ export default function ListPage() {
   useEffect(() => {
     // 로딩 중엔 products가 비어 pageCount=1이 되므로 clamp 금지
     // (직접 /list?page=2 진입 시 1로 리셋되어 딥 페이지가 크롤/표시 안 되는 버그 방지)
-    if (loading) return;
+    if (listLoading) return;
     if (page > pageCount) {
       setListPage(pageCount, { replace: true });
     }
-  }, [loading, page, pageCount, setListPage]);
+  }, [listLoading, page, pageCount, setListPage]);
 
   const pageProducts = useMemo(
     () => products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
@@ -204,14 +212,19 @@ export default function ListPage() {
     return <NotFoundPage />;
   }
 
-  if (loading) {
+  if (listLoading) {
     return (
       <div className="d-list-page">
         <div className="d-list-page-inner">
           <div className="d-list-sub-chips">
             <button type="button" className="d-list-sub-chip is-active">전체</button>
-            {ACTIVE_FOOD_TYPES.map((ft) => (
-              <button key={ft.label} type="button" className="d-list-sub-chip">
+            {LIST_FOOD_TYPES.map((ft) => (
+              <button
+                key={ft.label}
+                type="button"
+                className={`d-list-sub-chip${ft.disabled ? ' is-disabled' : ''}`}
+                aria-disabled={ft.disabled || undefined}
+              >
                 {ft.label}
               </button>
             ))}
@@ -261,16 +274,22 @@ export default function ListPage() {
           >
             전체
           </button>
-          {visibleFoodTypes.map((ft) => (
-            <button
-              key={ft.label}
-              type="button"
-              className={`d-list-sub-chip${activeSub === ft.label ? ' is-active' : ''}`}
-              onClick={() => navigate(categoryPath(ft))}
-            >
-              {ft.label}
-            </button>
-          ))}
+          {visibleFoodTypes.map((ft) => {
+            const disabled = Boolean(ft.disabled);
+            return (
+              <button
+                key={ft.label}
+                type="button"
+                className={`d-list-sub-chip${activeSub === ft.label ? ' is-active' : ''}${disabled ? ' is-disabled' : ''}`}
+                onClick={() => !disabled && navigate(categoryPath(ft))}
+                aria-disabled={disabled || undefined}
+                aria-label={disabled ? `${ft.label}, 준비중` : undefined}
+                data-tooltip={disabled ? '준비중' : undefined}
+              >
+                {ft.label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="d-list-body">

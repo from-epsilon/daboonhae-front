@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { IconCheck, IconAlert, IconInfo } from '../../ds/Icons.jsx';
 import { getAdapted } from '../../../data/adapters.js';
-import { EAA_KEYS, BCAA_KEYS } from '../../../data/aminoAcids.js';
+import { AMINO_ACID_LABELS, EAA_KEYS, BCAA_KEYS } from '../../../data/aminoAcids.js';
 import { cheapestUnitPrice } from '../../../data/categoryCardMetrics.js';
 import { useResolvedProteinSources, useResolvedSweeteners, proteinGradeMeta } from '../../../data/proteinQuality.js';
 import { IngredientList } from './IngredientList.jsx';
@@ -20,16 +20,24 @@ const RANK_MODES = [
 ];
 
 const FAO_EAA_PATTERN = [
-  { key: 'leucine', label: '류신', standard: 61, keys: ['leucine'] },
-  { key: 'isoleucine', label: '이소류신', standard: 30, keys: ['isoleucine'] },
-  { key: 'valine', label: '발린', standard: 40, keys: ['valine'] },
-  { key: 'histidine', label: '히스티딘', standard: 16, keys: ['histidine'] },
-  { key: 'lysine', label: '라이신', standard: 48, keys: ['lysine'] },
-  { key: 'sulfur', label: 'SAA', standard: 23, keys: ['methionine', 'cysteine'] },
-  { key: 'aromatic', label: 'AAA', standard: 41, keys: ['phenylalanine', 'tyrosine'] },
-  { key: 'threonine', label: '트레오닌', standard: 25, keys: ['threonine'] },
-  { key: 'tryptophan', label: '트립토판', standard: 6.6, keys: ['tryptophan'] },
+  { key: 'leucine', label: '류신', standard: 61, keys: ['leucine'], scoreKeys: ['leucine'] },
+  { key: 'isoleucine', label: '이소류신', standard: 30, keys: ['isoleucine'], scoreKeys: ['isoleucine'] },
+  { key: 'valine', label: '발린', standard: 40, keys: ['valine'], scoreKeys: ['valine'] },
+  { key: 'histidine', label: '히스티딘', standard: 16, keys: ['histidine'], scoreKeys: ['histidine'] },
+  { key: 'lysine', label: '라이신', standard: 48, keys: ['lysine'], scoreKeys: ['lysine'] },
+  { key: 'sulfur', label: 'SAA', standard: 23, keys: ['methionine', 'cysteine'], scoreKeys: ['sulfur_amino_acids', 'sulfur'] },
+  { key: 'aromatic', label: 'AAA', standard: 41, keys: ['phenylalanine', 'tyrosine'], scoreKeys: ['aromatic_amino_acids', 'aromatic'] },
+  { key: 'threonine', label: '트레오닌', standard: 25, keys: ['threonine'], scoreKeys: ['threonine'] },
+  { key: 'tryptophan', label: '트립토판', standard: 6.6, keys: ['tryptophan'], scoreKeys: ['tryptophan'] },
 ];
+
+const LIMITING_AMINO_LABELS = {
+  ...AMINO_ACID_LABELS,
+  sulfur_amino_acids: 'SAA',
+  sulfur: 'SAA',
+  aromatic_amino_acids: 'AAA',
+  aromatic: 'AAA',
+};
 
 const AMINO_PATTERN_SCALE_MAX = 180;
 const AMINO_PATTERN_TRACK_HEIGHT = 136;
@@ -163,7 +171,89 @@ function aminoPatternAmount(nutrition, keys) {
   };
 }
 
-function buildAminoPatternRows(nutrition) {
+function normalizeAminoScoreKey(key) {
+  return String(key ?? '').trim().toLowerCase();
+}
+
+function scoreItemForPattern(scoreItems, item) {
+  const index = new Map(
+    (Array.isArray(scoreItems) ? scoreItems : [])
+      .map((scoreItem) => [normalizeAminoScoreKey(scoreItem?.key), scoreItem])
+      .filter(([key]) => key),
+  );
+  return (item.scoreKeys ?? [item.key])
+    .map((key) => index.get(normalizeAminoScoreKey(key)))
+    .find(Boolean) ?? null;
+}
+
+function formatFallbackSources(sources) {
+  return (Array.isArray(sources) ? sources : [])
+    .map((source) => {
+      const name = source?.name_ko ?? source?.nameKo ?? source?.raw_text ?? source?.code;
+      const weight = Number(source?.normalized_weight ?? source?.normalizedWeight ?? source?.weight);
+      if (!name) return null;
+      return Number.isFinite(weight) && weight > 0 ? `${name} ${Math.round(weight * 100)}%` : name;
+    })
+    .filter(Boolean);
+}
+
+function aminoPatternTitle(row) {
+  if (row.value == null) return `${row.label}: 계산 불가`;
+  const basisText = row.basis === 'protein_source_top3_weighted'
+    ? '원료 기준 추정'
+    : row.basis === 'measured'
+      ? '실측값 기준'
+      : row.basis === 'frontend_measured'
+        ? '제품 영양성분 기준'
+        : '계산 근거 미상';
+  const sources = row.fallbackSources?.length > 0 ? ` (${row.fallbackSources.join(', ')})` : '';
+  return `${row.label}: FAO 기준 대비 ${Math.round(row.ratio)}%, ${basisText}${sources}`;
+}
+
+function buildAminoPatternRowsFromScores(scoreItems) {
+  if (!Array.isArray(scoreItems) || scoreItems.length === 0) return [];
+
+  return FAO_EAA_PATTERN.map((item) => {
+    const scoreItem = scoreItemForPattern(scoreItems, item);
+    const score = typeof scoreItem?.score === 'number' ? scoreItem.score : Number(scoreItem?.score);
+    const basis = scoreItem?.basis ?? 'missing';
+    const fallback = basis === 'protein_source_top3_weighted';
+    const measured = basis === 'measured';
+    const hasScore = Number.isFinite(score) && score >= 0 && basis !== 'missing';
+
+    if (!hasScore) {
+      return {
+        ...item,
+        value: null,
+        ratio: null,
+        delta: null,
+        barPercent: 0,
+        partial: false,
+        fallback: false,
+        measured: false,
+        basis,
+        fallbackSources: [],
+        tone: 'missing',
+      };
+    }
+
+    return {
+      ...item,
+      value: score,
+      ratio: score,
+      delta: score - 100,
+      barPercent: Math.min((score / AMINO_PATTERN_SCALE_MAX) * 100, 100),
+      partial: false,
+      fallback,
+      measured,
+      basis,
+      fallbackSources: formatFallbackSources(scoreItem?.fallback_sources ?? scoreItem?.fallbackSources),
+      tone: score >= 100 ? 'enough' : 'low',
+    };
+  });
+}
+
+function buildAminoPatternRowsFromNutrition(nutrition) {
   const protein = nutrition?.protein;
   if (!(protein > 0)) return [];
 
@@ -190,19 +280,31 @@ function buildAminoPatternRows(nutrition) {
       delta: ratio - 100,
       barPercent: Math.min((ratio / AMINO_PATTERN_SCALE_MAX) * 100, 100),
       partial: amountInfo.presentCount < item.keys.length,
+      fallback: false,
+      measured: true,
+      basis: 'frontend_measured',
+      fallbackSources: [],
       tone: ratio >= 100 ? 'enough' : 'low',
     };
   });
 }
 
-function AminoPatternSection({ nutrition }) {
-  const rows = buildAminoPatternRows(nutrition);
+function buildAminoPatternRows(product, nutrition) {
+  const scoreItems = product?.recommendationScores?.proteinDrinkDefault?.components?.amino_acids?.amino_acid_scores;
+  const scoreRows = buildAminoPatternRowsFromScores(scoreItems);
+  if (scoreRows.some((row) => row.value != null)) return scoreRows;
+  return buildAminoPatternRowsFromNutrition(nutrition);
+}
+
+function AminoPatternSection({ product, nutrition }) {
+  const rows = buildAminoPatternRows(product, nutrition);
   if (rows.length === 0) return null;
 
   const visibleRows = rows.filter((row) => row.value != null);
   if (visibleRows.length === 0) return null;
 
   const hasPartial = visibleRows.some((row) => row.partial);
+  const hasFallback = visibleRows.some((row) => row.fallback);
 
   return (
     <AnalysisSection title="필수아미노산 구성" icon={<IconInfo size={16} />}>
@@ -220,6 +322,12 @@ function AminoPatternSection({ nutrition }) {
               <i aria-hidden="true" />
               BCAA
             </span>
+            {hasFallback && (
+              <span className="d-analysis-amino-pattern-legend d-analysis-amino-pattern-legend--fallback">
+                <i aria-hidden="true" />
+                원료 추정
+              </span>
+            )}
           </div>
           <div className="d-analysis-amino-pattern-chart">
             {rows.map((row) => (
@@ -229,8 +337,10 @@ function AminoPatternSection({ nutrition }) {
                   `is-${row.tone}`,
                   ['leucine', 'isoleucine', 'valine'].includes(row.key) ? 'is-bcaa' : '',
                   row.partial ? 'is-partial' : '',
+                  row.fallback ? 'is-fallback' : '',
                 ].filter(Boolean).join(' ')}
                 key={row.key}
+                title={aminoPatternTitle(row)}
               >
                 <span className="d-analysis-amino-pattern-label">
                   <span>{row.label}</span>
@@ -249,6 +359,7 @@ function AminoPatternSection({ nutrition }) {
                   {row.value != null ? (
                     <>
                       <strong>{Math.round(row.ratio)}%</strong>
+                      {row.fallback && <b>추정</b>}
                       {row.partial && <b>부분</b>}
                     </>
                   ) : (
@@ -263,6 +374,11 @@ function AminoPatternSection({ nutrition }) {
         {hasPartial && (
           <p className="d-analysis-amino-pattern-note">
             부분 표시는 묶음 기준 중 일부 아미노산만 개별 수치가 있는 경우예요.
+          </p>
+        )}
+        {hasFallback && (
+          <p className="d-analysis-amino-pattern-note">
+            추정 표시는 제품의 개별 아미노산 실측값이 없어, 단백질 원료 품질 점수를 가중 반영한 값이에요.
           </p>
         )}
       </div>
@@ -955,6 +1071,222 @@ function eaaJudgment(nutrition) {
   };
 }
 
+function formatAminoQualityScore(score) {
+  if (typeof score !== 'number' || !Number.isFinite(score)) return null;
+  return `${Math.round(score).toLocaleString()}점`;
+}
+
+function aminoQualityCriterion(score) {
+  if (!(score > 0)) {
+    return {
+      tone: 'caution',
+      grade: 'N/A',
+      label: '정보 없음',
+      summary: '아미노산 구성 점수 데이터가 없어요.',
+      basis: 'DB v6 FAO 기준 아미노산 품질 점수',
+    };
+  }
+  if (score < 50) {
+    return {
+      tone: 'poor',
+      grade: 'F',
+      label: '매우 낮음',
+      summary: '필수아미노산 구성이 매우 낮은 수준이에요.',
+      basis: 'quality_score 50점 미만',
+    };
+  }
+  if (score < 60) {
+    return {
+      tone: 'poor',
+      grade: 'D',
+      label: '낮음',
+      summary: '필수아미노산 구성이 낮은 수준이에요.',
+      basis: 'quality_score 50~59점',
+    };
+  }
+  if (score < 70) {
+    return {
+      tone: 'light',
+      grade: 'C',
+      label: '제한 큼',
+      summary: '제한 아미노산 문제가 큰 편이에요.',
+      basis: 'quality_score 60~69점',
+    };
+  }
+  if (score < 80) {
+    return {
+      tone: 'near',
+      grade: 'B',
+      label: '보통 이하',
+      summary: '단백질 품질로는 보통 이하에 가까워요.',
+      basis: 'quality_score 70~79점',
+    };
+  }
+  if (score < 90) {
+    return {
+      tone: 'solid',
+      grade: 'B+',
+      label: '부족 축 있음',
+      summary: '명확히 부족한 아미노산 축이 있어요.',
+      basis: 'quality_score 80~89점',
+    };
+  }
+  if (score < 97) {
+    return {
+      tone: 'strong',
+      grade: 'A-',
+      label: '거의 충족',
+      summary: '거의 충족하지만 제한 아미노산 영향이 남아 있어요.',
+      basis: 'quality_score 90~96점',
+    };
+  }
+  if (score < 105) {
+    return {
+      tone: 'high',
+      grade: 'A',
+      label: '기준 충족권',
+      summary: '기준 충족권으로 볼 수 있는 아미노산 구성이에요.',
+      basis: 'quality_score 97~104점',
+    };
+  }
+  if (score < 115) {
+    return {
+      tone: 'very-high',
+      grade: 'A+',
+      label: '기준 초과',
+      summary: 'FAO 기준을 안정적으로 초과하는 구성이에요.',
+      basis: 'quality_score 105~114점',
+    };
+  }
+  if (score < 125) {
+    return {
+      tone: 'very-high',
+      grade: 'S',
+      label: '매우 우수',
+      summary: '기준을 초과 충족하는 매우 우수한 구성이에요.',
+      basis: 'quality_score 115~124점',
+    };
+  }
+  return {
+    tone: 'very-high',
+    grade: 'S+',
+    label: '강한 초과',
+    summary: 'FAO 기준을 매우 강하게 초과 충족하는 구성이에요.',
+    basis: 'quality_score 125점 이상',
+  };
+}
+
+function formatLimitingAminoAcids(items) {
+  const labels = (Array.isArray(items) ? items : [])
+    .map((item) => {
+      const key = typeof item === 'string' ? item : item?.code ?? item?.key ?? item?.name;
+      if (!key) return null;
+      return LIMITING_AMINO_LABELS[key] ?? LIMITING_AMINO_LABELS[String(key).toLowerCase()] ?? String(key);
+    })
+    .filter(Boolean);
+  return [...new Set(labels)];
+}
+
+function aminoQualityJudgment(product) {
+  const snapshot = product?.recommendationScores?.proteinDrinkDefault;
+  const amino = snapshot?.components?.amino_acids;
+  const rawScore = amino?.quality_score;
+  const score = typeof rawScore === 'number' ? rawScore : Number(rawScore);
+  const tier = aminoQualityCriterion(score);
+  const limiting = formatLimitingAminoAcids(amino?.limiting_amino_acids);
+  const usesFallback = amino?.basis === 'measured_with_protein_source_fallback';
+  const limitingText = limiting.length > 0
+    ? `부족한 쪽: ${limiting.join(', ')}.`
+    : '특별히 튀는 부족 성분은 없어요.';
+  const basisText = usesFallback
+    ? '일부 값은 제품 원료 정보를 참고했어요.'
+    : '제품에 있는 아미노산 정보를 기준으로 봤어요.';
+
+  return {
+    value: formatAminoQualityScore(score),
+    grade: tier.grade,
+    tone: tier.tone,
+    text: tier.summary,
+    help: `${limitingText} ${basisText}`.trim(),
+    helpDetail: `${limitingText} ${basisText}`.trim(),
+  };
+}
+
+function tierTone(tier) {
+  const key = String(tier ?? '').toUpperCase();
+  if (key === 'S+' || key === 'S' || key === 'A+') return 'very-high';
+  if (key === 'A') return 'high';
+  if (key === 'A-') return 'strong';
+  if (key === 'B+') return 'solid';
+  if (key === 'B') return 'near';
+  if (key === 'C') return 'light';
+  if (key === 'D' || key === 'F') return 'poor';
+  return 'caution';
+}
+
+function formatEfficiencyValue(value) {
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n)) return null;
+  return n.toFixed(2);
+}
+
+function coreScoreComponents(product) {
+  return product?.recommendationScores?.proteinDrinkDefault?.components?.core ?? {};
+}
+
+function calorieEfficiencyJudgment(product) {
+  const core = coreScoreComponents(product);
+  const tier = core.calorie_efficiency_tier ?? core.calorieEfficiencyTier;
+  const value = core.calorie_efficiency_value ?? core.calorieEfficiencyValue;
+  const calorieFactor = core.calorie_factor ?? core.calorieFactor;
+  if (!tier) {
+    return {
+      value: null,
+      grade: 'N/A',
+      tone: 'caution',
+      text: '칼로리 효율 티어 데이터가 없어요.',
+      helpDetail: 'DB v6 calorie_efficiency_tier 기준으로 표시합니다.',
+    };
+  }
+  return {
+    value: formatEfficiencyValue(value),
+    grade: tier,
+    tone: tierTone(tier),
+    text: '단백질 품질에 칼로리 효율을 반영한 티어예요.',
+    helpDetail: [
+      '비슷한 단백질 품질이라면 칼로리가 낮을수록 좋게 봐요.',
+      formatEfficiencyValue(value) ? `현재 효율값은 ${formatEfficiencyValue(value)}예요.` : null,
+    ].filter(Boolean).join(' '),
+  };
+}
+
+function priceEfficiencyJudgment(product) {
+  const core = coreScoreComponents(product);
+  const tier = core.price_efficiency_tier ?? core.priceEfficiencyTier;
+  const value = core.price_efficiency_value ?? core.priceEfficiencyValue;
+  const priceFactor = core.price_factor ?? core.priceFactor;
+  const basis = core.price_factor_basis ?? core.priceFactorBasis;
+  if (basis !== 'measured' || !tier) {
+    return {
+      value: null,
+      grade: 'N/A',
+      tone: 'caution',
+      text: '가격 정보가 없어 가성비 티어는 계산하지 않았어요.',
+      helpDetail: '가격이 확인되면 단백질 품질 대비 가격이 괜찮은지 보여줄게요.',
+    };
+  }
+  return {
+    value: formatEfficiencyValue(value),
+    grade: tier,
+    tone: tierTone(tier),
+    text: '단백질 품질에 가격 효율을 반영한 티어예요.',
+    helpDetail: [
+      '비슷한 단백질 품질이라면 가격이 낮을수록 좋게 봐요.',
+      formatEfficiencyValue(value) ? `현재 가성비값은 ${formatEfficiencyValue(value)}예요.` : null,
+    ].filter(Boolean).join(' '),
+  };
+}
+
 function bcaaJudgment(nutrition) {
   const protein = nutrition?.protein ?? 0;
   const bcaaCount = countPositive(nutrition, BCAA_KEYS);
@@ -1034,6 +1366,43 @@ const PROTEIN_GRADE_ROWS = [
   { range: '40g 이상', grade: 'S+', label: '초고함량' },
 ];
 
+const AMINO_QUALITY_GRADE_ROWS = [
+  { range: '125+', grade: 'S+', label: '매우 강하게 초과 충족' },
+  { range: '115~124', grade: 'S', label: '초과 충족, 매우 우수' },
+  { range: '105~114', grade: 'A+', label: '안정적으로 기준 초과' },
+  { range: '97~104', grade: 'A', label: '기준 충족권' },
+  { range: '90~96', grade: 'A-', label: '거의 충족' },
+  { range: '80~89', grade: 'B+', label: '명확히 부족한 축 있음' },
+  { range: '70~79', grade: 'B', label: '보통 이하' },
+  { range: '60~69', grade: 'C', label: '제한 아미노산 문제 큼' },
+  { range: '50~59', grade: 'D', label: '낮음' },
+  { range: '50 미만', grade: 'F', label: '매우 낮음' },
+];
+
+const CALORIE_EFFICIENCY_GRADE_ROWS = [
+  { range: '1.00+', grade: 'S+', label: '최상위 열량 효율' },
+  { range: '0.95~0.99', grade: 'S', label: '매우 우수' },
+  { range: '0.90~0.94', grade: 'A+', label: '우수' },
+  { range: '0.82~0.89', grade: 'A', label: '높은 편' },
+  { range: '0.72~0.81', grade: 'A-', label: '양호' },
+  { range: '0.62~0.71', grade: 'B+', label: '보통 이상' },
+  { range: '0.52~0.61', grade: 'B', label: '보통' },
+  { range: '0.35~0.51', grade: 'C', label: '낮은 편' },
+  { range: '0.35 미만', grade: 'D', label: '낮음' },
+];
+
+const PRICE_EFFICIENCY_GRADE_ROWS = [
+  { range: '1.80+', grade: 'S+', label: '최상위 가성비' },
+  { range: '1.50~1.79', grade: 'S', label: '매우 우수' },
+  { range: '1.35~1.49', grade: 'A+', label: '우수' },
+  { range: '1.20~1.34', grade: 'A', label: '높은 편' },
+  { range: '1.05~1.19', grade: 'A-', label: '양호' },
+  { range: '0.90~1.04', grade: 'B+', label: '보통 이상' },
+  { range: '0.75~0.89', grade: 'B', label: '보통' },
+  { range: '0.55~0.74', grade: 'C', label: '낮은 편' },
+  { range: '0.55 미만', grade: 'D', label: '낮음' },
+];
+
 function ProteinGradeTooltip() {
   return (
     <span className="d-analysis-protein-grade-table" role="table" aria-label="단백질 총량 등급 기준">
@@ -1051,6 +1420,50 @@ function ProteinGradeTooltip() {
       ))}
       <span className="d-analysis-protein-grade-note">
         ISSN(국제스포츠영양학회)은 운동 직후 1회 단백질 보충량으로 20~40g 범위를 제시합니다.
+      </span>
+    </span>
+  );
+}
+
+function EfficiencyGradeTooltip({ ariaLabel, valueHeader, rows, detail }) {
+  return (
+    <span className="d-analysis-protein-grade-table" role="table" aria-label={ariaLabel}>
+      <span className="d-analysis-protein-grade-row is-head" role="row">
+        <span role="columnheader">{valueHeader}</span>
+        <span role="columnheader">등급</span>
+        <span role="columnheader">의미</span>
+      </span>
+      {rows.map((row) => (
+        <span key={row.grade} className="d-analysis-protein-grade-row" role="row">
+          <span role="cell">{row.range}</span>
+          <strong role="cell">{row.grade}</strong>
+          <span role="cell">{row.label}</span>
+        </span>
+      ))}
+      <span className="d-analysis-protein-grade-note">
+        {detail}
+      </span>
+    </span>
+  );
+}
+
+function AminoQualityGradeTooltip({ detail }) {
+  return (
+    <span className="d-analysis-protein-grade-table" role="table" aria-label="아미노산 구성 등급 기준">
+      <span className="d-analysis-protein-grade-row is-head" role="row">
+        <span role="columnheader">점수</span>
+        <span role="columnheader">등급</span>
+        <span role="columnheader">의미</span>
+      </span>
+      {AMINO_QUALITY_GRADE_ROWS.map((row) => (
+        <span key={row.grade} className="d-analysis-protein-grade-row" role="row">
+          <span role="cell">{row.range}</span>
+          <strong role="cell">{row.grade}</strong>
+          <span role="cell">{row.label}</span>
+        </span>
+      ))}
+      <span className="d-analysis-protein-grade-note">
+        {detail || 'DB v6 FAO 기준 아미노산 품질 점수로 판단합니다.'}
       </span>
     </span>
   );
@@ -1094,10 +1507,10 @@ function SummaryGradeRow({ title, value, tone, grade: gradeProp, text, help, hel
   );
 }
 
-function KeyJudgmentSection({ nutrition, proteinVerdict }) {
-  const eaa = eaaJudgment(nutrition);
-  const leucine = leucineJudgment(nutrition);
-  const bcaa = bcaaJudgment(nutrition);
+function KeyJudgmentSection({ product, nutrition, proteinVerdict }) {
+  const aminoQuality = aminoQualityJudgment(product);
+  const calorieEfficiency = calorieEfficiencyJudgment(product);
+  const priceEfficiency = priceEfficiencyJudgment(product);
 
   return (
     <div className="d-analysis-grade-summary" aria-label="핵심 판단 요약">
@@ -1111,25 +1524,45 @@ function KeyJudgmentSection({ nutrition, proteinVerdict }) {
         helpContent={<ProteinGradeTooltip />}
       />
       <SummaryGradeRow
-        title="필수아미노산"
-        value={eaa.value}
-        tone={eaa.tone}
-        text={eaa.text}
-        help={eaa.help}
+        title="아미노산 구성"
+        value={aminoQuality.value}
+        tone={aminoQuality.tone}
+        grade={aminoQuality.grade}
+        text={aminoQuality.text}
+        helpLabel="아미노산 구성 등급 기준"
+        helpContent={<AminoQualityGradeTooltip detail={aminoQuality.helpDetail} />}
       />
       <SummaryGradeRow
-        title="류신"
-        value={leucine.value}
-        tone={leucine.tone}
-        text={leucine.text}
-        help={leucine.help}
+        title="칼로리효율"
+        value={calorieEfficiency.value}
+        tone={calorieEfficiency.tone}
+        grade={calorieEfficiency.grade}
+        text={calorieEfficiency.text}
+        helpLabel="칼로리효율 등급 기준"
+        helpContent={(
+          <EfficiencyGradeTooltip
+            ariaLabel="칼로리효율 등급 기준"
+            valueHeader="값"
+            rows={CALORIE_EFFICIENCY_GRADE_ROWS}
+            detail={calorieEfficiency.helpDetail}
+          />
+        )}
       />
       <SummaryGradeRow
-        title="BCAA"
-        value={bcaa.value}
-        tone={bcaa.tone}
-        text={bcaa.text}
-        help={bcaa.help}
+        title="가성비"
+        value={priceEfficiency.value}
+        tone={priceEfficiency.tone}
+        grade={priceEfficiency.grade}
+        text={priceEfficiency.text}
+        helpLabel="가성비 등급 기준"
+        helpContent={(
+          <EfficiencyGradeTooltip
+            ariaLabel="가성비 등급 기준"
+            valueHeader="값"
+            rows={PRICE_EFFICIENCY_GRADE_ROWS}
+            detail={priceEfficiency.helpDetail}
+          />
+        )}
       />
     </div>
   );
@@ -1304,10 +1737,11 @@ function ProteinDrinkReport({ product, products, nutrition, ingredients, categor
         <h2 className="d-detail-card-title">분석 리포트</h2>
       </header>
       <KeyJudgmentSection
+        product={product}
         nutrition={nutrition}
         proteinVerdict={proteinVerdict}
       />
-      <AminoPatternSection nutrition={nutrition} />
+      <AminoPatternSection product={product} nutrition={nutrition} />
       <CategoryRankSection ranks={ranks} />
       <ProteinSourceSection proteinNotes={proteinNotes} />
       <OtherNutrientsSection foodNutrients={foodNutrients} />

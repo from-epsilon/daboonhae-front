@@ -34,7 +34,7 @@ function saveToStorage(ids) {
 
 export function CompareProvider({ children }) {
   const [ids, setIds] = useState(() => loadFromStorage());
-  const { products, loading } = useProducts();
+  const { products, loaded } = useProducts({ autoLoad: false });
   const validIds = useMemo(
     () => new Set(products.map((p) => String(p.id))),
     [products],
@@ -47,13 +47,13 @@ export function CompareProvider({ children }) {
 
   // 제품 풀에서 제외된 항목(비활성 제품/비활성 카테고리 등)은 비교함에서도 제거
   useEffect(() => {
-    if (loading) return;
+    if (!loaded) return;
     setIds((prev) => prev.filter((id) => validIds.has(String(id))));
-  }, [loading, validIds]);
+  }, [loaded, validIds]);
 
   // 추가 시 최대치 초과면 false 반환 → 호출부에서 알림 처리
   const add = useCallback((productId) => {
-    if (!validIds.has(String(productId))) return false;
+    if (loaded && !validIds.has(String(productId))) return false;
     let added = false;
     setIds((prev) => {
       if (prev.includes(productId)) return prev;
@@ -62,7 +62,7 @@ export function CompareProvider({ children }) {
       return [...prev, productId];
     });
     return added;
-  }, [validIds]);
+  }, [loaded, validIds]);
 
   const remove = useCallback((productId) => {
     setIds((prev) => prev.filter((id) => id !== productId));
@@ -70,7 +70,7 @@ export function CompareProvider({ children }) {
 
   // 토글: 이미 담겨있으면 빼기, 아니면 추가 (최대치 초과면 false 반환)
   const toggle = useCallback((productId) => {
-    if (!validIds.has(String(productId))) return false;
+    if (loaded && !validIds.has(String(productId))) return false;
     let result = true;
     setIds((prev) => {
       if (prev.includes(productId)) return prev.filter((id) => id !== productId);
@@ -81,7 +81,7 @@ export function CompareProvider({ children }) {
       return [...prev, productId];
     });
     return result;
-  }, [validIds]);
+  }, [loaded, validIds]);
 
   const clear = useCallback(() => {
     setIds([]);

@@ -87,7 +87,6 @@ function tagFatWarn(n) {
 
 // 영양/성분 기반 자동 태그 생성
 // - DS 컨벤션: 앞쪽 우선순위 유지, 최대 4개
-// - '공식 영양정보' 신뢰 배지는 별도 slot(getTrustBadges)으로 분리 → 강점 많은 제품에서 밀리지 않음
 export function getAutoTags(product) {
   const n = product?.nutrition ?? {};
   const ing = product?.ingredients ?? {};
@@ -106,12 +105,8 @@ export function getAutoTags(product) {
 }
 
 // ============================================================ 신뢰 배지 (trust slot)
-// - 자동 태그와 별도 슬롯으로 노출 (FoodCard 썸네일 옆 작은 체크 아이콘 + 텍스트)
-// - 현재 47종 모두 식약처/원천 DB 출처라 항상 '공식 영양정보' 1개 반환
-//   추후 데이터 다양화 시 product.source 별 분기 추가 예정
-export function getTrustBadges(product) {
-  // 향후 product.source/품목제조보고번호 유무 등으로 분기 가능
-  return [{ v: 'info', label: '공식 영양정보' }];
+export function getTrustBadges() {
+  return [];
 }
 
 // ============================================================ 매크로 변환

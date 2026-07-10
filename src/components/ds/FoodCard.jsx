@@ -814,6 +814,49 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
   );
 }
 
+// 데스크톱 메인 목적별 추천 전용 카드.
+// 일반 그리드 카드와 독립적으로 구성해 추천 영역만의 정보 배치 변경이 다른 카드에 번지지 않게 한다.
+export function PurposeRecommendCard({ food, onClick, onCompare, inCompare, metrics }) {
+  if (!food) return null;
+  const stats = metrics ? getPurposeStats(food, metrics) : getDefaultStats(food);
+
+  return (
+    <div className="fc-grid-card" onClick={onClick}>
+      <div className="fc-grid-thumb">
+        <ThumbImage src={food.thumb} alt={food.name} />
+        <CompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+      </div>
+      <div className="fc-grid-body has-purchase">
+        <div className="fc-grid-brand">{food.brand}</div>
+        <a
+          className="fc-grid-name"
+          href={productHref(food)}
+          onClick={(e) => handleNameClick(e, onClick)}
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          {food.name}
+          {food.serving && (
+            <span className="fc-grid-serving">
+              {' '}{food.serving}
+            </span>
+          )}
+        </a>
+        <StatGrid stats={stats} />
+        <PurchaseOffers
+          offers={food.purchaseLinks}
+          compact
+          maxItems={1}
+          pricePer="unit"
+          title="개당 최저가"
+          className="fc-grid-offers"
+          emptyLabel="가격 정보 없음"
+          affiliatePlacement="below"
+        />
+      </div>
+    </div>
+  );
+}
+
 // 카드 하단 trust 신호 — "후기 24건"
 // - reviewCount 가 없으면 "후기 수집 중" 라벨
 function ReviewMeta({ reviewCount }) {

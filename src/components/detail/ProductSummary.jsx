@@ -43,10 +43,14 @@ export default function ProductSummary({ product }) {
         <ul className="ingredient-list">
           <IngredientRow label="단백질 원료" items={product.ingredients?.proteinSources} fallback="해당 없음" />
           <IngredientRow label="대체당" items={product.ingredients?.sweeteners} fallback="사용 안 함" />
-          <IngredientRow label="알레르겐" items={product.ingredients?.allergens} fallback="없음" />
+          <IngredientRow
+            label="알레르겐"
+            items={product.ingredients?.allergens}
+            fallback={product.ingredients?.allergensKnown === false ? '정보 없음' : '없음'}
+          />
           <li className="ingredient-row">
             <span className="ingredient-label">유당</span>
-            <span className="ingredient-value">{product.ingredients?.lactoseFree ? 'Free' : '함유'}</span>
+            <span className="ingredient-value">{formatLactose(product.ingredients?.lactoseFree)}</span>
           </li>
         </ul>
       </div>
@@ -63,4 +67,10 @@ function IngredientRow({ label, items, fallback }) {
       <span className="ingredient-value">{value}</span>
     </li>
   );
+}
+
+function formatLactose(lactoseFree) {
+  if (lactoseFree === true) return 'Free';
+  if (lactoseFree === false) return '포함 가능';
+  return '정보 없음';
 }

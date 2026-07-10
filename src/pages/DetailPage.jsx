@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { productPath, parseProductId } from '../data/productUrl.js';
-import { useProductById, useProducts } from '../store/ProductsContext.jsx';
+import { useCategoryProducts, useProductDetail } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { categoryPath } from '../data/categoryTabs.js';
 import { getFoodTypeByCode } from '../data/categoryTabs.js';
@@ -608,12 +608,12 @@ export default function DetailPage() {
   const navigate = useNavigate();
   const { has, toggle, isFull, max } = useCompare();
   const wishlist = useWishlist();
-  const { products, loading } = useProducts();
   const navRef = useRef(null);
   const [cardNutritionOpen, setCardNutritionOpen] = useState(false);
   const [cardNutritionBasis, setCardNutritionBasis] = useState('serving');
 
-  const raw = useProductById(id);
+  const { product: raw, loading, error } = useProductDetail(id);
+  const { products: categoryProducts } = useCategoryProducts(raw?.categoryCode);
   const product = raw ? getAdapted(raw) : null;
   const activeSection = useActiveSection(product?.id);
 
@@ -636,6 +636,14 @@ export default function DetailPage() {
           <span className="d-skeleton" style={{ width: '100%', height: 12, borderRadius: 6, display: 'inline-block', marginTop: 8 }} />
         </div>
       </div>
+    </div>
+  );
+  if (error) return (
+    <div className="page d-detail-empty">
+      <p className="d-detail-empty-msg">제품 정보를 불러오지 못했어요.</p>
+      <button type="button" className="d-detail-empty-link" onClick={() => window.location.reload()}>
+        다시 시도
+      </button>
     </div>
   );
   if (!product) return <EmptyState />;
@@ -715,7 +723,7 @@ export default function DetailPage() {
             <div id="analysis" className="d-detail-section-block">
               <AnalysisReport
                 product={product}
-                products={products}
+                products={categoryProducts}
                 nutrition={n}
                 ingredients={product.ingredients}
                 category={raw?.category}
@@ -733,6 +741,7 @@ export default function DetailPage() {
             </div>
             <RelatedProducts
               currentProduct={raw}
+              allProducts={categoryProducts}
               onNavigate={(food) => navigate(productPath(food))}
               limit={4}
             />

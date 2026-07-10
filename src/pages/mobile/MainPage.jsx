@@ -12,7 +12,7 @@ import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import Footer from '../../components/desktop/home/Footer.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { productPath } from '../../data/productUrl.js';
-import { CATEGORY_TABS } from '../../data/categoryTabs.js';
+import { HOME_PURPOSE_TABS } from '../../data/categoryTabs.js';
 import { getPurposeRecommendedProducts } from '../../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../../data/categoryCardMetrics.js';
 import { ArrowRight, ChevronRight } from 'lucide-react';
@@ -46,18 +46,24 @@ function usePurposeRecommended(products, tabId) {
 function PurposeSegment({ value, onChange }) {
   return (
     <div className="m-home-rec-seg" role="tablist" aria-label="추천 목적 선택">
-      {CATEGORY_TABS.map((t) => (
-        <button
-          key={t.id}
-          type="button"
-          role="tab"
-          aria-selected={t.id === value}
-          className={`m-home-rec-seg-btn${t.id === value ? ' is-active' : ''}`}
-          onClick={() => onChange(t.id)}
-        >
-          {t.label}
-        </button>
-      ))}
+      {HOME_PURPOSE_TABS.map((t) => {
+        const disabled = t.id === 'low_sugar';
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={t.id === value}
+            aria-disabled={disabled || undefined}
+            aria-label={disabled ? `${t.label}, 준비중` : undefined}
+            data-tooltip={disabled ? '준비중' : undefined}
+            className={`m-home-rec-seg-btn${t.id === value ? ' is-active' : ''}${disabled ? ' is-disabled' : ''}`}
+            onClick={() => !disabled && onChange(t.id)}
+          >
+            {t.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -99,7 +105,7 @@ export default function MainPageMobile() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
-  const [recTabId, setRecTabId] = useState(CATEGORY_TABS[0].id);
+  const [recTabId, setRecTabId] = useState(HOME_PURPOSE_TABS[0].id);
   const recommended = usePurposeRecommended(PRODUCTS, recTabId);
   const recent = useRecent(adapted);
 

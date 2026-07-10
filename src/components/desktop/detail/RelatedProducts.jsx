@@ -6,13 +6,11 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { FoodCard } from '../../ds/FoodCard.jsx';
 import { getAdapted } from '../../../data/adapters.js';
-import { useProducts } from '../../../store/ProductsContext.jsx';
 import { categoryPath } from '../../../data/categoryTabs.js';
 
-export function RelatedProducts({ currentProduct, onNavigate, limit = 3 }) {
-  const { products: PRODUCTS } = useProducts();
+export function RelatedProducts({ currentProduct, allProducts = [], onNavigate, limit = 3 }) {
   const related = currentProduct?.categoryCode
-    ? PRODUCTS
+    ? allProducts
         .filter((p) => p.id !== currentProduct.id && p.categoryCode === currentProduct.categoryCode)
         .sort((a, b) => String(a.id).localeCompare(String(b.id)))
         .slice(0, limit)

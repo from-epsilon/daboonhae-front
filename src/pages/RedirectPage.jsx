@@ -3,6 +3,50 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Seo from '../components/global/Seo.jsx';
 import '../styles/redirect.css';
 
+const DEFAULT_DELAY_SECONDS = 1.5;
+const MIN_DELAY_SECONDS = 0.5;
+const MAX_DELAY_SECONDS = 5;
+
+// 구매 페이지로 연결을 허용하는 판매처 호스트.
+// 판매처명은 쿼리 파라미터를 신뢰하지 않고 검증된 호스트에서 결정한다.
+const TRUSTED_VENDOR_HOSTS = [
+  { host: 'link.coupang.com', vendorName: '쿠팡' },
+  { host: 'oy.run', vendorName: '올리브영' },
+  { host: 'wellife.co.kr', vendorName: '대상웰라이프', allowSubdomains: true },
+  { host: 'cjthemarket.com', vendorName: 'CJ더마켓', allowSubdomains: true },
+];
+
+function getTrustedPurchaseTarget(rawUrl) {
+  if (!rawUrl) return null;
+
+  try {
+    const url = new URL(rawUrl);
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      (url.port && url.port !== '443')
+    ) {
+      return null;
+    }
+
+    const hostname = url.hostname.toLowerCase();
+    const vendor = TRUSTED_VENDOR_HOSTS.find(({ host, allowSubdomains }) => (
+      hostname === host || (allowSubdomains && hostname.endsWith(`.${host}`))
+    ));
+
+    return vendor ? { url: url.href, vendorName: vendor.vendorName } : null;
+  } catch {
+    return null;
+  }
+}
+
+function getDelaySeconds(rawDelay) {
+  const parsed = Number.parseFloat(rawDelay ?? '');
+  if (!Number.isFinite(parsed)) return DEFAULT_DELAY_SECONDS;
+  return Math.min(MAX_DELAY_SECONDS, Math.max(MIN_DELAY_SECONDS, parsed));
+}
+
 // 다분해 텍스트 로고 — 헤더와 동일한 표기('분'만 브랜드 그린)
 function DabunhaeLogo() {
   return (
@@ -17,10 +61,12 @@ export default function RedirectPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const targetUrl = searchParams.get('url');
-  const vendorName = searchParams.get('vendor') || '판매처';
-  // 대기 시간 — 1.5초 같은 소수점 값도 허용
-  const delaySeconds = parseFloat(searchParams.get('delay') ?? '1.5');
+  const rawTargetUrl = searchParams.get('url');
+  const trustedTarget = getTrustedPurchaseTarget(rawTargetUrl);
+  const targetUrl = trustedTarget?.url ?? null;
+  const vendorName = trustedTarget?.vendorName ?? '판매처';
+  // 대기 시간 — 비정상 값은 기본값으로, 정상 값도 안전한 범위로 제한
+  const delaySeconds = getDelaySeconds(searchParams.get('delay'));
 
   const [timeLeft, setTimeLeft] = useState(() => Math.ceil(delaySeconds));
   const [progress, setProgress] = useState(100);
@@ -47,7 +93,7 @@ export default function RedirectPage() {
       // 구매 페이지에서 뒤로가기 시 진입 직전 페이지로 돌아감
       if (elapsed >= totalDuration) {
         clearInterval(intervalRef.current);
-        window.location.replace(decodeURIComponent(targetUrl));
+        window.location.replace(targetUrl);
       }
     }, 100);
 
@@ -64,7 +110,8 @@ export default function RedirectPage() {
   // replace로 이동해 뒤로가기 시 리다이렉트 페이지로 돌아오지 않도록 함
   const handleGoNow = () => {
     clearInterval(intervalRef.current);
-    window.location.replace(decodeURIComponent(targetUrl));
+    if (!targetUrl) return;
+    window.location.replace(targetUrl);
   };
 
   if (!targetUrl) {
@@ -75,7 +122,11 @@ export default function RedirectPage() {
           <DabunhaeLogo />
           <div className="redirect-error-icon">⚠️</div>
           <h1 className="redirect-title">링크 오류</h1>
-          <p className="redirect-message">판매처 링크를 찾을 수 없습니다.</p>
+          <p className="redirect-message">
+            {rawTargetUrl
+              ? '허용되지 않은 판매처 링크입니다.'
+              : '판매처 링크를 찾을 수 없습니다.'}
+          </p>
           <div className="redirect-actions">
             <button type="button" className="redirect-btn redirect-btn--ghost" onClick={() => navigate(-1)}>
               이전 페이지
