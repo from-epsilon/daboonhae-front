@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Seo from '../components/global/Seo.jsx';
+import { ANALYTICS_EVENTS, captureEvent } from '../lib/analytics.js';
 import '../styles/redirect.css';
 
 const DEFAULT_DELAY_SECONDS = 1.5;
@@ -65,6 +66,7 @@ export default function RedirectPage() {
   const trustedTarget = getTrustedPurchaseTarget(rawTargetUrl);
   const targetUrl = trustedTarget?.url ?? null;
   const vendorName = trustedTarget?.vendorName ?? '판매처';
+  const productId = searchParams.get('product');
   // 대기 시간 — 비정상 값은 기본값으로, 정상 값도 안전한 범위로 제한
   const delaySeconds = getDelaySeconds(searchParams.get('delay'));
 
@@ -72,6 +74,19 @@ export default function RedirectPage() {
   const [progress, setProgress] = useState(100);
   const [isStopped, setIsStopped] = useState(false);
   const intervalRef = useRef(null);
+  const purchaseCapturedRef = useRef(false);
+
+  useEffect(() => {
+    if (!targetUrl || purchaseCapturedRef.current) return;
+    purchaseCapturedRef.current = true;
+    captureEvent(ANALYTICS_EVENTS.PURCHASE_LINK_CLICKED, {
+      vendor: vendorName,
+      product_id: productId || null,
+      source_path: document.referrer.startsWith(window.location.origin)
+        ? new URL(document.referrer).pathname
+        : null,
+    }, { send_instantly: true });
+  }, [targetUrl, vendorName, productId]);
 
   useEffect(() => {
     if (!targetUrl) return;

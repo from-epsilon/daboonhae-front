@@ -49,12 +49,13 @@ export function formatWon(value) {
   return Math.round(value).toLocaleString();
 }
 
-export function getPurchaseRedirectUrl(offer, delaySeconds = 1.5) {
+export function getPurchaseRedirectUrl(offer, delaySeconds = 1.5, productId) {
   if (!offer?.url) return null;
   const params = new URLSearchParams({
     url: offer.url,
     vendor: offer.vendorName || '판매처',
     delay: delaySeconds,
   });
+  if (productId != null) params.set('product', String(productId));
   return `/redirect?${params.toString()}`;
 }

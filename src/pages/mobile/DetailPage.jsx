@@ -240,6 +240,7 @@ export default function DetailPageMobile() {
         <HeroSection product={product} config={detailConfig} />
         <PurchaseOffers
           offers={product.purchaseLinks}
+          productId={product.id}
           className="m-detail-purchase-offers"
           sortBy="unit-first"
           pricePer={detailConfig?.purchasePricePer ?? 'unit'}

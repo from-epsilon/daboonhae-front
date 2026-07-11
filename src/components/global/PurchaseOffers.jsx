@@ -106,12 +106,13 @@ function basisPriceParts(price, pricePer) {
   };
 }
 
-function getRedirectUrl(offer, delaySeconds = 1.5) {
+function getRedirectUrl(offer, delaySeconds = 1.5, productId) {
   const params = new URLSearchParams({
     url: offer.url,
     vendor: offer.vendorName || '판매처',
     delay: delaySeconds,
   });
+  if (productId != null) params.set('product', String(productId));
   return `/redirect?${params.toString()}`;
 }
 
@@ -143,6 +144,7 @@ export default function PurchaseOffers({
   sortBy = 'total',   // 'total' 총액순 | 'unit' 개당순 | 'unit-first' 개당 최저가 먼저+나머지 총액순
   servingsPerUnit,
   affiliatePlacement = 'header', // compact 카드에서만 'header' | 'below'
+  productId,
 }) {
   const isUnitLike = pricePer === 'unit' || pricePer === 'serving';
   const basisPriceOf = pricePer === 'serving'
@@ -200,7 +202,7 @@ export default function PurchaseOffers({
             <a
               key={`${offer.vendorName}-${offer.url}-${i}`}
               className={`purchase-offer${isBest ? ' is-best' : ''}`}
-              href={getRedirectUrl(offer, redirectDelay)}
+              href={getRedirectUrl(offer, redirectDelay, productId)}
               target="_blank"
               rel="noopener noreferrer nofollow sponsored"
               onClick={handlePurchaseClick}

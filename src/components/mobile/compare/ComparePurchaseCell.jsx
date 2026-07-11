@@ -8,7 +8,7 @@ import {
 export function ComparePurchaseCell({ product, isBest }) {
   const offer = getBestUnitOffer(product?.purchaseLinks);
   const unitPrice = unitPriceOf(offer);
-  const redirectUrl = getPurchaseRedirectUrl(offer);
+  const redirectUrl = getPurchaseRedirectUrl(offer, 1.5, product?.id);
   const cls = [
     'm-compare-cell',
     'm-compare-purchase-cell',

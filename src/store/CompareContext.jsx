@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useProducts } from './ProductsContext.jsx';
+import { ANALYTICS_EVENTS, captureEvent } from '../lib/analytics.js';
 
 // 비교함(compare cart) 전역 상태
 // - 어디서든 제품을 담거나 빼기 가능
@@ -34,6 +35,7 @@ function saveToStorage(ids) {
 
 export function CompareProvider({ children }) {
   const [ids, setIds] = useState(() => loadFromStorage());
+  const idsRef = useRef(ids);
   const { products, loaded } = useProducts({ autoLoad: false });
   const validIds = useMemo(
     () => new Set(products.map((p) => String(p.id))),
@@ -42,6 +44,7 @@ export function CompareProvider({ children }) {
 
   // 상태 변경 시 localStorage 동기화
   useEffect(() => {
+    idsRef.current = ids;
     saveToStorage(ids);
   }, [ids]);
 
@@ -54,51 +57,69 @@ export function CompareProvider({ children }) {
   // 추가 시 최대치 초과면 false 반환 → 호출부에서 알림 처리
   const add = useCallback((productId) => {
     if (loaded && !validIds.has(String(productId))) return false;
-    let added = false;
-    setIds((prev) => {
-      if (prev.includes(productId)) return prev;
-      if (prev.length >= MAX_COMPARE) return prev;
-      added = true;
-      return [...prev, productId];
+    const current = idsRef.current;
+    if (current.some((id) => String(id) === String(productId))) return false;
+    if (current.length >= MAX_COMPARE) return false;
+    const next = [...current, productId];
+    idsRef.current = next;
+    setIds(next);
+    captureEvent(ANALYTICS_EVENTS.COMPARE_CHANGED, {
+      action: 'added',
+      product_id: String(productId),
+      item_count: next.length,
     });
-    return added;
+    return true;
   }, [loaded, validIds]);
 
   const remove = useCallback((productId) => {
-    setIds((prev) => prev.filter((id) => id !== productId));
+    const current = idsRef.current;
+    const next = current.filter((id) => String(id) !== String(productId));
+    if (next.length === current.length) return;
+    idsRef.current = next;
+    setIds(next);
+    captureEvent(ANALYTICS_EVENTS.COMPARE_CHANGED, {
+      action: 'removed',
+      product_id: String(productId),
+      item_count: next.length,
+    });
   }, []);
 
   // 토글: 이미 담겨있으면 빼기, 아니면 추가 (최대치 초과면 false 반환)
   const toggle = useCallback((productId) => {
     if (loaded && !validIds.has(String(productId))) return false;
-    let result = true;
-    setIds((prev) => {
-      if (prev.includes(productId)) return prev.filter((id) => id !== productId);
-      if (prev.length >= MAX_COMPARE) {
-        result = false;
-        return prev;
-      }
-      return [...prev, productId];
+    const current = idsRef.current;
+    const removing = current.some((id) => String(id) === String(productId));
+    if (!removing && current.length >= MAX_COMPARE) return false;
+    const next = removing
+      ? current.filter((id) => String(id) !== String(productId))
+      : [...current, productId];
+    idsRef.current = next;
+    setIds(next);
+    captureEvent(ANALYTICS_EVENTS.COMPARE_CHANGED, {
+      action: removing ? 'removed' : 'added',
+      product_id: String(productId),
+      item_count: next.length,
     });
-    return result;
+    return true;
   }, [loaded, validIds]);
 
   const clear = useCallback(() => {
+    idsRef.current = [];
     setIds([]);
   }, []);
 
   const reorder = useCallback((sourceId, destinationId, position = 'before') => {
-    setIds((prev) => {
-      const sourceIndex = prev.findIndex((id) => String(id) === String(sourceId));
-      const destinationIndex = prev.findIndex((id) => String(id) === String(destinationId));
-      if (sourceIndex < 0 || destinationIndex < 0 || sourceIndex === destinationIndex) return prev;
-      const next = [...prev];
-      const [moved] = next.splice(sourceIndex, 1);
-      const remainingDestinationIndex = next.findIndex((id) => String(id) === String(destinationId));
-      const insertIndex = remainingDestinationIndex + (position === 'after' ? 1 : 0);
-      next.splice(insertIndex, 0, moved);
-      return next;
-    });
+    const current = idsRef.current;
+    const sourceIndex = current.findIndex((id) => String(id) === String(sourceId));
+    const destinationIndex = current.findIndex((id) => String(id) === String(destinationId));
+    if (sourceIndex < 0 || destinationIndex < 0 || sourceIndex === destinationIndex) return;
+    const next = [...current];
+    const [moved] = next.splice(sourceIndex, 1);
+    const remainingDestinationIndex = next.findIndex((id) => String(id) === String(destinationId));
+    const insertIndex = remainingDestinationIndex + (position === 'after' ? 1 : 0);
+    next.splice(insertIndex, 0, moved);
+    idsRef.current = next;
+    setIds(next);
   }, []);
 
   const has = useCallback((productId) => ids.includes(productId), [ids]);

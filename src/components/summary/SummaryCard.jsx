@@ -134,9 +134,9 @@ function SummaryStats({ stats }) {
   );
 }
 
-export function SummaryPurchaseLink({ offer }) {
+export function SummaryPurchaseLink({ offer, productId }) {
   const unitPrice = unitPriceOf(offer);
-  const href = getPurchaseRedirectUrl(offer);
+  const href = getPurchaseRedirectUrl(offer, 1.5, productId);
   if (!offer || unitPrice == null || !href) return null;
   const vendorLogo = getVendorLogo(offer.vendorName);
 
@@ -210,7 +210,7 @@ export function SummaryCard({
           <SummaryInlineMeta food={food} />
         </a>
         <SummaryStats stats={stats} />
-        {displaysPurchase && <SummaryPurchaseLink offer={bestOffer} />}
+        {displaysPurchase && <SummaryPurchaseLink offer={bestOffer} productId={food.id} />}
       </div>
     </article>
   );
@@ -294,7 +294,7 @@ export function MobileSummaryListCard({ food, onClick, onCompare, inCompare }) {
           <div className="mobile-summary-serving">{food.serving}</div>
         )}
         <MobileSummaryMetrics food={food} />
-        <SummaryPurchaseLink offer={bestOffer} />
+        <SummaryPurchaseLink offer={bestOffer} productId={food.id} />
       </div>
     </article>
   );

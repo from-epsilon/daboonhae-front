@@ -753,6 +753,7 @@ export default function DetailPage() {
           <div className="d-detail-aside-inner">
             <PurchaseOffers
               offers={product.purchaseLinks}
+              productId={product.id}
               title="가격 비교"
               showUpdatedAt
               stacked

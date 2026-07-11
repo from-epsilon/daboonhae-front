@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useProducts } from './ProductsContext.jsx';
+import { ANALYTICS_EVENTS, captureEvent } from '../lib/analytics.js';
 
 const STORAGE_KEY = 'dabunhae:wishlist:v1';
 const WishlistContext = createContext(null);
@@ -30,6 +31,7 @@ function saveToStorage(ids) {
 
 export function WishlistProvider({ children }) {
   const [ids, setIds] = useState(() => loadFromStorage());
+  const idsRef = useRef(ids);
   const { products, loaded } = useProducts({ autoLoad: false });
   const validIds = useMemo(
     () => new Set(products.map((p) => normalizeId(p.id))),
@@ -37,6 +39,7 @@ export function WishlistProvider({ children }) {
   );
 
   useEffect(() => {
+    idsRef.current = ids;
     saveToStorage(ids);
   }, [ids]);
 
@@ -48,25 +51,53 @@ export function WishlistProvider({ children }) {
   const add = useCallback((productId) => {
     const id = normalizeId(productId);
     if (!id || (loaded && !validIds.has(id))) return false;
-    setIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    const current = idsRef.current;
+    if (current.includes(id)) return true;
+    const next = [...current, id];
+    idsRef.current = next;
+    setIds(next);
+    captureEvent(ANALYTICS_EVENTS.WISHLIST_CHANGED, {
+      action: 'added',
+      product_id: id,
+      item_count: next.length,
+    });
     return true;
   }, [loaded, validIds]);
 
   const remove = useCallback((productId) => {
     const id = normalizeId(productId);
-    setIds((prev) => prev.filter((item) => item !== id));
+    const current = idsRef.current;
+    if (!current.includes(id)) return;
+    const next = current.filter((item) => item !== id);
+    idsRef.current = next;
+    setIds(next);
+    captureEvent(ANALYTICS_EVENTS.WISHLIST_CHANGED, {
+      action: 'removed',
+      product_id: id,
+      item_count: next.length,
+    });
   }, []);
 
   const toggle = useCallback((productId) => {
     const id = normalizeId(productId);
     if (!id || (loaded && !validIds.has(id))) return false;
-    setIds((prev) => (prev.includes(id)
-      ? prev.filter((item) => item !== id)
-      : [...prev, id]));
+    const current = idsRef.current;
+    const removing = current.includes(id);
+    const next = removing
+      ? current.filter((item) => item !== id)
+      : [...current, id];
+    idsRef.current = next;
+    setIds(next);
+    captureEvent(ANALYTICS_EVENTS.WISHLIST_CHANGED, {
+      action: removing ? 'removed' : 'added',
+      product_id: id,
+      item_count: next.length,
+    });
     return true;
   }, [loaded, validIds]);
 
   const clear = useCallback(() => {
+    idsRef.current = [];
     setIds([]);
   }, []);
 

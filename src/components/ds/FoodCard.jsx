@@ -212,6 +212,7 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, so
         <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
         <PurchaseOffers
           offers={food.purchaseLinks}
+          productId={food.id}
           compact
           sortBy="unit-first"
           pricePer={config.purchasePricePer ?? 'unit'}
@@ -630,6 +631,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, onWishlist, inWishl
       </div>
       <PurchaseOffers
         offers={food.purchaseLinks}
+        productId={food.id}
         compact
         sortBy="unit-first"
         pricePer={config.purchasePricePer ?? 'unit'}
@@ -725,6 +727,7 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
         {showPurchase && (
           <PurchaseOffers
             offers={food.purchaseLinks}
+            productId={food.id}
             compact
             maxItems={1}
             pricePer="unit"
@@ -769,6 +772,7 @@ export function PurposeRecommendCard({ food, onClick, onCompare, inCompare, metr
         <StatGrid stats={stats} />
         <PurchaseOffers
           offers={food.purchaseLinks}
+          productId={food.id}
           compact
           maxItems={1}
           pricePer="unit"

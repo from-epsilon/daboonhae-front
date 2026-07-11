@@ -86,7 +86,7 @@ function RecommendCard({ food, rank, metrics, onClick }) {
           )}
         </div>
         <HighlightStats food={food} metrics={metrics} />
-        <SummaryPurchaseLink offer={bestOffer} />
+        <SummaryPurchaseLink offer={bestOffer} productId={food.id} />
       </div>
     </article>
   );

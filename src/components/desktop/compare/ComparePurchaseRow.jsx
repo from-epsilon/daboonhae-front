@@ -8,7 +8,7 @@ import {
 function PurchaseCell({ product, isBest, motionClass, motionStyle }) {
   const offer = getBestUnitOffer(product?.purchaseLinks);
   const unitPrice = unitPriceOf(offer);
-  const redirectUrl = getPurchaseRedirectUrl(offer);
+  const redirectUrl = getPurchaseRedirectUrl(offer, 1.5, product?.id);
   const cls = [
     'd-compare-purchase-cell',
     isBest ? 'd-compare-purchase-cell--best' : '',

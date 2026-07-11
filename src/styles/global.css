@@ -1766,3 +1766,26 @@ img.product-thumb { object-fit: cover; }
     padding: 10px 6px;
   }
 }
+.internal-analytics-notice {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 10000;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  border: 1px solid color-mix(in srgb, var(--brand-green) 35%, transparent);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 14%);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.internal-analytics-notice.is-error {
+  border-color: #ef4444;
+  color: #b91c1c;
+}

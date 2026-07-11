@@ -11,6 +11,8 @@ import { useIsMobile } from './hooks/useMediaQuery.js';
 import Header from './components/global/Header.jsx';
 import CompareTrayBar from './components/global/CompareTrayBar.jsx';
 import SiteFeedbackButton from './components/global/SiteFeedbackButton.jsx';
+import AnalyticsTracker from './components/global/AnalyticsTracker.jsx';
+import InternalAnalyticsNotice from './components/global/InternalAnalyticsNotice.jsx';
 
 // 데스크탑 페이지 — 렌더될 때만 청크 로드 (모바일 사용자는 받지 않음)
 const MainPage = lazy(() => import('./pages/MainPage.jsx'));
@@ -118,5 +120,11 @@ function MobileShell() {
 // 앱 진입점: viewport에 따라 데스크탑/모바일 셸 분기
 export default function App() {
   const isMobile = useIsMobile();
-  return isMobile ? <MobileShell /> : <DesktopShell />;
+  return (
+    <>
+      <AnalyticsTracker />
+      <InternalAnalyticsNotice />
+      {isMobile ? <MobileShell /> : <DesktopShell />}
+    </>
+  );
 }
