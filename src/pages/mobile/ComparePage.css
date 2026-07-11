@@ -153,6 +153,15 @@
 .m-compare-data-col:last-child {
   border-right: none;
 }
+.m-compare-data-col.is-dragging {
+  position: relative;
+  z-index: 5;
+  opacity: 0.78;
+  pointer-events: none;
+  box-shadow: var(--shadow-lg);
+}
+.m-compare-data-col.is-drop-before { box-shadow: inset 3px 0 0 var(--brand-green); }
+.m-compare-data-col.is-drop-after { box-shadow: inset -3px 0 0 var(--brand-green); }
 
 /* ─────────────────────────────────────────────────────────────────────────
    컬럼 헤더 (썸네일 + 브랜드 + 이름 + X)
@@ -165,7 +174,10 @@
   border-bottom: 1px solid var(--bg-divider);
   display: flex;
   flex-direction: column;
+  cursor: grab;
+  touch-action: pan-y;
 }
+.m-compare-data-col.is-dragging .m-compare-col-header { cursor: grabbing; }
 .m-compare-col-x {
   position: absolute;
   top: 6px;
@@ -197,7 +209,7 @@
   background: transparent;
   border: none;
   padding: 0;
-  cursor: pointer;
+  cursor: inherit;
   text-align: center;
   color: inherit;
 }

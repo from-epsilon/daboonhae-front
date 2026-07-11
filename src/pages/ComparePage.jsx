@@ -55,7 +55,7 @@ function PageHeader({ count, max, onClear }) {
 
 export default function ComparePage() {
   const navigate = useNavigate();
-  const { ids, remove, clear, max } = useCompare();
+  const { ids, remove, clear, reorder, max } = useCompare();
   const { products: allProducts } = useProducts();
 
   const products = useMemo(
@@ -120,6 +120,7 @@ export default function ComparePage() {
             onRemove={handleRemove}
             onOpen={handleOpenDetail}
             onAdd={handleAdd}
+            onReorder={reorder}
             canAdd={canAdd}
             remaining={remaining}
           />

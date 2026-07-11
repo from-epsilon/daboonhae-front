@@ -9,6 +9,7 @@ import { CompareHeaderRow } from './CompareHeaderRow.jsx';
 import { CompareMetricRow } from './CompareMetricRow.jsx';
 import { ComparePurchaseRow } from './ComparePurchaseRow.jsx';
 import { CompareAddSlot } from './CompareAddSlot.jsx';
+import { useCompareColumnReorder } from '../../compare/useCompareColumnReorder.js';
 
 // 좌측 라벨 컬럼(160px) + 데이터 컬럼들(각 1fr, min 180px)
 function buildGridTemplate(dataColCount) {
@@ -24,12 +25,15 @@ export function CompareTable({
   onRemove,
   onOpen,
   onAdd,
+  onReorder,
   canAdd,
   remaining,
 }) {
   const dataColCount = products.length + (canAdd ? 1 : 0);
   const gridTemplate = buildGridTemplate(dataColCount);
   const rowStyle = { gridTemplateColumns: gridTemplate };
+  const { draggedId, targetId, dropPosition, dragOffsetX, getColumnProps } = useCompareColumnReorder({ products, onReorder });
+  const dragState = { draggedId, targetId, dropPosition, dragOffsetX };
 
   return (
     <section className="d-compare-table" aria-label="제품 비교 표">
@@ -45,6 +49,10 @@ export function CompareTable({
             product={p}
             onRemove={onRemove}
             onOpen={onOpen}
+            dragProps={getColumnProps(p.id)}
+            isDragging={String(draggedId) === String(p.id)}
+            dropPosition={draggedId != null && String(targetId) === String(p.id) && String(draggedId) !== String(p.id) ? dropPosition : null}
+            dragOffsetX={dragOffsetX}
           />
         ))}
         {canAdd && <CompareAddSlot onClick={onAdd} remaining={remaining} />}
@@ -55,6 +63,7 @@ export function CompareTable({
         bestSet={purchaseBestSet}
         rowStyle={rowStyle}
         hasAdd={canAdd}
+        dragState={dragState}
       />
 
       {/* 2) KPI 행들 */}
@@ -69,6 +78,7 @@ export function CompareTable({
           bestSet={bestByKey[m.key]}
           rowStyle={rowStyle}
           hasAdd={canAdd}
+          dragState={dragState}
         />
       ))}
     </section>

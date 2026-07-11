@@ -22,14 +22,19 @@ function Thumb({ src, alt }) {
   );
 }
 
-export function CompareColumnHeader({ product, onRemove, onOpen }) {
+export function CompareColumnHeader({ product, onRemove, onOpen, dragProps }) {
   // onOpen: 제품명 영역 클릭 시 디테일로 이동
   const handleOpen = () => {
     if (typeof onOpen === 'function') onOpen(product.id);
   };
 
   return (
-    <div className="m-compare-col-header">
+    <div
+      className="m-compare-col-header"
+      tabIndex={0}
+      aria-label={`${product.name} 비교 열. 드래그하거나 좌우 방향키로 순서를 변경할 수 있습니다`}
+      {...dragProps}
+    >
       <button
         type="button"
         className="m-compare-col-x"

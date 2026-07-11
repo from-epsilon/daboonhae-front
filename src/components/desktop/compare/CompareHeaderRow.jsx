@@ -36,14 +36,21 @@ function RemoveButton({ name, onClick }) {
   );
 }
 
-export function CompareHeaderRow({ product, onRemove, onOpen }) {
+export function CompareHeaderRow({ product, onRemove, onOpen, dragProps, isDragging, dropPosition, dragOffsetX }) {
   // 상세 이동 핸들러 (가드 포함)
   const handleOpen = () => {
     if (typeof onOpen === 'function') onOpen(product.id);
   };
 
   return (
-    <div className="d-compare-col-header">
+    <div
+      className={`d-compare-col-header${isDragging ? ' is-dragging' : ''}${dropPosition ? ` is-drop-${dropPosition}` : ''}`}
+      data-compare-product-id={product.id}
+      style={isDragging ? { transform: `translateX(${dragOffsetX}px)` } : undefined}
+      tabIndex={0}
+      aria-label={`${product.name} 비교 열. 드래그하거나 좌우 방향키로 순서를 변경할 수 있습니다`}
+      {...dragProps}
+    >
       <RemoveButton name={product.name} onClick={() => onRemove(product.id)} />
       <button
         type="button"

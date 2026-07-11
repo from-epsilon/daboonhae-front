@@ -87,6 +87,20 @@ export function CompareProvider({ children }) {
     setIds([]);
   }, []);
 
+  const reorder = useCallback((sourceId, destinationId, position = 'before') => {
+    setIds((prev) => {
+      const sourceIndex = prev.findIndex((id) => String(id) === String(sourceId));
+      const destinationIndex = prev.findIndex((id) => String(id) === String(destinationId));
+      if (sourceIndex < 0 || destinationIndex < 0 || sourceIndex === destinationIndex) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(sourceIndex, 1);
+      const remainingDestinationIndex = next.findIndex((id) => String(id) === String(destinationId));
+      const insertIndex = remainingDestinationIndex + (position === 'after' ? 1 : 0);
+      next.splice(insertIndex, 0, moved);
+      return next;
+    });
+  }, []);
+
   const has = useCallback((productId) => ids.includes(productId), [ids]);
 
   const value = useMemo(
@@ -99,9 +113,10 @@ export function CompareProvider({ children }) {
       remove,
       toggle,
       clear,
+      reorder,
       has,
     }),
-    [ids, add, remove, toggle, clear, has],
+    [ids, add, remove, toggle, clear, reorder, has],
   );
 
   return <CompareContext.Provider value={value}>{children}</CompareContext.Provider>;

@@ -20,6 +20,7 @@ import { ComparePurchaseCell } from '../../components/mobile/compare/ComparePurc
 import { AddSlot } from '../../components/mobile/compare/AddSlot.jsx';
 import { EmptyCompare } from '../../components/mobile/compare/EmptyCompare.jsx';
 import { CompareSummary } from '../../components/mobile/compare/CompareSummary.jsx';
+import { useCompareColumnReorder } from '../../components/compare/useCompareColumnReorder.js';
 import Seo from '../../components/global/Seo.jsx';
 import { productPath } from '../../data/productUrl.js';
 import {
@@ -42,15 +43,28 @@ function CompareGrid({
   onAdd,
   canAdd,
   remaining,
+  onReorder,
 }) {
+  const { draggedId, targetId, dropPosition, dragOffsetX, getColumnProps } = useCompareColumnReorder({ products, onReorder });
+
   return (
     <div className="m-compare-grid">
       <div className="m-compare-data-scroll">
         <div className="m-compare-data-track">
           {products.map((p, idx) => (
-            <div key={p.id} className="m-compare-data-col">
+            <div
+              key={p.id}
+              className={`m-compare-data-col${String(draggedId) === String(p.id) ? ' is-dragging' : ''}${draggedId != null && String(draggedId) !== String(p.id) && String(targetId) === String(p.id) ? ` is-drop-${dropPosition}` : ''}`}
+              data-compare-product-id={p.id}
+              style={String(draggedId) === String(p.id) ? { transform: `translateX(${dragOffsetX}px)` } : undefined}
+            >
               {/* 헤더 셀 (썸네일/브랜드/이름/X) */}
-              <CompareColumnHeader product={p} onRemove={onRemove} onOpen={onOpen} />
+              <CompareColumnHeader
+                product={p}
+                onRemove={onRemove}
+                onOpen={onOpen}
+                dragProps={getColumnProps(p.id)}
+              />
 
               <ComparePurchaseCell
                 product={p}
@@ -93,7 +107,7 @@ function CompareGrid({
 
 export default function ComparePageMobile() {
   const navigate = useNavigate();
-  const { ids, remove, clear, max } = useCompare();
+  const { ids, remove, clear, reorder, max } = useCompare();
   const { products: allProducts } = useProducts();
 
   const products = useMemo(
@@ -185,6 +199,7 @@ export default function ComparePageMobile() {
             onRemove={handleRemove}
             onOpen={handleOpenDetail}
             onAdd={handleAdd}
+            onReorder={reorder}
             canAdd={canAdd}
             remaining={remaining}
           />

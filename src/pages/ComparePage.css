@@ -146,10 +146,34 @@
   background: var(--bg-white);
   border-right: 1px solid var(--bg-divider);
   text-align: center;
+  cursor: grab;
+  touch-action: pan-y;
 }
 .d-compare-col-header:last-of-type {
   border-right: none;
 }
+.d-compare-col-header.is-dragging {
+  z-index: 5;
+  opacity: 0.78;
+  pointer-events: none;
+  cursor: grabbing;
+  box-shadow: var(--shadow-lg);
+}
+.d-compare-col-header.is-drop-before { box-shadow: inset 3px 0 0 var(--brand-green); }
+.d-compare-col-header.is-drop-after { box-shadow: inset -3px 0 0 var(--brand-green); }
+
+.d-compare-purchase-cell.is-column-dragging,
+.d-compare-metric-cell.is-column-dragging {
+  position: relative;
+  z-index: 5;
+  opacity: 0.78;
+  pointer-events: none;
+  box-shadow: var(--shadow-md);
+}
+.d-compare-purchase-cell.is-column-drop-before,
+.d-compare-metric-cell.is-column-drop-before { box-shadow: inset 3px 0 0 var(--brand-green); }
+.d-compare-purchase-cell.is-column-drop-after,
+.d-compare-metric-cell.is-column-drop-after { box-shadow: inset -3px 0 0 var(--brand-green); }
 
 /* 우상단 X 버튼
    - 실 버튼은 시각적으로 28x28 유지하되, 의사요소로 44x44 hit-area 확장
@@ -193,7 +217,7 @@
   background: transparent;
   border: none;
   padding: 0;
-  cursor: pointer;
+  cursor: inherit;
   text-align: center;
   color: inherit;
   width: 100%;

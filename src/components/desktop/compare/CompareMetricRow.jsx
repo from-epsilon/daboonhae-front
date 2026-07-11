@@ -11,15 +11,16 @@ function fmt(v) {
 }
 
 // 한 제품의 셀 (SRP)
-function MetricCell({ value, displayValue, note, unit, isBest, supporting }) {
+function MetricCell({ productId, value, displayValue, note, unit, isBest, supporting, motionClass, motionStyle }) {
   const cls = [
     'd-compare-metric-cell',
     isBest ? 'd-compare-metric-cell--best' : '',
     supporting ? 'd-compare-metric-cell--supporting' : '',
+    motionClass,
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={cls}>
+    <div className={cls} style={motionStyle} data-compare-product-id={productId}>
       <div className="d-compare-metric-value">
         <span className="d-compare-metric-num">{displayValue ?? fmt(value)}</span>
         {unit && value !== null && value !== undefined && (
@@ -40,6 +41,7 @@ export function CompareMetricRow({
   bestSet,
   rowStyle,
   hasAdd,
+  dragState,
 }) {
   // 행의 최대값 계산 (막대 정규화 기준)
   const presentations = products.map((product) => (
@@ -52,17 +54,26 @@ export function CompareMetricRow({
       <div className="d-compare-row-label">
         <span className="d-compare-row-label-text">{label}</span>
       </div>
-      {products.map((p, idx) => (
-        <MetricCell
-          key={p.id}
-          value={presentations[idx].value}
-          displayValue={presentations[idx].displayValue}
-          note={presentations[idx].note}
-          supporting={presentations[idx].supporting}
-          unit={unit}
-          isBest={bestSet?.has(idx) ?? false}
-        />
-      ))}
+      {products.map((p, idx) => {
+        const isDragging = dragState?.draggedId != null && String(dragState.draggedId) === String(p.id);
+        const isDropTarget = dragState?.draggedId != null
+          && String(dragState.targetId) === String(p.id)
+          && String(dragState.draggedId) !== String(p.id);
+        return (
+          <MetricCell
+            key={p.id}
+            productId={p.id}
+            value={presentations[idx].value}
+            displayValue={presentations[idx].displayValue}
+            note={presentations[idx].note}
+            supporting={presentations[idx].supporting}
+            unit={unit}
+            isBest={bestSet?.has(idx) ?? false}
+            motionClass={`${isDragging ? ' is-column-dragging' : ''}${isDropTarget ? ` is-column-drop-${dragState.dropPosition}` : ''}`}
+            motionStyle={isDragging ? { transform: `translateX(${dragState.dragOffsetX}px)` } : undefined}
+          />
+        );
+      })}
       {/* AddSlot 컬럼 자리 — 빈 셀로 컬럼 정렬 보존 */}
       {hasAdd && <div className="d-compare-metric-cell d-compare-metric-cell--empty" />}
     </div>
