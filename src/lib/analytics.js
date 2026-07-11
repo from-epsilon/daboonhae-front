@@ -6,6 +6,7 @@ const INTERNAL_NOTICE_KEY = 'dabunhae:analytics:internal-notice';
 let client = null;
 let initialization = null;
 let staffCommandProcessed = false;
+let staffCommand = null;
 const pendingEvents = [];
 
 export const ANALYTICS_EVENTS = Object.freeze({
@@ -35,6 +36,7 @@ function processStaffCommand() {
   if (command !== '1' && command !== '0') return;
 
   const enabled = command === '1';
+  staffCommand = enabled ? 'enabled' : 'disabled';
   try {
     if (enabled) localStorage.setItem(INTERNAL_USER_KEY, 'true');
     else localStorage.removeItem(INTERNAL_USER_KEY);
@@ -93,11 +95,16 @@ export function initAnalytics() {
         properties: {
           ...event.properties,
           app_environment: 'production',
-          is_internal: isInternalUser,
         },
       }),
     });
     client = posthog;
+    // PostHog의 내부 사용자 필터가 인식하는 Person property를 함께 설정한다.
+    if (isInternalUser) {
+      posthog.setInternalOrTestUser();
+    } else if (staffCommand === 'disabled') {
+      posthog.unsetPersonProperties('$internal_or_test_user');
+    }
     pendingEvents.splice(0).forEach(([eventName, properties, options]) => {
       client.capture(eventName, properties, options);
     });
