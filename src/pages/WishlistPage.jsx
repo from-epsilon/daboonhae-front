@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBar } from '../components/ds/AppBar.jsx';
-import { FoodCard } from '../components/ds/FoodCard.jsx';
+import { SummaryCard } from '../components/summary/SummaryCard.jsx';
 import Seo from '../components/global/Seo.jsx';
 import { getAdapted } from '../data/adapters.js';
-import { getFoodTypeByCode } from '../data/categoryTabs.js';
 import { productPath } from '../data/productUrl.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { useProducts } from '../store/ProductsContext.jsx';
@@ -82,19 +81,16 @@ export default function WishlistPage() {
           <div className="d-wishlist-list">
             {products.map((p) => {
               const food = getAdapted(p);
-              const ft = getFoodTypeByCode(p.categoryCode);
               return (
                 <div key={p.id} className="d-wishlist-cell">
-                  <FoodCard
+                  <SummaryCard
                     food={food}
-                    layout="wide"
                     onClick={() => navigate(productPath(food))}
                     onCompare={() => handleToggleCompare(p.id)}
                     inCompare={compare.has(p.id)}
                     onWishlist={() => wishlist.toggle(p.id)}
                     inWishlist={wishlist.has(p.id)}
-                    tabId={ft?.tab}
-                    subLabel={ft?.label}
+                    showPurchase
                   />
                 </div>
               );

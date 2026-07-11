@@ -4,16 +4,19 @@
 // - props: { items, onItemClick, onCompare }
 import { SummaryCard } from '../../summary/SummaryCard.jsx';
 import { useCompare } from '../../../store/CompareContext.jsx';
+import { useWishlist } from '../../../store/WishlistContext.jsx';
 
 // 그리드 셀 한 칸 — SummaryCard를 홈 전용 hover 래퍼로 감쌈
 // - rank: 1부터 시작하는 순위 (전달 시 셀 좌상단 배지 오버레이, 1~3위는 브랜드 그린)
 // - metrics: 목적별 핵심 성분 정의 (요약카드 지표 교체용)
-function FoodCell({ food, rank, metrics, onItemClick, onCompare, inCompare, showPurchase, variant }) {
+function FoodCell({ food, rank, metrics, onItemClick, onCompare, inCompare, onWishlist, inWishlist, showPurchase, variant }) {
   const cardProps = {
     food,
     onClick: () => onItemClick(food),
     onCompare: onCompare ? () => onCompare(food) : undefined,
     inCompare,
+    onWishlist: onWishlist ? () => onWishlist(food) : undefined,
+    inWishlist,
   };
 
   return (
@@ -35,6 +38,7 @@ function FoodCell({ food, rank, metrics, onItemClick, onCompare, inCompare, show
 
 export default function FoodGrid({ items, onItemClick, onCompare, variant = 'recommend', showPurchase = false, showRank = false, metrics }) {
   const { has } = useCompare();
+  const wishlist = useWishlist();
   // variant 별 클래스: recommend(추천 12개) | recent(최근 8개) — 그리드 차이 미세
   const cls = variant === 'recent' ? 'd-home-recent-grid' : 'd-home-food-grid';
   return (
@@ -48,6 +52,8 @@ export default function FoodGrid({ items, onItemClick, onCompare, variant = 'rec
           onItemClick={onItemClick}
           onCompare={onCompare}
           inCompare={has(food.id)}
+          onWishlist={() => wishlist.toggle(food.id)}
+          inWishlist={wishlist.has(food.id)}
           showPurchase={showPurchase}
           variant={variant}
         />

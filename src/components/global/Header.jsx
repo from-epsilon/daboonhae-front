@@ -21,12 +21,14 @@ function BrandMark() {
 function HeaderSearchBar() {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const q = query.trim();
-    if (q) navigate(`/list?q=${encodeURIComponent(q)}`);
-    else navigate('/list');
+    const listPath = pathname.startsWith('/category/') ? pathname : '/list';
+    if (q) navigate(`${listPath}?q=${encodeURIComponent(q)}`);
+    else navigate(listPath);
   };
 
   return (

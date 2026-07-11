@@ -13,7 +13,7 @@ export function getPurposeRecommendedProducts(products, tabId, limit) {
   return (products ?? [])
     .filter((p) => productMatchesTab(p, tabId))
     // 단백질 보충 추천은 카테고리 종류가 아니라 실제 추천점수 보유 여부로만 제한한다.
-    // 추후 셰이크 등 다른 식품유형에 점수가 연결되면 별도 분기 없이 자동 포함된다.
+    // 추후 쉐이크 등 다른 식품유형에 점수가 연결되면 별도 분기 없이 자동 포함된다.
     .filter((p) => tabId !== 'protein' || Number.isFinite(getProteinDrinkRecommendScore(p)))
     .sort((a, b) => {
       const scoreDiff = (purposeRecommendationScore(b, tabId) ?? -Infinity) - (purposeRecommendationScore(a, tabId) ?? -Infinity);

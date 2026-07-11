@@ -222,12 +222,17 @@ export default function ListPage() {
       <div className="d-list-page">
         <div className="d-list-page-inner">
           <div className="d-list-sub-chips">
-            <button type="button" className="d-list-sub-chip is-active">전체</button>
+            <button
+              type="button"
+              className={`d-list-sub-chip${activeSub === 'all' ? ' is-active' : ''}`}
+            >
+              전체
+            </button>
             {LIST_FOOD_TYPES.map((ft) => (
               <button
                 key={ft.label}
                 type="button"
-                className={`d-list-sub-chip${ft.disabled ? ' is-disabled' : ''}`}
+                className={`d-list-sub-chip${activeSub === ft.label ? ' is-active' : ''}${ft.disabled ? ' is-disabled' : ''}`}
                 aria-disabled={ft.disabled || undefined}
               >
                 {ft.label}

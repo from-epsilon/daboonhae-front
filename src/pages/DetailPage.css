@@ -559,16 +559,16 @@
   background: #fff1f4;
 }
 .d-detail-overview-action--like.is-active {
-  border-color: #f4a6b8;
-  color: #e11d48;
-  background: #fff1f4;
-  box-shadow: 0 4px 10px rgba(225, 29, 72, 0.12);
+  border-color: #ef7896;
+  color: #be123c;
+  background: #ffe4ea;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.08), 0 4px 10px rgba(225, 29, 72, 0.16);
 }
 .d-detail-overview-action--compare.is-active {
-  border-color: #8eea8a;
-  color: var(--green-700);
-  background: var(--green-50);
-  box-shadow: 0 4px 10px rgba(0, 134, 0, 0.12);
+  border-color: var(--green-600);
+  color: var(--green-800);
+  background: var(--green-100);
+  box-shadow: 0 0 0 2px rgba(0, 134, 0, 0.10), 0 4px 10px rgba(0, 134, 0, 0.16);
 }
 @keyframes compare-flash {
   0% { transform: scale(1); }

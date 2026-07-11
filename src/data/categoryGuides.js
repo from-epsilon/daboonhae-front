@@ -176,7 +176,7 @@ export const CATEGORY_GUIDES = {
     ],
   },
 
-  '셰이크': {
+  '쉐이크': {
     considerations: [
       {
         title: '먼저 용도 정하기',

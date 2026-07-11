@@ -539,7 +539,7 @@ function WideLikeButton({ food, onWishlist, inWishlist }) {
       title={inWishlist ? '찜함에서 빼기' : '찜하기'}
       className={`d-foodcard-wide-action d-foodcard-wide-action--like${inWishlist ? ' is-in' : ''}`}
     >
-      <IconHeart size={16} stroke={1.8} />
+      <IconHeart size={16} stroke={1.8} fill={inWishlist ? 'currentColor' : 'none'} />
     </button>
   );
 }
@@ -603,7 +603,7 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, onWishlist, inWishl
             variant={config.servingMetaVariant}
           />
 
-          {/* 셰이크형 미니 탄단지 — 원료 상세보다 먼저 보이도록 배치 */}
+          {/* 쉐이크형 미니 탄단지 — 원료 상세보다 먼저 보이도록 배치 */}
           {config.showMacroBar !== false && config.macroBarVariant && (
             <MacroRow {...food.macros} wide ratioOnly variant={config.macroBarVariant} />
           )}

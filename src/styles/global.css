@@ -1306,10 +1306,10 @@ img.product-thumb { object-fit: cover; }
 }
 
 .d-foodcard-wide-action.is-in {
-  border-color: #8eea8a;
-  background: var(--green-50);
-  color: var(--green-700);
-  box-shadow: 0 4px 10px rgba(0, 134, 0, 0.12);
+  border-color: var(--green-600);
+  background: var(--green-100);
+  color: var(--green-800);
+  box-shadow: 0 0 0 2px rgba(0, 134, 0, 0.10), 0 4px 10px rgba(0, 134, 0, 0.16);
 }
 
 .d-foodcard-wide-action--like:hover {
@@ -1318,10 +1318,10 @@ img.product-thumb { object-fit: cover; }
   background: #fff1f4;
 }
 .d-foodcard-wide-action--like.is-in {
-  border-color: #f4a6b8;
-  color: #e11d48;
-  background: #fff1f4;
-  box-shadow: 0 4px 10px rgba(225, 29, 72, 0.12);
+  border-color: #ef7896;
+  color: #be123c;
+  background: #ffe4ea;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.08), 0 4px 10px rgba(225, 29, 72, 0.16);
 }
 
 .m-foodcard-store {
@@ -1338,9 +1338,10 @@ img.product-thumb { object-fit: cover; }
 }
 
 .m-foodcard-store.is-in {
-  border-color: var(--brand-green);
-  background: var(--green-50);
-  color: var(--green-700);
+  border-color: var(--green-600);
+  background: var(--green-100);
+  color: var(--green-800);
+  box-shadow: 0 0 0 2px rgba(0, 134, 0, 0.08);
 }
 
 .header-nav {

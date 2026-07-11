@@ -83,7 +83,7 @@ const CONFIG = {
   'meal:밥':              { metrics: MEAL_COMMON, showSweeteners: false },
   'meal:면':              { metrics: MEAL_COMMON, showSweeteners: false },
   'meal:시리얼/그래놀라/오트밀': { metrics: CEREAL_METRICS, showSweeteners: false },
-  'meal:셰이크': {
+  'meal:쉐이크': {
     metrics: [],
     showProteinSource: true,
     showSweetenerMeta: true,

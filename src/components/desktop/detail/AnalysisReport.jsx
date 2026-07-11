@@ -2101,7 +2101,7 @@ const SHAKE_RANK_BASES = [
 
 function sameShakeCategory(product, categoryCode, category) {
   if (!product) return false;
-  return product.categoryCode === categoryCode || product.categoryCode === 'shake' || product.category === category || product.category === '셰이크';
+  return product.categoryCode === categoryCode || product.categoryCode === 'shake' || product.category === category || product.category === '쉐이크';
 }
 
 function buildShakePositions(current, products, categoryCode, category) {
@@ -2193,7 +2193,7 @@ function sugarCriterion(sugar) {
     return {
       tone: 'solid',
       label: '낮은 편',
-      text: '셰이크 제품 중 당류 부담이 낮은 쪽에 가까워요.',
+      text: '쉐이크 제품 중 당류 부담이 낮은 쪽에 가까워요.',
       help: '1회 제공량 기준 당류 5g 이하를 낮은 구간으로 봅니다.',
     };
   }
@@ -2323,7 +2323,7 @@ function ShakeCategoryRankSection({ positions }) {
 
   return (
     <AnalysisSection title="동일 카테고리 위치" icon={<IconInfo size={16} />}>
-      <div className="d-analysis-rank-table" role="table" aria-label="셰이크 카테고리 내 단백질 상대 순위">
+      <div className="d-analysis-rank-table" role="table" aria-label="쉐이크 카테고리 내 단백질 상대 순위">
         <div className="d-analysis-rank-row is-head" role="row">
           <span role="columnheader" className="d-analysis-rank-head-label">성분</span>
           {shakeRankModes.map((mode) => (
@@ -2342,7 +2342,7 @@ function ShakeCategoryRankSection({ positions }) {
         ))}
       </div>
       <p className="d-analysis-rank-note">
-        위치는 현재 등록된 셰이크 제품 중 해당 수치가 있는 제품만 대상으로 계산합니다. 1,000원당 값은 1회분당 최저가 기준입니다.
+        위치는 현재 등록된 쉐이크 제품 중 해당 수치가 있는 제품만 대상으로 계산합니다. 1,000원당 값은 1회분당 최저가 기준입니다.
       </p>
     </AnalysisSection>
   );
@@ -2514,7 +2514,7 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
   const n = nutrition ?? {};
   const ing = ingredients ?? {};
   const isProteinDrink = categoryCode === 'protein_drink' || category === '단백질 음료';
-  const isShake = categoryCode === 'shake' || category === '셰이크';
+  const isShake = categoryCode === 'shake' || category === '쉐이크';
   const isChickenBreast = categoryCode === 'chicken_breast' || category === '닭가슴살';
 
   const { strengths, cautions } = useMemo(

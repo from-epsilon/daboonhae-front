@@ -1,4 +1,4 @@
-import { IconCheck, IconChevron, IconPlus } from '../ds/Icons.jsx';
+import { IconCheck, IconChevron, IconCompare, IconHeart, IconPlus } from '../ds/Icons.jsx';
 import { computeMetricValues, getHighlightValue } from '../../data/categoryCardMetrics.js';
 import { productPath } from '../../data/productUrl.js';
 import { getProteinDrinkScoreModel } from '../../data/proteinDrinkScore.js';
@@ -32,7 +32,7 @@ function SummaryCompareButton({ food, onCompare, inCompare }) {
   return (
     <button
       type="button"
-      className={`summary-card-compare${inCompare ? ' is-in-compare' : ''}`}
+      className={`d-foodcard-wide-action d-foodcard-wide-action--compare${inCompare ? ' is-in' : ''}`}
       onClick={(event) => {
         event.stopPropagation();
         onCompare(food);
@@ -41,7 +41,26 @@ function SummaryCompareButton({ food, onCompare, inCompare }) {
       aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
       title={inCompare ? '비교함에서 빼기' : '비교함에 담기'}
     >
-      {inCompare ? <IconCheck size={14} /> : <IconPlus size={14} />}
+      <IconCompare size={16} stroke={1.8} />
+    </button>
+  );
+}
+
+function SummaryWishlistButton({ food, onWishlist, inWishlist }) {
+  if (!onWishlist) return null;
+  return (
+    <button
+      type="button"
+      className={`d-foodcard-wide-action d-foodcard-wide-action--like${inWishlist ? ' is-in' : ''}`}
+      onClick={(event) => {
+        event.stopPropagation();
+        onWishlist(food);
+      }}
+      aria-pressed={inWishlist}
+      aria-label={inWishlist ? `${food.name} 찜함에서 빼기` : `${food.name} 찜하기`}
+      title={inWishlist ? '찜함에서 빼기' : '찜하기'}
+    >
+      <IconHeart size={16} stroke={1.8} fill={inWishlist ? 'currentColor' : 'none'} />
     </button>
   );
 }
@@ -157,6 +176,8 @@ export function SummaryCard({
   onClick,
   onCompare,
   inCompare,
+  onWishlist,
+  inWishlist,
   metrics,
   showPurchase = false,
   variant = 'standard',
@@ -171,7 +192,12 @@ export function SummaryCard({
     <article className="summary-card" onClick={onClick}>
       <div className="summary-card-thumb">
         <SummaryThumb src={food.thumb} alt={food.name} />
-        <SummaryCompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+        {(onWishlist || onCompare) && (
+          <div className="summary-card-actions">
+            <SummaryWishlistButton food={food} onWishlist={onWishlist} inWishlist={inWishlist} />
+            <SummaryCompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+          </div>
+        )}
       </div>
       <div className={`summary-card-body${displaysPurchase ? ' has-purchase' : ''}`}>
         <div className="summary-card-brand">{food.brand}</div>

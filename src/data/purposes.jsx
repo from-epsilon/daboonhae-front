@@ -16,7 +16,7 @@ export const FOOD_CATEGORIES = [
   '밥',
   '면',
   '시리얼/그래놀라/오트밀',
-  '셰이크',
+  '쉐이크',
 ];
 
 export const ALLERGEN_FILTER_NOTE =
@@ -195,7 +195,7 @@ export const CATEGORY_KEY_METRICS = {
     { key: 'protein', label: '단백질', unit: 'g' },
     { key: 'sodium', label: '나트륨', unit: 'mg' },
   ],
-  '셰이크': [
+  '쉐이크': [
     { key: 'protein', label: '단백질', unit: 'g' },
     { key: 'calories', label: '칼로리', unit: 'kcal' },
     { key: 'sugar', label: '당류', unit: 'g' },

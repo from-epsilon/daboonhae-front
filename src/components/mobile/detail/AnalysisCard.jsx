@@ -225,7 +225,7 @@ const SHAKE_POSITION_BASES = [
 ];
 
 function sameShakeCategory(product) {
-  return product?.categoryCode === 'shake' || product?.category === '셰이크';
+  return product?.categoryCode === 'shake' || product?.category === '쉐이크';
 }
 
 function formatPositionValue(value, unit) {
@@ -355,7 +355,7 @@ function ShakeReportMobile({ rawProduct, products }) {
     <section className="m-detail-report">
       <header className="m-detail-section-head">
         <h2 className="m-detail-section-title">분석 리포트</h2>
-        <span className="m-detail-section-sub">셰이크</span>
+        <span className="m-detail-section-sub">쉐이크</span>
       </header>
       <div className="m-detail-shake-grid">
         <ShakeSection title="탄단지 구성">
@@ -584,7 +584,7 @@ function getDefaultReportSections(rawProduct) {
 }
 
 export function AnalysisCard({ rawProduct, purpose, purposeId, products }) {
-  if (rawProduct?.categoryCode === 'shake' || rawProduct?.category === '셰이크') {
+  if (rawProduct?.categoryCode === 'shake' || rawProduct?.category === '쉐이크') {
     return <ShakeReportMobile rawProduct={rawProduct} products={products} />;
   }
 

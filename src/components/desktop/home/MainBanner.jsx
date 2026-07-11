@@ -12,7 +12,7 @@ const DEFAULT_CATEGORIES = [
     image: "/images/categories/protein-drink-pow-transparent.png",
   },
   {
-    label: "셰이크",
+    label: "쉐이크",
     code: "shake",
     image: "/images/categories/shake-pouch-transparent.png",
   },

@@ -22,7 +22,7 @@ export default function SidebarFilter({
           <FilterSection key={spec.key} spec={spec} value={value[spec.key]} onChange={(next) => updateField(spec.key, next)} />
         ))
       ) : (
-        <div className="d-list-sidebar-empty">목적을 선택하면 세부 필터가 표시됩니다.</div>
+        <div className="d-list-sidebar-empty">사용 가능한 세부 필터가 없습니다.</div>
       )}
     </aside>
   );

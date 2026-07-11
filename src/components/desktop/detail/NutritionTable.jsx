@@ -383,7 +383,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, servingSize,
             ))}
           </ul>
         </div>
-        {/* 우측: 단백질음료는 아미노산, 셰이크는 비타민·무기질 */}
+        {/* 우측: 단백질음료는 아미노산, 쉐이크는 비타민·무기질 */}
         {showRightColumn && (
           <div className="d-detail-nutri-group d-detail-nutri-group--optional">
             {isShake ? (

@@ -20,7 +20,7 @@ const DEFAULT_SORT_OPTIONS = [
 const HIDE_BY_CATEGORY = {
   '제로 음료': ['protein_desc', 'carbs_asc'],
   '아이스크림': ['protein_desc'],
-  '셰이크': ['carbs_asc'],
+  '쉐이크': ['carbs_asc'],
 };
 
 // 단백질 음료 추천순 키 — 2축 그리드 위에 별도 노출(기본 선택)

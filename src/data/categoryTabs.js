@@ -10,7 +10,7 @@
 // 서브 칩의 code는 DB food_type_categories.code 와 1:1 매칭 (2026-05 기준 11종):
 //   chicken_breast 닭가슴살 / protein_drink 단백질 음료 / energy_bar 에너지바 /
 //   processed_meat 기타 가공육 / ice_cream 아이스크림 / snack_sweets 과자·초콜릿·젤리 /
-//   zero_drink 제로 음료 / rice 밥 / noodle 면 / cereal_granola_oat 시리얼·그래놀라·오트밀 / shake 셰이크
+//   zero_drink 제로 음료 / rice 밥 / noodle 면 / cereal_granola_oat 시리얼·그래놀라·오트밀 / shake 쉐이크
 export const CATEGORY_TABS = [
   {
     id: 'protein',
@@ -47,7 +47,7 @@ export const CATEGORY_TABS = [
       { label: '밥', code: 'rice' },
       { label: '면', code: 'noodle' },
       { label: '시리얼/그래놀라/오트밀', code: 'cereal_granola_oat' },
-      { label: '셰이크', code: 'shake' },
+      { label: '쉐이크', code: 'shake' },
       { label: '에너지바', code: 'energy_bar' },
     ],
   },
@@ -65,7 +65,7 @@ export const HOME_PURPOSE_TABS = ['protein', 'meal', 'low_sugar']
 // slug: 카테고리 경로형 URL(/category/:slug)용 — 한글 키워드 슬러그(안정성 위해 명시)
 export const FOOD_TYPES = [
   { label: '단백질 음료', code: 'protein_drink', tab: 'protein', slug: '단백질-음료' },
-  { label: '셰이크', code: 'shake', tab: 'meal', slug: '셰이크' },
+  { label: '쉐이크', code: 'shake', tab: 'meal', slug: '쉐이크' },
   { label: '닭가슴살', code: 'chicken_breast', tab: 'protein', slug: '닭가슴살' },
   { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar', slug: '아이스크림', disabled: true, showDisabledChip: true },
   { label: '과자/초콜릿/젤리', code: 'snack_sweets', tab: 'low_sugar', slug: '과자-초콜릿-젤리', disabled: true, showDisabledChip: true },
@@ -99,6 +99,9 @@ export function getVisibleFoodTypes(products, foodTypes = LIST_FOOD_TYPES) {
 const FOOD_TYPE_BY_CODE = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.code, ft]));
 const FOOD_TYPE_BY_LABEL = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.label, ft]));
 const FOOD_TYPE_BY_SLUG = Object.fromEntries(FOOD_TYPES.map((ft) => [ft.slug, ft]));
+// 표시명 변경 전 공유된 링크와 외부 입력은 계속 새 카테고리로 해석한다.
+FOOD_TYPE_BY_LABEL['셰이크'] = FOOD_TYPE_BY_CODE.shake;
+FOOD_TYPE_BY_SLUG['셰이크'] = FOOD_TYPE_BY_CODE.shake;
 
 // 식품유형 코드/라벨/슬러그 → FOOD_TYPES 항목 (없으면 null)
 export function getFoodTypeByCode(code) {

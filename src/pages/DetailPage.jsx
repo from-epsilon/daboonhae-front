@@ -573,7 +573,7 @@ function LikeButton({ product, inWishlist, onClick }) {
       aria-pressed={inWishlist}
       aria-label={inWishlist ? `${product.name} 찜함에서 빼기` : `${product.name} 찜하기`}
     >
-      <IconHeart size={17} stroke={1.8} />
+      <IconHeart size={17} stroke={1.8} fill={inWishlist ? 'currentColor' : 'none'} />
       <span className="d-detail-overview-action-tooltip" role="tooltip">{label}</span>
     </button>
   );

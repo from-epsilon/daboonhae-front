@@ -7,7 +7,7 @@ export default function FilterPanel({ specs, value, onChange }) {
   if (!specs || specs.length === 0) {
     return (
       <div className="filter-panel">
-        <div className="filter-empty">목적을 선택하면 세부 필터가 표시됩니다.</div>
+        <div className="filter-empty">사용 가능한 세부 필터가 없습니다.</div>
       </div>
     );
   }
