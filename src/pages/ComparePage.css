@@ -95,9 +95,9 @@
   border-bottom: none;
 }
 
-/* 헤더 행: bg-card-ui 톤으로 구분 + 더 큰 패딩 */
+/* 제품 헤더 행 — 표 본문과 같은 흰색으로 연결 */
 .d-compare-row--header {
-  background: var(--bg-card-ui);
+  background: var(--bg-white);
   border-bottom: 1px solid var(--border-tertiary);
 }
 
@@ -126,9 +126,9 @@
   color: var(--text-tertiary);
   line-height: 1.3;
 }
-/* 헤더 행 라벨 셀은 비어있음 — 시각적으로 헤더 톤 유지 */
+/* 헤더 행의 좌측 축 라벨 */
 .d-compare-row-label--header {
-  background: var(--bg-card-ui);
+  background: var(--bg-white);
   border-right: 1px solid var(--border-tertiary);
   border-bottom: none;
 }
@@ -138,12 +138,12 @@
    ──────────────────────────────────────────────────────────────────────── */
 .d-compare-col-header {
   position: relative;
-  padding: var(--space-5) var(--space-4) var(--space-4);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  background: var(--bg-card-ui);
+  gap: var(--space-2);
+  background: var(--bg-white);
   border-right: 1px solid var(--bg-divider);
   text-align: center;
 }
@@ -391,6 +391,9 @@
   font-weight: 800;
   color: var(--text-primary);
 }
+.d-compare-purchase-price-prefix {
+  font-weight: 600;
+}
 .d-compare-purchase-cell--best .d-compare-purchase-price-main {
   padding: 1px 5px 2px;
   border-radius: 3px;
@@ -470,8 +473,15 @@
 /* ─────────────────────────────────────────────────────────────────────────
    AddSlot (마지막 컬럼 자리 — max 미만일 때)
    ──────────────────────────────────────────────────────────────────────── */
+.d-compare-add-cell {
+  padding: var(--space-3);
+  background: var(--bg-card-ui);
+  display: flex;
+  min-width: 0;
+}
 .d-compare-add-slot {
-  margin: var(--space-3);
+  flex: 1;
+  margin: 0;
   border: 2px dashed var(--border-tertiary);
   border-radius: var(--radius-lg);
   background: var(--bg-white);
@@ -482,8 +492,8 @@
   gap: 10px;
   cursor: pointer;
   color: var(--text-secondary);
-  padding: var(--space-5) var(--space-3);
-  min-height: 240px;
+  padding: var(--space-4) var(--space-3);
+  min-height: 0;
   transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease;
 }
 .d-compare-add-slot:hover {
@@ -524,7 +534,7 @@
 .d-compare-summary {
   margin: 0 0 var(--space-6);
   padding: var(--space-5);
-  background: var(--bg-card-ui);
+  background: var(--bg-white);
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-lg);
 }

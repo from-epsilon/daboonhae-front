@@ -25,7 +25,10 @@ function PurchaseCell({ product, isBest }) {
   return (
     <div className={cls}>
       <div className="d-compare-purchase-price">
-        <span className="d-compare-purchase-price-main">개당 {formatWon(unitPrice)}원</span>
+        <span className="d-compare-purchase-price-main">
+          <span className="d-compare-purchase-price-prefix">개당</span>{' '}
+          {formatWon(unitPrice)}원
+        </span>
       </div>
       <div className="d-compare-purchase-meta">
         <span>{offer.quantity ?? 1}개 묶음</span>

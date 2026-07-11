@@ -1,7 +1,7 @@
 // 모바일 메인 — 최근 추가 식품 리스트
-// - FoodCard layout="list"를 그대로 사용 (썸네일+이름+macros+tags+trust)
+// - 메인 전용 MobileSummaryListCard 사용 (목록 카드와 구현·스타일 독립)
 // - 부모에서 정렬/슬라이스된 items를 받는다
-import { FoodCard } from '../../ds/FoodCard.jsx';
+import { MobileSummaryListCard } from '../../summary/SummaryCard.jsx';
 import { useCompare } from '../../../store/CompareContext.jsx';
 
 export function RecentList({ items, onItemClick, onCompare }) {
@@ -14,9 +14,8 @@ export function RecentList({ items, onItemClick, onCompare }) {
     <ul className="m-home-recent-list" role="list">
       {items.map((food) => (
         <li key={food.id} className="m-home-recent-row">
-          <FoodCard
+          <MobileSummaryListCard
             food={food}
-            layout="list"
             onClick={() => onItemClick && onItemClick(food)}
             onCompare={onCompare ? () => onCompare(food) : undefined}
             inCompare={has(food.id)}

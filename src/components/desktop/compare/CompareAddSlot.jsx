@@ -5,17 +5,19 @@ import { IconPlus } from '../../ds/Icons.jsx';
 
 export function CompareAddSlot({ onClick, remaining }) {
   return (
-    <button
-      type="button"
-      className="d-compare-add-slot"
-      onClick={onClick}
-      aria-label={`제품 추가 (남은 슬롯 ${remaining}개)`}
-    >
-      <span className="d-compare-add-icon" aria-hidden="true">
-        <IconPlus size={24} />
-      </span>
-      <span className="d-compare-add-label">제품 추가</span>
-      <span className="d-compare-add-sub">{remaining}개 더 담을 수 있어요</span>
-    </button>
+    <div className="d-compare-add-cell">
+      <button
+        type="button"
+        className="d-compare-add-slot"
+        onClick={onClick}
+        aria-label={`제품 추가 (남은 슬롯 ${remaining}개)`}
+      >
+        <span className="d-compare-add-icon" aria-hidden="true">
+          <IconPlus size={24} />
+        </span>
+        <span className="d-compare-add-label">제품 추가</span>
+        <span className="d-compare-add-sub">{remaining}개 더 담을 수 있어요</span>
+      </button>
+    </div>
   );
 }

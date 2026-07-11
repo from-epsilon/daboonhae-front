@@ -495,7 +495,7 @@
 .m-compare-summary {
   margin: var(--space-4) var(--space-4) var(--space-5);
   padding: var(--space-4);
-  background: var(--bg-card-ui);
+  background: var(--bg-white);
   border: 1px solid var(--border-tertiary);
   border-radius: var(--radius-lg);
 }

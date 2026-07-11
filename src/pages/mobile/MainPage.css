@@ -328,7 +328,7 @@
   white-space: nowrap;
 }
 .m-home-rec-name {
-  font-size: var(--font-size-s);
+  font-size: 15px;
   color: var(--text-primary);
   font-weight: var(--fw-medium);
   line-height: 20px;
@@ -337,11 +337,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.m-home-rec-inline-meta {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 400;
+}
 /* 목적별 핵심 성분 스탯 — 3컬럼 고정 그리드 (카드 간 같은 성분이 같은 위치) */
 .m-home-rec-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
+}
+.m-home-rec-stats.is-protein-drink {
+  grid-template-columns: repeat(2, 1fr);
 }
 .m-home-rec-stat {
   display: flex;
@@ -356,17 +364,18 @@
   white-space: nowrap;
 }
 .m-home-rec-stat.is-primary .m-home-rec-stat-label {
-  color: var(--green-700);
+  color: var(--text-tertiary);
 }
 .m-home-rec-stat-value {
   font-family: var(--font-numeric);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   color: var(--text-primary);
   white-space: nowrap;
 }
 .m-home-rec-stat.is-primary .m-home-rec-stat-value {
+  color: var(--green-700);
   font-size: 15px;
 }
 .m-home-rec-stat-unit {
@@ -488,7 +497,7 @@
 }
 .m-cat-label {
   font-family: var(--font-body);
-  font-size: var(--font-size-xs);
+  font-size: 13px;
   font-weight: var(--fw-medium);
   color: var(--text-primary);
   text-align: center;

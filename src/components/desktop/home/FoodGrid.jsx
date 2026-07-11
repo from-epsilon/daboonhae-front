@@ -1,14 +1,13 @@
 // 데스크탑 메인: 식품 카드 그리드 (Round 4)
 // - 추천/최근 두 섹션에서 공통 사용 (4컬럼 그리드)
-// - DS atom FoodCard(layout='grid') 사용 — hover lift 는 외부 래퍼에서 부여
+// - 메인 전용 SummaryCard 사용 — 목록/찜함 카드와 구현·스타일 독립
 // - props: { items, onItemClick, onCompare }
-import { FoodCard, PurposeRecommendCard } from '../../ds/FoodCard.jsx';
+import { SummaryCard } from '../../summary/SummaryCard.jsx';
 import { useCompare } from '../../../store/CompareContext.jsx';
 
-// 그리드 셀 한 칸 — FoodCard 를 hover-lift 가능한 래퍼로 감쌈
-// (FoodCard atom 자체는 모바일과 공유하므로 hover 스타일을 atom 내부에 박지 않음)
+// 그리드 셀 한 칸 — SummaryCard를 홈 전용 hover 래퍼로 감쌈
 // - rank: 1부터 시작하는 순위 (전달 시 셀 좌상단 배지 오버레이, 1~3위는 브랜드 그린)
-// - metrics: 목적별 핵심 성분 정의 (FoodCard grid 우측 지표 교체용)
+// - metrics: 목적별 핵심 성분 정의 (요약카드 지표 교체용)
 function FoodCell({ food, rank, metrics, onItemClick, onCompare, inCompare, showPurchase, variant }) {
   const cardProps = {
     food,
@@ -24,11 +23,12 @@ function FoodCell({ food, rank, metrics, onItemClick, onCompare, inCompare, show
           {rank}
         </span>
       )}
-      {variant === 'recommend' ? (
-        <PurposeRecommendCard {...cardProps} metrics={metrics} />
-      ) : (
-        <FoodCard {...cardProps} layout="grid" showPurchase={showPurchase} metrics={metrics} />
-      )}
+      <SummaryCard
+        {...cardProps}
+        metrics={metrics}
+        showPurchase={showPurchase}
+        variant={variant === 'recommend' ? 'recommend' : 'standard'}
+      />
     </div>
   );
 }
