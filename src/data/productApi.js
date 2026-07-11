@@ -8,8 +8,9 @@
 import { supabase } from '../lib/supabase.js';
 import { AMINO_ACID_KEYS, AMINO_ACID_KO_ALIASES } from './aminoAcids.js';
 import { NUTRIENT_GROUP, isNutrientGroup } from './nutrientGroups.js';
+import { PROTEIN_DRINK_SCORE_PROFILE } from './proteinDrinkScore.js';
 
-export const PROTEIN_DRINK_SCORE_PROFILE = 'protein_drink_default_v1';
+export { PROTEIN_DRINK_SCORE_PROFILE } from './proteinDrinkScore.js';
 
 // ── 영양성분 코드 → mock nutrition 키 매핑
 const NUTRIENT_KEY = {
@@ -227,7 +228,13 @@ function parseScoreSnapshots(snapshots) {
 }
 
 function pickScoreSnapshot(snapshots, profileCode) {
-  return snapshots.find((snapshot) => snapshot.profileCode === profileCode) ?? null;
+  return snapshots
+    .filter((snapshot) => snapshot.profileCode === profileCode)
+    .sort((a, b) => {
+      const versionDiff = (b.profileVersion ?? -Infinity) - (a.profileVersion ?? -Infinity);
+      if (versionDiff !== 0) return versionDiff;
+      return new Date(b.computedAt ?? 0).getTime() - new Date(a.computedAt ?? 0).getTime();
+    })[0] ?? null;
 }
 
 // ── 영양값 기반 목적 자동 태깅 (DB 링크가 비었을 때 폴백)
@@ -367,6 +374,33 @@ function transformProduct(food) {
       sourceFoodCode: food.source_food_code ?? '',
       aliases: (food.food_aliases ?? []).map((a) => a.alias).filter(Boolean),
     },
+  };
+}
+
+async function attachFoodCategoryNutrientDescriptions(food) {
+  const nutrientCodes = [...new Set((food?.food_nutrients ?? [])
+    .map((item) => item?.nutrient_code)
+    .filter(Boolean))];
+  const categoryCode = food?.food_type_category_code;
+  if (!categoryCode || nutrientCodes.length === 0) return food;
+
+  const { data, error } = await supabase
+    .from('nutrient_food_category_descriptions')
+    .select('nutrient_code, display_label, description, sort_order')
+    .eq('food_type_category_code', categoryCode)
+    .eq('is_active', true)
+    .in('nutrient_code', nutrientCodes)
+    .order('sort_order', { ascending: true });
+
+  if (error || !Array.isArray(data) || data.length === 0) return food;
+
+  const byCode = new Map(data.map((row) => [row.nutrient_code, row]));
+  return {
+    ...food,
+    food_nutrients: (food.food_nutrients ?? []).map((item) => ({
+      ...item,
+      food_category_description: byCode.get(item?.nutrient_code) ?? null,
+    })),
   };
 }
 
@@ -668,7 +702,10 @@ async function fetchProductByIdUncached(id) {
       .eq('food_type_categories.is_active', true)
       .single();
 
-    if (!error) return data?.food_type_categories?.is_active === true ? transformProduct(data) : null;
+    if (!error) {
+      if (data?.food_type_categories?.is_active !== true) return null;
+      return transformProduct(await attachFoodCategoryNutrientDescriptions(data));
+    }
     if (isNoRowsError(error)) return null;
     if (!isOptionalJoinError(error)) throw error;
     optionalJoinsAvailable = false;
@@ -684,7 +721,8 @@ async function fetchProductByIdUncached(id) {
 
   if (isNoRowsError(error)) return null;
   if (error) throw error;
-  return data?.food_type_categories?.is_active === true ? transformProduct(data) : null;
+  if (data?.food_type_categories?.is_active !== true) return null;
+  return transformProduct(await attachFoodCategoryNutrientDescriptions(data));
 }
 
 export function fetchProductById(id, { force = false } = {}) {

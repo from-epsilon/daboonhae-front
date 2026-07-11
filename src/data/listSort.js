@@ -1,5 +1,5 @@
 // 리스트 정렬 — 카테고리별 정렬 옵션·기준 통합 (데스크톱/모바일 공용)
-// - 단백질 음료는 단백질/필수아미노산(EAA)/류신/BCAA × 총량·칼로리대비·가격대비 전용
+// - 단백질 음료는 추천/저칼로리 + 단백질/필수아미노산(EAA)/류신/BCAA 총량 정렬 중심
 // - 그 외 카테고리는 공통 기본 옵션(당류/탄수화물 등)
 // - 정렬값은 카드 메트릭(computeMetricValues)과 동일한 기준(칼로리/가격 대비)으로 산출
 import { cheapestUnitPrice } from './categoryCardMetrics.js';
@@ -27,12 +27,18 @@ const HIDE_BY_CATEGORY = {
 export const PROTEIN_SORT_RECOMMEND = 'recommend';
 
 // 단백질 음료 전용 2축 — 정렬 키는 `${base}_${mode}` 조합 (예: eaa_kcal)
-// - 성분(base) × 기준(mode)을 각각 한 개씩 골라 조합 (UI: 2열 단일선택 그리드)
+// - 성분(base) × 기준(mode)을 각각 한 개씩 골라 조합한다.
+// - 현재 UI 라벨은 간결하게 성분명만 노출하지만, mode 정보는 정렬 계산과 카드 KPI 강조에 계속 사용한다.
 export const PROTEIN_SORT_MODES = [
   { key: 'total', label: '1회 제공량 기준' },
   { key: 'kcal', label: '100kcal 기준' },
   { key: 'price', label: '1,000원 기준' },
 ];
+
+// 현재 정렬 UI에서는 기준 선택을 비활성화하고 총량 기준만 노출한다.
+// kcal/price mode는 정렬 계산과 향후 재노출을 위해 PROTEIN_SORT_MODES에 보존한다.
+export const PROTEIN_SORT_VISIBLE_MODES = PROTEIN_SORT_MODES.filter((mode) => mode.key === 'total');
+
 export const PROTEIN_SORT_BASES = [
   { key: 'protein', label: '단백질', unit: 'g' },
   { key: 'eaa', label: '필수아미노산', unit: 'mg' },
@@ -40,10 +46,12 @@ export const PROTEIN_SORT_BASES = [
   { key: 'bcaa', label: 'BCAA', unit: 'mg' },
 ];
 
+// 나중에 정렬 라벨에서 기준 구분을 다시 노출할 때 아래 suffix를 되살리면 된다.
+// 예: kcal: '(칼로리대비)', price: '(가격대비)'
 const PROTEIN_MODE_LABEL_SUFFIX = {
   total: '',
-  kcal: '(칼로리대비)',
-  price: '(가격대비)',
+  kcal: '',
+  price: '',
 };
 
 export function isProteinDrinkCategory(category) {
@@ -74,14 +82,15 @@ export function getProteinSortParts(sortKey) {
 }
 
 // 단백질 음료 전용 정렬 옵션 — 추천순 + (기준 × 성분)
-// 라벨 형식: "{성분}순" + 선택 기준 (예: BCAA순(칼로리대비))
+// 라벨은 현재 "{성분}순"으로만 보여주고, 기준 차이는 선택 후 카드 KPI에서 드러낸다.
 export const PROTEIN_DRINK_SORT_OPTIONS = [
-  { key: PROTEIN_SORT_RECOMMEND, label: '추천순', short: '추천순' },
+  { key: PROTEIN_SORT_RECOMMEND, label: '추천 순', short: '추천 순' },
+  { key: 'calories_asc', label: '칼로리 낮은 순', short: '칼로리 낮은 순' },
   ...PROTEIN_SORT_BASES.flatMap((b) =>
-    PROTEIN_SORT_MODES.map((m) => ({
+    PROTEIN_SORT_VISIBLE_MODES.map((m) => ({
       key: makeProteinSortKey(b.key, m.key),
-      label: `${b.label}순${PROTEIN_MODE_LABEL_SUFFIX[m.key] ?? ''}`,
-      short: `${b.label}${PROTEIN_MODE_LABEL_SUFFIX[m.key] ?? ''}`,
+      label: `${b.label} 순${PROTEIN_MODE_LABEL_SUFFIX[m.key] ?? ''}`,
+      short: `${b.label} 순${PROTEIN_MODE_LABEL_SUFFIX[m.key] ?? ''}`,
     }))),
 ];
 
@@ -195,9 +204,10 @@ export function applySort(products, category, sortKey) {
   const key = resolveSortKey(category, sortKey);
   const arr = [...products];
 
-  // 단백질 음료 — 추천순은 단백질 음료 전용 종합 점수, 그 외는 단백질/EAA/류신/BCAA 기준 내림차순
+  // 단백질 음료 — 추천순/저칼로리는 별도 기준, 성분 정렬은 단백질/EAA/류신/BCAA 기준 내림차순
   if (category === PROTEIN_DRINK_CATEGORY) {
     if (key === PROTEIN_SORT_RECOMMEND) return arr.sort(compareProteinRecommend);
+    if (key === 'calories_asc') return arr.sort((a, b) => compareAscMissingLast(a, b, 'calories'));
     return arr.sort((a, b) => proteinDrinkValue(b, key) - proteinDrinkValue(a, key));
   }
 

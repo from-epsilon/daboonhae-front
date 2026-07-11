@@ -5,7 +5,6 @@
 //   - onClick: 카드 전체 클릭 핸들러 (디테일 진입)
 //   - layout: 'grid' (홈/리스트 그리드) | 'list' (리스트 페이지)
 //   - onCompare: 비교함 담기 콜백 (미지정 시 + 버튼 미표시)
-import { Fragment } from 'react';
 import { MacroRow } from './MacroRow.jsx';
 import { IconPlus, IconCheck, IconCompare, IconHeart } from './Icons.jsx';
 import { getCategoryMetrics } from '../../data/purposes.jsx';
@@ -291,15 +290,18 @@ function TieredMetricsBlock({ food, config, sortKey }) {
   const sweeteners = config.showSweetenerMeta ? (food.ingredients?.sweeteners ?? food.sweeteners ?? []) : [];
   const isProteinMetricSort = isTieredMetricSort(sortKey, primary);
   const isRecommend = sortKey === PROTEIN_SORT_RECOMMEND;
+  const isCaloriesSort = sortKey === 'calories_asc';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4 }}>
       {isRecommend ? (
-        <RecommendScore food={food} />
-      ) : isProteinMetricSort ? (
-        <SelectedProteinMetric food={food} metrics={primary} sortKey={sortKey} />
+        <RecommendScore food={food} showProtein />
       ) : (
-        <TieredPrimaryTable food={food} metrics={primary} sortKey={sortKey} />
+        <>
+          <RecommendScore food={food} variant="secondary" />
+          {isProteinMetricSort && <SelectedProteinMetric food={food} metrics={primary} sortKey={sortKey} />}
+          {isCaloriesSort && <SelectedCaloriesMetric food={food} />}
+        </>
       )}
 
       <TieredMeta sources={sources} sweeteners={sweeteners} showSweeteners={config.showSweetenerMeta} />
@@ -314,20 +316,21 @@ function isTieredMetricSort(sortKey, metrics) {
   return metrics.some((m) => m.key === base) && PROTEIN_SORT_MODES.some((m) => m.key === mode);
 }
 
-function RecommendScore({ food }) {
+function RecommendScore({ food, showProtein = false, variant = 'primary' }) {
   const score = getProteinDrinkRecommendScore(food);
   if (!Number.isFinite(score)) return null;
   const protein = formatInlineNumber(food?.nutrition?.protein);
+  const isSecondary = variant === 'secondary';
 
   return (
-    <div className="fc-recommend-summary">
+    <div className={`fc-recommend-summary${isSecondary ? ' is-secondary' : ''}`}>
       <div className="fc-recommend-score">
         <span className="fc-meta-label fc-recommend-score-label">추천점수</span>
         <span className="fc-recommend-score-value">
           {Math.round(score)}<span className="fc-recommend-score-unit">점</span>
         </span>
       </div>
-      {protein !== null && (
+      {showProtein && protein !== null && (
         <div className="fc-recommend-protein">
           <span className="fc-meta-label fc-recommend-score-label">단백질</span>
           <span className="fc-recommend-protein-value">
@@ -408,96 +411,18 @@ function SelectedProteinMetric({ food, metrics, sortKey }) {
   );
 }
 
-// 1순위 핵심 지표 — 총량/100kcal당/1,000원당 열 정렬 표
-// - 세 지표를 같은 비중으로 두되 열로 정렬해 가독성 확보
-// - 100kcal당/1,000원당 열은 데이터(칼로리·구매가) 있을 때만 노출
-// - 리스트 카드 + 상세페이지(핵심 지표 섹션)에서 공용
-export function TieredPrimaryTable({ food, metrics, sortKey, priceHelp }) {
-  const rows = metrics
-    .map((m) => {
-      const result = computeMetricValues(food, m);
-      if (!result) return null;
-      const byLabel = {};
-      result.ratios.forEach((r) => { byLabel[r.label] = r; });
-      const pick = (r) => (r ? { num: r.num, unit: r.unit } : null);
-      return {
-        key: m.key,
-        label: m.label,
-        total: { num: result.total, unit: result.unit },
-        perKcal: pick(byLabel['/100kcal']),
-        perPrice: pick(byLabel['/1,000원']),
-      };
-    })
-    .filter(Boolean);
-  if (rows.length === 0) return null;
-
-  // 값 열은 항상 고정. 행은 숨기더라도 카드 간 열 위치가 흔들리지 않게 한다.
-  const cols = [
-    { key: 'total', head: '1회 제공량 기준', variant: 'total', pick: (r) => r.total },
-    { key: 'kcal', head: '100kcal 기준', variant: 'ratio', pick: (r) => r.perKcal },
-    { key: 'price', head: '1,000원 기준', variant: 'ratio', pick: (r) => r.perPrice },
-  ];
-
-  // 정렬 조합(기준×성분)이면 sortMode — 해당 '셀'만 강조하고 호버 로직은 비활성
-  // 추천순/미지정이면 기존 호버 '열' 강조만 동작
-  const hl = typeof sortKey === 'string' && sortKey.includes('_')
-    ? splitProteinSortKey(sortKey)
-    : null;
-  const sortMode = !!hl;
-
-  const cellActive = (rKey, cKey) => sortMode && hl.base === rKey && hl.mode === cKey;
-  const headActive = (cKey) => sortMode && hl.mode === cKey;
+function SelectedCaloriesMetric({ food }) {
+  const calories = formatInlineNumber(food?.nutrition?.calories);
+  if (calories === null) return null;
 
   return (
-    <div
-      className={`fc-ptable${sortMode ? ' is-focused' : ''}`}
-    >
-      {/* 헤더 — 라인 없이 타이포(작고 연함)로 구분 */}
-      <span className="fc-ptable-corner" />
-      {cols.map((c) => (
-        <span
-          key={c.key}
-          className={`fc-ptable-head${headActive(c.key) ? ' is-active' : ''}`}
-        >
-          <span className="fc-ptable-head-text">{c.head}</span>
-          {c.key === 'price' && priceHelp && (
-            <span className="fc-ptable-help" aria-label={priceHelp} tabIndex={0}>
-              ?
-              <span className="fc-ptable-help-bubble" role="tooltip">{priceHelp}</span>
-            </span>
-          )}
-        </span>
-      ))}
-      {/* 지표 행 */}
-      {rows.map((r) => (
-        <Fragment key={r.key}>
-          <span className="fc-ptable-label">{r.label}</span>
-          {cols.map((c) => (
-            <PTableCell
-              key={c.key}
-              value={c.pick(r)}
-              variant={c.variant}
-              active={cellActive(r.key, c.key)}
-            />
-          ))}
-        </Fragment>
-      ))}
+    <div className="fc-selected-metric">
+      <span className="fc-meta-label fc-selected-metric-name">칼로리</span>
+      <span className="fc-selected-metric-value">
+        {calories}<span className="fc-selected-metric-unit">kcal</span>
+        <span className="fc-selected-metric-basis">1회 제공량 기준</span>
+      </span>
     </div>
-  );
-}
-
-// 표 셀 — 단위는 작게 연하게 (텍스트 위계로 가독성 확보)
-// - variant: 'total' 총량(진한 색) | 'ratio' 대비 수치(연한 색)
-// - active: 호버 열 / 정렬 기준 셀 강조 (더 크고 볼드)
-function PTableCell({ value, variant, active, ...handlers }) {
-  const cls = `fc-ptable-cell fc-ptable-cell--${variant}${active ? ' is-active' : ''}`;
-  if (!value) {
-    return <span className={`${cls} is-empty`} aria-hidden="true" {...handlers}>-</span>;
-  }
-  return (
-    <span className={cls} {...handlers}>
-      {value.num}<span className="fc-ptable-unit">{value.unit}</span>
-    </span>
   );
 }
 

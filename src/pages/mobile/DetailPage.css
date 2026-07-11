@@ -297,19 +297,6 @@
   margin-top: 4px;
 }
 
-/* 핵심 지표 표 — 리스트 카드 표(.fc-ptable) 재사용 + 카드 안 여백 */
-.m-detail-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.m-detail-metrics-note {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--text-tertiary);
-}
-
 /* ============================================================
    NUTRITION TABLE
    ============================================================ */

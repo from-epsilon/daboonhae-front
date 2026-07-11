@@ -1267,14 +1267,15 @@
   max-height: 100%;
   transform: translateX(-50%);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  /* 실측/제품 제공 값은 원료 추정과 구분되도록 조금 더 선명한 색으로 표시한다. */
   background-image: linear-gradient(
     0deg,
-    #f4a261 0%,
-    #f6c177 36%,
-    #a7d979 52%,
-    #72cf8a 62.5%,
-    #8fbde8 82%,
-    #b7a7df 100%
+    #e98b3f 0%,
+    #f2b45f 36%,
+    #8fd35f 52%,
+    #45c76f 62.5%,
+    #5aa7e6 82%,
+    #9b84d8 100%
   );
   background-size: 100% var(--amino-pattern-track-height);
   background-position: bottom;
@@ -1292,18 +1293,19 @@
     ),
     linear-gradient(
       0deg,
-      #f4a261 0%,
-      #f6c177 36%,
-      #a7d979 52%,
-      #72cf8a 62.5%,
-      #8fbde8 82%,
-      #b7a7df 100%
+      #e98b3f 0%,
+      #f2b45f 36%,
+      #8fd35f 52%,
+      #45c76f 62.5%,
+      #5aa7e6 82%,
+      #9b84d8 100%
     );
   background-size: auto, 100% var(--amino-pattern-track-height);
   background-position: 0 0, bottom;
   background-repeat: repeat, no-repeat;
 }
 .d-analysis-amino-pattern-row.is-fallback .d-analysis-amino-pattern-bar {
+  /* 원료 추정값은 신뢰도 차이를 드러내기 위해 기존의 차분한 톤과 빗금 패턴을 유지한다. */
   background-image:
     repeating-linear-gradient(
       135deg,
@@ -1381,11 +1383,11 @@
 .d-analysis-grade-row {
   position: relative;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) max-content;
+  grid-template-columns: 58px minmax(0, 1fr) max-content;
   align-items: center;
-  column-gap: 16px;
-  min-height: 64px;
-  padding: 12px 0;
+  column-gap: 18px;
+  min-height: 78px;
+  padding: 14px 0;
 }
 .d-analysis-grade-row + .d-analysis-grade-row {
   border-top: 1px solid var(--border-tertiary);
@@ -1394,13 +1396,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 34px;
+  width: 54px;
+  height: 48px;
   border-radius: var(--radius-sm);
   background: var(--gray-100);
   color: var(--text-tertiary);
   font-family: var(--font-numeric);
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -1501,6 +1503,7 @@
   margin: 4px 0 0;
   font-size: 12px;
   line-height: 1.45;
+  min-height: 34.8px;
   color: var(--text-secondary);
   word-break: keep-all;
 }
@@ -1645,6 +1648,75 @@
   color: var(--text-secondary);
   font-size: 11px;
   line-height: 1.45;
+}
+.d-analysis-negative {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.d-analysis-negative-table {
+  overflow: hidden;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+}
+.d-analysis-negative-row {
+  display: grid;
+  grid-template-columns: minmax(70px, 100px) minmax(66px, max-content) minmax(74px, max-content) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+.d-analysis-negative-row:last-child { border-bottom: 0; }
+.d-analysis-negative-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.d-analysis-negative-value {
+  font-family: var(--font-numeric);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.d-analysis-negative-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.d-analysis-negative-row.is-low .d-analysis-negative-status {
+  background: var(--green-50);
+  color: var(--green-700);
+}
+.d-analysis-negative-row.is-mid .d-analysis-negative-status {
+  background: var(--orange-50);
+  color: var(--orange-700);
+}
+.d-analysis-negative-row.is-high .d-analysis-negative-status {
+  background: var(--rating-poor-tag-bg);
+  color: var(--rating-poor-text);
+}
+.d-analysis-negative-row.is-unknown .d-analysis-negative-status {
+  background: var(--gray-100);
+  color: var(--text-tertiary);
+}
+.d-analysis-negative-row p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  word-break: keep-all;
 }
 .d-analysis-help {
   position: relative;
@@ -2344,42 +2416,79 @@
   color: var(--text-tertiary);
 }
 
-/* 감미료/단백질원 분석 카드 */
+/* 성분 분석표 — 개별 카드 대신 하나의 명세표 안에서 이름·설명·수치를 가로로 읽는다. */
 .d-analysis-ingredients {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
 }
 .d-analysis-ingredients.is-subtle .d-analysis-ingr-card {
-  background: var(--gray-50);
+  background: transparent;
 }
 .d-analysis-ingr-card {
-  padding: 13px 15px; border-radius: var(--radius-md);
-  background: var(--bg-card-ui);
-  border: none;
-  display: flex; flex-direction: column; gap: 5px;
+  padding: 15px 18px;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-tertiary);
+  display: grid;
+  gap: 24px;
+  align-items: start;
 }
-.d-analysis-ingr-card.is-good { border-left: 3px solid var(--green-400); }
-.d-analysis-ingr-card.is-caution { border-left: 3px solid var(--orange-400); }
-.d-analysis-ingr-card.is-neutral { border-left: 3px solid var(--blue-300); }
+.d-analysis-ingr-card:last-child { border-bottom: 0; }
+.d-analysis-ingr-card.is-good,
+.d-analysis-ingr-card.is-caution,
+.d-analysis-ingr-card.is-neutral { border-left: 0; }
 .d-analysis-ingr-head {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
 .d-analysis-ingr-name {
   font-size: 14px; font-weight: 700; color: var(--text-primary);
 }
-/* 단백질 원료 카드 헤더 — 원료명 + 약자 + 등급 좌측 정렬 */
+/* 단백질 원료는 이름/등급과 설명을 두 열로 분리한다. */
+.d-analysis-protein-card { grid-template-columns: minmax(170px, 220px) minmax(0, 1fr); }
 .d-analysis-protein-head { justify-content: flex-start; flex-wrap: wrap; }
 .d-analysis-ingr-grade {
-  font-size: 11px; font-weight: 700; color: white;
-  padding: 1px 8px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
 }
-.d-analysis-ingr-grade.is-good { background: var(--green-500); }
-.d-analysis-ingr-grade.is-moderate { background: #F3E8C2; color: #6B4E16; }
-.d-analysis-ingr-grade.is-low { background: var(--gray-400); }
+.d-analysis-ingr-grade.is-good { background: var(--green-50); border-color: var(--green-200); color: var(--green-700); }
+.d-analysis-ingr-grade.is-moderate { background: #FBF4E4; border-color: #E8D8AA; color: #6B4E16; }
+.d-analysis-ingr-grade.is-low { background: var(--gray-100); border-color: var(--gray-300); color: var(--text-secondary); }
 .d-analysis-ingr-text {
-  margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary);
+  margin: 0; font-size: 13px; line-height: 1.55; color: var(--text-secondary);
 }
-/* 기타 영양소 카드 — 우측 수치 */
+.d-analysis-support {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.d-analysis-support-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.d-analysis-support-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+/* 추가 성분은 성분명 / 짧은 설명 / 함량 순서의 명세표로 표시한다. */
+.d-analysis-other-card {
+  grid-template-columns: minmax(130px, 170px) minmax(0, 1fr) auto;
+}
+.d-analysis-other-card .d-analysis-ingr-head { display: contents; }
+.d-analysis-other-card .d-analysis-ingr-name { grid-column: 1; grid-row: 1; }
+.d-analysis-other-card .d-analysis-ingr-text { grid-column: 2; grid-row: 1; }
 .d-analysis-other-amount {
+  grid-column: 3; grid-row: 1;
   font-family: var(--font-numeric); font-size: 14px; font-weight: 700;
   color: var(--text-primary); flex-shrink: 0;
 }
@@ -2392,6 +2501,18 @@
   .d-analysis-summary-grid { grid-template-columns: 1fr; }
   .d-analysis-amino-grid { grid-template-columns: 1fr; }
   .d-analysis-ingredients { grid-template-columns: 1fr; }
+  .d-analysis-ingr-card,
+  .d-analysis-protein-card,
+  .d-analysis-other-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 12px;
+    padding: 13px 14px;
+  }
+  .d-analysis-protein-head { grid-column: 1 / -1; }
+  .d-analysis-protein-card .d-analysis-ingr-text { grid-column: 1 / -1; }
+  .d-analysis-other-card .d-analysis-ingr-name { grid-column: 1; }
+  .d-analysis-other-card .d-analysis-other-amount { grid-column: 2; }
+  .d-analysis-other-card .d-analysis-ingr-text { grid-column: 1 / -1; grid-row: 2; }
   .d-analysis-quality-panel {
     grid-template-columns: 1fr;
     gap: 14px;
@@ -2413,6 +2534,23 @@
   .d-analysis-rank-total,
   .d-analysis-rank-value {
     justify-self: start;
+  }
+  .d-analysis-negative-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 10px;
+    padding: 13px 14px;
+  }
+  .d-analysis-negative-status {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .d-analysis-negative-value {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .d-analysis-negative-row p {
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 }
 
@@ -2630,20 +2768,23 @@
   padding: 1px 6px; border-radius: 3px;
 }
 /* 최상 = 반짝이는 밝은 금색(그라데이션 스윕) / 우수=초록 / 보통=주황 / 낮음=회색 */
-.d-detail-protein-grade.is-excellent,
-.d-analysis-ingr-grade.is-excellent {
+.d-detail-protein-grade.is-excellent {
   background: linear-gradient(110deg, #F8D873 0%, #FFEFB0 18%, #EBB933 42%, #FFF6CE 58%, #F2C947 80%, #F8D873 100%);
   background-size: 200% 100%;
   color: #7a5600;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
   animation: goldShine 3s linear infinite;
 }
+.d-analysis-ingr-grade.is-excellent {
+  background: #FFF8D8;
+  border-color: #E8D48A;
+  color: #7A5600;
+}
 @keyframes goldShine {
   to { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .d-detail-protein-grade.is-excellent,
-  .d-analysis-ingr-grade.is-excellent { animation: none; }
+  .d-detail-protein-grade.is-excellent { animation: none; }
 }
 .d-detail-protein-grade.is-good { background: var(--green-500); }
 .d-detail-protein-grade.is-moderate { background: #F3E8C2; color: #6B4E16; }

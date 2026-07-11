@@ -8,12 +8,11 @@ import { productPath, parseProductId } from '../../data/productUrl.js';
 import { useCategoryProducts, useProductDetail } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { getFoodTypeByCode } from '../../data/categoryTabs.js';
-import { getCategoryCardConfig, getPrimaryMetricsByCode } from '../../data/categoryCardMetrics.js';
+import { getCategoryCardConfig } from '../../data/categoryCardMetrics.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { Button } from '../../components/ds/Button.jsx';
 import { MacroRow } from '../../components/ds/MacroRow.jsx';
-import { TieredPrimaryTable } from '../../components/ds/FoodCard.jsx';
 import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
 import { NutritionTable } from '../../components/mobile/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../../components/desktop/detail/AnalysisReport.jsx';
@@ -45,20 +44,6 @@ function MacroSection({ macros }) {
         fat={macros.fat}
         kcal={macros.kcal}
       />
-    </section>
-  );
-}
-
-// 핵심 지표 카드 — 리스트 카드와 동일한 단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당
-function PrimaryMetricsSection({ food, metrics }) {
-  const priceBasis = metrics?.some((metric) => metric.pricePer === 'serving') ? '1회분당' : '개당';
-  return (
-    <section className="m-detail-card m-detail-metrics">
-      <header className="m-detail-card-head">
-        <h2 className="m-detail-card-title">핵심 지표</h2>
-      </header>
-      <TieredPrimaryTable food={food} metrics={metrics} />
-      <p className="m-detail-metrics-note">1,000원당 값은 등록된 구매링크의 {priceBasis} 최저가 기준이에요.</p>
     </section>
   );
 }
@@ -203,8 +188,6 @@ export default function DetailPageMobile() {
   }
 
   const inCart = has(product.id);
-  // 핵심 지표 표 — 1순위 지표가 있는 카테고리(단백질 음료 등)만 노출
-  const primaryMetrics = getPrimaryMetricsByCode(raw?.categoryCode);
   const detailConfig = getDetailCardConfig(raw?.categoryCode);
   const showMacroSection = detailConfig?.showMacroBar !== false && !detailConfig?.macroBarVariant;
 
@@ -265,9 +248,6 @@ export default function DetailPageMobile() {
 
         {/* 2. 매크로 분포 */}
         {showMacroSection && <MacroSection macros={product.macros} />}
-
-        {/* 2-1. 핵심 지표 표 (단백질/EAA/류신/BCAA × 총량·100kcal당·1,000원당) */}
-        {primaryMetrics && <PrimaryMetricsSection food={product} metrics={primaryMetrics} />}
 
         {/* 3. 영양성분표 + 펼침 안 추가 안내 */}
         <NutritionTable

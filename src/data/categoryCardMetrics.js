@@ -1,6 +1,5 @@
 // 탭(목적) + 서브카테고리 조합으로 리스트 카드 메트릭 결정
 // 같은 DB 카테고리(에너지바)도 단백질 보충 vs 식사대용에서 다른 메트릭 표시
-import { getFoodTypeByCode } from './categoryTabs.js';
 
 const PROTEIN_COMMON = [
   { key: 'calories', label: '칼로리', unit: 'kcal', perVol: true },
@@ -64,7 +63,6 @@ const CONFIG = {
   'protein:단백질 음료': {
     primaryMetrics: PROTEIN_DRINK_PRIMARY,
     showProteinSource: true,
-    detailPrimaryMetrics: true,
     secondaryMetrics: PROTEIN_DRINK_SECONDARY,
     showSweeteners: false,
     showMacroBar: false,
@@ -97,7 +95,6 @@ const CONFIG = {
     showServingCalories: true,
     showSubNutrients: false,
     showIngredientDetails: false,
-    detailPrimaryMetrics: false,
   },
   'meal:에너지바':          { metrics: MEAL_COMMON, showSweeteners: false },
 };
@@ -125,21 +122,6 @@ export function getCategoryCardConfig(tabId, subLabel) {
   }
   if (tabId && TAB_DEFAULTS[tabId]) return TAB_DEFAULTS[tabId];
   return GLOBAL_DEFAULT;
-}
-
-// 상세페이지 핵심 지표 표용 — 제품의 식품유형(코드)별 1순위 지표 배열
-// - 리스트 카드와 동일한 정의를 재사용(단백질 음료=단백질/EAA/류신/BCAA)
-// - 1순위 지표가 없는 카테고리는 null → 상세페이지에서 표 미노출
-export function getPrimaryMetricsByCode(categoryCode) {
-  const ft = getFoodTypeByCode(categoryCode);
-  if (!ft) return null;
-  const config = getCategoryCardConfig(ft.tab, ft.label);
-  if (Array.isArray(config.detailPrimaryMetrics)) {
-    return config.detailPrimaryMetrics.length > 0 ? config.detailPrimaryMetrics : null;
-  }
-  if (config.detailPrimaryMetrics === false) return null;
-  const metrics = config.primaryMetrics ?? [];
-  return metrics.length > 0 ? metrics : null;
 }
 
 // ============================================================ 목적별 추천 카드(홈)

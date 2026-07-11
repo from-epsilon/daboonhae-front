@@ -111,6 +111,7 @@ export default function ComparePage() {
         <EmptyCompare max={max} onBrowse={handleBrowse} />
       ) : (
         <>
+          <CompareSummary sentences={summary} />
           <CompareTable
             products={products}
             bestByKey={bestByKey}
@@ -122,7 +123,6 @@ export default function ComparePage() {
             canAdd={canAdd}
             remaining={remaining}
           />
-          <CompareSummary sentences={summary} />
         </>
       )}
     </div>

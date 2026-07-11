@@ -1,7 +1,7 @@
-import { cheapestUnitPrice } from './categoryCardMetrics.js';
-import { AMINO_ACID_KEYS, AMINO_ACID_LABELS } from './aminoAcids.js';
+import { AMINO_ACID_KEYS } from './aminoAcids.js';
 import { NUTRIENT_GROUP, isNutrientGroup } from './nutrientGroups.js';
 import { bestUnitPriceOf } from './purchaseLinks.js';
+import { formatEfficiencyValue, getProteinDrinkScoreModel } from './proteinDrinkScore.js';
 
 const PROTEIN_DRINK_CODE = 'protein_drink';
 const PROTEIN_DRINK_LABEL = '단백질 음료';
@@ -49,25 +49,6 @@ function valueOf(product, key, { zeroAsMissing = false } = {}) {
   return value;
 }
 
-function proteinValue(product, base, mode) {
-  const total = valueOf(product, base, { zeroAsMissing: true });
-  if (total === null) return null;
-
-  if (mode === 'total') return total;
-
-  const calories = valueOf(product, 'calories', { zeroAsMissing: true });
-  if (mode === 'kcal') {
-    return calories ? (total / calories) * 100 : null;
-  }
-
-  if (mode === 'price') {
-    const unitPrice = cheapestUnitPrice(product);
-    return unitPrice ? (total / unitPrice) * 1000 : null;
-  }
-
-  return null;
-}
-
 function rawNutrientName(fn) {
   return fn?.nutrients?.name_ko || fn?.nutrient_code || '';
 }
@@ -100,6 +81,7 @@ function rawNutrientMetric(fn, groupLabel) {
     label: name,
     unit: rawNutrientUnit(fn),
     direction: 'max',
+    supporting: true,
     getValue: (product) => {
       const value = getRawNutrientAmount(product, nutrientCode);
       return value != null && value > 0 ? value : null;
@@ -136,56 +118,77 @@ function getMicronutrientMetrics(products) {
   return rows;
 }
 
-function nutrientMetric(key, label, unit, direction = null, options) {
+function nutrientMetric(key, label, unit, direction = null, options = {}) {
   return {
     key,
     label,
     unit,
     direction,
+    supporting: options.supporting === true,
     getValue: (product) => valueOf(product, key, options),
   };
 }
 
-function proteinMetric(base, baseLabel, unit, mode, modeLabel) {
+function scoreMetric({ key, label, unit = '', select, formatValue, getNote }) {
   return {
-    key: mode === 'total' ? base : `${base}_${mode}`,
-    label: mode === 'total' ? baseLabel : `${baseLabel} ${modeLabel}`,
+    key,
+    label,
     unit,
     direction: 'max',
-    getValue: (product) => proteinValue(product, base, mode),
+    getValue: (product) => select(getProteinDrinkScoreModel(product))?.value ?? null,
+    getGrade: (product) => select(getProteinDrinkScoreModel(product))?.tier ?? null,
+    getTone: (product) => select(getProteinDrinkScoreModel(product))?.tone ?? null,
+    getNote: getNote
+      ? (product) => getNote(select(getProteinDrinkScoreModel(product)))
+      : undefined,
+    formatValue,
   };
 }
 
-const PROTEIN_BASES = [
-  { key: 'protein', label: '단백질', unit: 'g' },
-  { key: 'eaa', label: 'EAA', unit: 'mg' },
-  { key: 'bcaa', label: 'BCAA', unit: 'mg' },
-];
-
-const PROTEIN_MODES = [
-  { key: 'total', label: '' },
-  { key: 'kcal', label: '/100kcal' },
-  { key: 'price', label: '/1,000원' },
-];
-
 const PROTEIN_DRINK_COMPARE_METRICS = [
-  nutrientMetric('calories', '열량', 'kcal', 'min'),
-  ...PROTEIN_BASES.flatMap((base) =>
-    PROTEIN_MODES.map((mode) =>
-      proteinMetric(base.key, base.label, base.unit, mode.key, mode.label))),
-  nutrientMetric('carbs', '탄수화물', 'g', 'min'),
-  nutrientMetric('fat', '지방', 'g', 'min'),
-  nutrientMetric('saturatedFat', '포화지방', 'g', 'min'),
-  nutrientMetric('transFat', '트랜스지방', 'g', 'min'),
-  nutrientMetric('cholesterol', '콜레스테롤', 'mg', 'min'),
-  nutrientMetric('sodium', '나트륨', 'mg', 'min'),
-  ...AMINO_ACID_KEYS.map((key) =>
-    nutrientMetric(key, AMINO_ACID_LABELS[key] ?? key, 'mg', 'max', { zeroAsMissing: true })),
+  scoreMetric({
+    key: 'proteinDrinkScore',
+    label: '추천점수',
+    unit: '점',
+    select: (model) => model.overall,
+    formatValue: (value) => Math.round(value).toLocaleString(),
+    getNote: (metric) => metric.confidence != null && metric.confidence < 1
+      ? `신뢰도 ${Math.round(metric.confidence * 100)}%`
+      : null,
+  }),
+  scoreMetric({
+    key: 'proteinAmount',
+    label: '단백질 총량',
+    unit: 'g',
+    select: (model) => model.proteinAmount,
+  }),
+  scoreMetric({
+    key: 'aminoQuality',
+    label: '아미노산 구성',
+    unit: '점',
+    select: (model) => model.aminoQuality,
+    formatValue: (value) => Math.round(value).toLocaleString(),
+    getNote: (metric) => metric.limiting ? `제한: ${metric.limiting}` : null,
+  }),
+  scoreMetric({
+    key: 'calorieEfficiency',
+    label: '칼로리 효율',
+    select: (model) => model.calorieEfficiency,
+    formatValue: formatEfficiencyValue,
+  }),
+  scoreMetric({
+    key: 'priceEfficiency',
+    label: '가성비',
+    select: (model) => model.priceEfficiency,
+    formatValue: formatEfficiencyValue,
+    getNote: (metric) => metric.available ? null : '가격 정보 없음',
+  }),
+  nutrientMetric('calories', '열량', 'kcal', null, { supporting: true }),
+  nutrientMetric('carbs', '탄수화물', 'g', null, { supporting: true }),
+  nutrientMetric('sugar', '당류', 'g', null, { supporting: true }),
+  nutrientMetric('fat', '지방', 'g', null, { supporting: true }),
+  nutrientMetric('sodium', '나트륨', 'mg', null, { supporting: true }),
 ];
-
-const CATEGORY_COMPARE_METRICS = {
-  [PROTEIN_DRINK_CODE]: PROTEIN_DRINK_COMPARE_METRICS,
-};
 
 function categoryKeyOf(product) {
   if (product?.categoryCode) return product.categoryCode;
@@ -205,16 +208,33 @@ function uniqueByKey(metrics) {
 export function getCompareMetricsForProducts(products) {
   if (!Array.isArray(products) || products.length === 0) return DEFAULT_COMPARE_METRICS;
 
-  const metrics = [];
-  for (const product of products) {
-    const categoryKey = categoryKeyOf(product);
-    metrics.push(...(CATEGORY_COMPARE_METRICS[categoryKey] ?? DEFAULT_COMPARE_METRICS));
+  // 서로 다른 평가 프로필의 점수는 직접 비교하지 않는다.
+  // 전부 단백질 음료일 때만 단백질 음료 전용 스코어 KPI를 사용한다.
+  if (products.every((product) => categoryKeyOf(product) === PROTEIN_DRINK_CODE)) {
+    return uniqueByKey([...PROTEIN_DRINK_COMPARE_METRICS, ...getMicronutrientMetrics(products)]);
   }
 
-  return uniqueByKey([...metrics, ...getMicronutrientMetrics(products)]);
+  return uniqueByKey([...DEFAULT_COMPARE_METRICS, ...getMicronutrientMetrics(products)]);
 }
 
 export function getCompareMetricValue(product, metric) {
   if (typeof metric.getValue === 'function') return metric.getValue(product);
   return valueOf(product, metric.key);
+}
+
+export function getCompareMetricPresentation(product, metric) {
+  const value = getCompareMetricValue(product, metric);
+  return {
+    value,
+    isRich: Boolean(metric.getGrade || metric.getNote),
+    supporting: metric.supporting === true,
+    grade: typeof metric.getGrade === 'function' ? metric.getGrade(product) : null,
+    tone: typeof metric.getTone === 'function' ? metric.getTone(product) : null,
+    note: typeof metric.getNote === 'function' ? metric.getNote(product) : null,
+    displayValue: value == null
+      ? '-'
+      : typeof metric.formatValue === 'function'
+        ? metric.formatValue(value)
+        : null,
+  };
 }

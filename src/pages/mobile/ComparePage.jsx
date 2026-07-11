@@ -25,7 +25,7 @@ import { productPath } from '../../data/productUrl.js';
 import {
   LOWEST_UNIT_PRICE_COMPARE_METRIC,
   getCompareMetricsForProducts,
-  getCompareMetricValue,
+  getCompareMetricPresentation,
 } from '../../data/compareKpis.js';
 import { getBestIndices, buildCompareSummary } from '../../components/mobile/compare/compareUtils.js';
 import './ComparePage.css';
@@ -59,13 +59,19 @@ function CompareGrid({
 
               {/* 영양소 셀들 — 라벨 + 값 */}
               {metrics.map((m) => {
-                const value = getCompareMetricValue(p, m);
+                const presentation = getCompareMetricPresentation(p, m);
                 const isBest = bestByKey[m.key]?.has(idx) ?? false;
                 return (
                   <CompareCell
                     key={m.key}
                     label={m.label}
-                    value={value}
+                    value={presentation.value}
+                    displayValue={presentation.displayValue}
+                    grade={presentation.grade}
+                    tone={presentation.tone}
+                    note={presentation.note}
+                    isRich={presentation.isRich}
+                    supporting={presentation.supporting}
                     unit={m.unit}
                     isBest={isBest}
                   />
@@ -169,6 +175,9 @@ export default function ComparePageMobile() {
             </button>
           </div>
 
+          {/* 핵심 차이를 먼저 읽고 상세 표를 확인하도록 상단에 배치 */}
+          <CompareSummary sentences={summary} />
+
           {/* 본문 그리드 */}
           <CompareGrid
             products={products}
@@ -182,8 +191,6 @@ export default function ComparePageMobile() {
             remaining={remaining}
           />
 
-          {/* 하단 자동 요약 */}
-          <CompareSummary sentences={summary} />
         </div>
       )}
     </>

@@ -14,7 +14,7 @@ import { Pagination } from '../../components/ds/Pagination.jsx';
 import { useProductSearch, useProducts } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
-import { applySort } from '../../data/listSort.js';
+import { applySort, resolveSortKey } from '../../data/listSort.js';
 import {
   applyListFilters,
   countActiveFilters,
@@ -112,6 +112,11 @@ export default function ListPageMobile() {
       setPage(pageParam);
     }
   }, [pageParam, page]);
+
+  useEffect(() => {
+    const resolved = resolveSortKey(activeSub, sortKey);
+    if (resolved !== sortKey) setSortKey(resolved);
+  }, [activeSub, sortKey]);
 
   useEffect(() => {
     if (listLoading || activeSub === 'all') return;

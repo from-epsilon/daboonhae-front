@@ -1,6 +1,7 @@
 // 비교 페이지용 헬퍼 함수 모음
 // - 우수값(best) 인덱스 계산: '높을수록 좋음' / '낮을수록 좋음' 분기
 // - 단일 책임 단위로 분리 (테스트 용이 + ComparePage 본문 정리)
+import { getProteinDrinkScoreModel } from '../../../data/proteinDrinkScore.js';
 
 // 안전한 숫자 추출 (undefined/null → null)
 function pick(product, metricOrKey) {
@@ -45,6 +46,38 @@ export function getBestIndices(products, metricOrKey, direction = 'max') {
 // - 1위/2위 단어는 절대 쓰지 않음
 export function buildCompareSummary(products) {
   if (!products || products.length < 2) return null;
+
+  if (products.every((product) => product?.categoryCode === 'protein_drink')) {
+    const scoreMetrics = [
+      {
+        getValue: (product) => getProteinDrinkScoreModel(product).overall.value,
+        phrase: '추천점수가 가장 높아요',
+      },
+      {
+        getValue: (product) => getProteinDrinkScoreModel(product).aminoQuality.value,
+        phrase: '아미노산 구성이 가장 탄탄해요',
+      },
+      {
+        getValue: (product) => getProteinDrinkScoreModel(product).calorieEfficiency.value,
+        phrase: '칼로리 효율이 가장 좋아요',
+      },
+      {
+        getValue: (product) => getProteinDrinkScoreModel(product).priceEfficiency.value,
+        phrase: '가격 정보가 확인된 제품 중 가성비가 가장 좋아요',
+      },
+    ];
+
+    const sentences = [];
+    for (const metric of scoreMetrics) {
+      const indices = getBestIndices(products, metric, 'max');
+      if (indices.length === 0 || indices.length === products.length) continue;
+      const product = products[indices[0]];
+      if (!product) continue;
+      sentences.push(`${product.name}: ${metric.phrase}`);
+      if (sentences.length >= 3) break;
+    }
+    return sentences.length > 0 ? sentences : null;
+  }
 
   // 비교 지표 정의: { key, direction, suffix, phraseHigh, phraseLow }
   // - phraseHigh: direction='max' 일 때 표현 ("단백질이 가장 많아요")
