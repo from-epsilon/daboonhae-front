@@ -16,6 +16,7 @@ function Thumb({ src, alt }) {
       className="m-compare-thumb"
       src={src}
       alt={alt}
+      draggable={false}
       onError={() => setFailed(true)}
       loading="lazy"
     />

@@ -148,6 +148,7 @@
   text-align: center;
   cursor: grab;
   touch-action: pan-y;
+  user-select: none;
 }
 .d-compare-col-header:last-of-type {
   border-right: none;
@@ -237,6 +238,7 @@
   object-fit: cover;
   background: var(--bg-white);
   border: 1px solid var(--border-tertiary);
+  -webkit-user-drag: none;
 }
 .d-compare-thumb--ph {
   background: var(--gray-200);
@@ -281,6 +283,7 @@
    본문 데이터 셀 (영양소 / 점수)
    ──────────────────────────────────────────────────────────────────────── */
 .d-compare-metric-cell {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -292,6 +295,31 @@
   min-height: 72px;
   transition: background-color 150ms ease;
 }
+.d-compare-metric-grade {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  color: var(--green-700);
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+.d-compare-metric-grade.is-na { color: var(--text-tertiary); }
+.d-compare-metric-grade.is-poor,
+.d-compare-metric-grade.is-grade-f { color: #b91c1c; }
+.d-compare-metric-grade.is-light,
+.d-compare-metric-grade.is-near,
+.d-compare-metric-grade.is-grade-d { color: #c65a12; }
+.d-compare-metric-grade.is-grade-c { color: #a66b00; }
+.d-compare-metric-grade.is-grade-b { color: #668a12; }
+.d-compare-metric-grade.is-grade-bplus { color: #408319; }
+.d-compare-metric-grade.is-grade-aminus { color: #16834b; }
+.d-compare-metric-grade.is-grade-a { color: #08775f; }
+.d-compare-metric-grade.is-grade-aplus { color: #326eb7; }
+.d-compare-metric-grade.is-grade-s { color: #6843c4; }
+.d-compare-metric-grade.is-grade-splus { color: #8a35c8; }
 .d-compare-metric-note {
   max-width: 160px;
   color: var(--text-tertiary);

@@ -115,15 +115,16 @@ function getRedirectUrl(offer, delaySeconds = 1.5) {
   return `/redirect?${params.toString()}`;
 }
 
-// 오퍼 목록 중 가장 최근 가격 갱신 시각 (YYYY.MM.DD) — 없으면 null
-function latestUpdatedLabel(offers) {
+// 활성 오퍼 전체가 마지막으로 확인된 보수적 기준 시점 (YYYY.MM.DD).
+// 가장 오래된 updatedAt을 사용해야 일부 판매처만 최근 갱신된 경우를 최신 기준일로 오해하지 않는다.
+function priceCheckedAtLabel(offers) {
   const times = (offers ?? [])
     .map((o) => o.updatedAt)
     .filter(Boolean)
     .map((t) => new Date(t).getTime())
     .filter((t) => Number.isFinite(t));
   if (times.length === 0) return null;
-  const d = new Date(Math.max(...times));
+  const d = new Date(Math.min(...times));
   const pad = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
 }
@@ -152,7 +153,7 @@ export default function PurchaseOffers({
   const sorted = orderOffers(offers, sortMode, basisPriceOf);
   const visible = typeof maxItems === 'number' ? sorted.slice(0, maxItems) : sorted;
   const bestUnitOffer = getBestUnitOffer(sorted, basisPriceOf);
-  const updatedLabel = showUpdatedAt ? latestUpdatedLabel(sorted) : null;
+  const updatedLabel = showUpdatedAt ? priceCheckedAtLabel(sorted) : null;
   const rootClass = [
     'purchase-offers',
     compact ? 'purchase-offers--compact' : '',

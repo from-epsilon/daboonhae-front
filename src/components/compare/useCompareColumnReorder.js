@@ -94,6 +94,7 @@ export function useCompareColumnReorder({ products, onReorder }) {
   }, [onReorder, products]);
 
   const getColumnProps = useCallback((productId) => ({
+    onDragStart: (event) => event.preventDefault(),
     onPointerDown: (event) => handlePointerDown(event, productId),
     onPointerMove: handlePointerMove,
     onPointerUp: handlePointerUp,

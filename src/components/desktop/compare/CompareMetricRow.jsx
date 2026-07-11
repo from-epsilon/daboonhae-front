@@ -10,8 +10,16 @@ function fmt(v) {
   return rounded.toLocaleString();
 }
 
+function gradeClass(grade) {
+  return String(grade ?? '')
+    .toLowerCase()
+    .replace(/\+/g, 'plus')
+    .replace(/-/g, 'minus')
+    .replace(/[^a-z0-9]/g, '');
+}
+
 // 한 제품의 셀 (SRP)
-function MetricCell({ productId, value, displayValue, note, unit, isBest, supporting, motionClass, motionStyle }) {
+function MetricCell({ productId, value, displayValue, grade, tone, note, unit, isBest, supporting, motionClass, motionStyle }) {
   const cls = [
     'd-compare-metric-cell',
     isBest ? 'd-compare-metric-cell--best' : '',
@@ -21,6 +29,11 @@ function MetricCell({ productId, value, displayValue, note, unit, isBest, suppor
 
   return (
     <div className={cls} style={motionStyle} data-compare-product-id={productId}>
+      {grade && (
+        <span className={`d-compare-metric-grade is-${tone ?? 'neutral'} is-grade-${gradeClass(grade)}${grade === 'N/A' ? ' is-na' : ''}`}>
+          {grade}
+        </span>
+      )}
       <div className="d-compare-metric-value">
         <span className="d-compare-metric-num">{displayValue ?? fmt(value)}</span>
         {unit && value !== null && value !== undefined && (
@@ -65,6 +78,8 @@ export function CompareMetricRow({
             productId={p.id}
             value={presentations[idx].value}
             displayValue={presentations[idx].displayValue}
+            grade={presentations[idx].grade}
+            tone={presentations[idx].tone}
             note={presentations[idx].note}
             supporting={presentations[idx].supporting}
             unit={unit}

@@ -16,6 +16,7 @@ function Thumb({ src, alt }) {
       className="d-compare-thumb"
       src={src}
       alt={alt}
+      draggable={false}
       onError={() => setFailed(true)}
       loading="lazy"
     />

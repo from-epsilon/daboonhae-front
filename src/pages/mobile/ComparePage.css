@@ -176,6 +176,7 @@
   flex-direction: column;
   cursor: grab;
   touch-action: pan-y;
+  user-select: none;
 }
 .m-compare-data-col.is-dragging .m-compare-col-header { cursor: grabbing; }
 .m-compare-col-x {
@@ -221,6 +222,7 @@
   background: var(--bg-white);
   border: 1px solid var(--border-tertiary);
   margin-bottom: 4px;
+  -webkit-user-drag: none;
 }
 .m-compare-thumb--ph {
   /* 이미지 실패 시 placeholder — 단색 */
@@ -281,6 +283,31 @@
   color: var(--text-tertiary);
   line-height: 1;
 }
+.m-compare-cell-grade {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  color: var(--green-700);
+  font-family: var(--font-numeric);
+  font-size: var(--font-size-xxs);
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+.m-compare-cell-grade.is-na { color: var(--text-tertiary); }
+.m-compare-cell-grade.is-poor,
+.m-compare-cell-grade.is-grade-f { color: #b91c1c; }
+.m-compare-cell-grade.is-light,
+.m-compare-cell-grade.is-near,
+.m-compare-cell-grade.is-grade-d { color: #c65a12; }
+.m-compare-cell-grade.is-grade-c { color: #a66b00; }
+.m-compare-cell-grade.is-grade-b { color: #668a12; }
+.m-compare-cell-grade.is-grade-bplus { color: #408319; }
+.m-compare-cell-grade.is-grade-aminus { color: #16834b; }
+.m-compare-cell-grade.is-grade-a { color: #08775f; }
+.m-compare-cell-grade.is-grade-aplus { color: #326eb7; }
+.m-compare-cell-grade.is-grade-s { color: #6843c4; }
+.m-compare-cell-grade.is-grade-splus { color: #8a35c8; }
 .m-compare-cell-note {
   max-width: 128px;
   color: var(--text-tertiary);

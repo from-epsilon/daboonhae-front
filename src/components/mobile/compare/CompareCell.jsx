@@ -10,7 +10,15 @@ function fmt(v) {
   return rounded.toLocaleString();
 }
 
-export function CompareCell({ label, value, displayValue, note, unit, isBest, isRich = false, supporting = false }) {
+function gradeClass(grade) {
+  return String(grade ?? '')
+    .toLowerCase()
+    .replace(/\+/g, 'plus')
+    .replace(/-/g, 'minus')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+export function CompareCell({ label, value, displayValue, grade, tone, note, unit, isBest, isRich = false, supporting = false }) {
   // best 여부에 따라 클래스 분기 (CSS 토큰만 사용)
   const cls = [
     'm-compare-cell',
@@ -22,6 +30,11 @@ export function CompareCell({ label, value, displayValue, note, unit, isBest, is
   return (
     <div className={cls}>
       <span className="m-compare-cell-label">{label}</span>
+      {grade && (
+        <span className={`m-compare-cell-grade is-${tone ?? 'neutral'} is-grade-${gradeClass(grade)}${grade === 'N/A' ? ' is-na' : ''}`}>
+          {grade}
+        </span>
+      )}
       <span className="m-compare-cell-valrow">
         <span className="m-compare-cell-num">{displayValue ?? fmt(value)}</span>
         {unit && value !== null && value !== undefined && (

@@ -152,9 +152,6 @@ const PROTEIN_DRINK_COMPARE_METRICS = [
     unit: '점',
     select: (model) => model.overall,
     formatValue: (value) => Math.round(value).toLocaleString(),
-    getNote: (metric) => metric.confidence != null && metric.confidence < 1
-      ? `신뢰도 ${Math.round(metric.confidence * 100)}%`
-      : null,
   }),
   scoreMetric({
     key: 'proteinAmount',
