@@ -56,6 +56,26 @@ export function CategoryGuideCard({ category }) {
   const [collapsed, toggle] = useGuideCollapsed();
   if (!guide) return null;
 
+  if (category === '닭가슴살') {
+    return (
+      <section className="m-detail-guide">
+        <header className="m-detail-section-head">
+          <h2 className="m-detail-section-title">
+            <span className="m-detail-guide-ico"><IconInfo size={15} /></span>
+            닭가슴살 선택 가이드
+          </h2>
+          <span className="m-detail-guide-preparing-badge">준비중</span>
+        </header>
+        <div className="m-detail-guide-preparing" role="status">
+          <p className="m-detail-guide-preparing-title">선택 가이드를 준비하고 있어요</p>
+          <p className="m-detail-guide-preparing-text">
+            단백질 함량과 나트륨, 원재료 구성을 쉽게 확인할 수 있도록 기준을 정리 중입니다.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="m-detail-guide">
       <header className="m-detail-section-head">

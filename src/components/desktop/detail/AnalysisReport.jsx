@@ -2515,6 +2515,7 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
   const ing = ingredients ?? {};
   const isProteinDrink = categoryCode === 'protein_drink' || category === '단백질 음료';
   const isShake = categoryCode === 'shake' || category === '셰이크';
+  const isChickenBreast = categoryCode === 'chicken_breast' || category === '닭가슴살';
 
   const { strengths, cautions } = useMemo(
     () => generateInsights(n, ing),
@@ -2541,6 +2542,24 @@ export function AnalysisReport({ product, products, nutrition, ingredients, cate
       displayDescription: ingr?.displayDescription ?? null,
     };
   }), [resolvedProteinSources]);
+
+  if (isChickenBreast) {
+    return (
+      <section className="d-detail-card d-detail-report">
+        <header className="d-detail-card-head">
+          <h2 className="d-detail-card-title">분석 리포트</h2>
+          <span className="d-detail-card-sub">준비중</span>
+        </header>
+        <div className="d-analysis-preparing" role="status">
+          <span className="d-analysis-preparing-badge">준비중</span>
+          <p className="d-analysis-preparing-title">닭가슴살 분석 리포트를 준비하고 있어요</p>
+          <p className="d-analysis-preparing-text">
+            단백질 함량과 나트륨, 지방, 원재료 구성을 함께 비교할 수 있도록 분석 기준을 정리 중입니다.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   if (isProteinDrink) {
     return (

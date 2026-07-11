@@ -693,6 +693,25 @@
 .d-detail-guide-toggle svg.is-open {
   transform: rotate(180deg);
 }
+.d-detail-guide-preparing {
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card-ui);
+  text-align: center;
+}
+.d-detail-guide-preparing-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.d-detail-guide-preparing-text {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
 .d-detail-aside .d-detail-guide {
   padding: 16px 0 16px 36px;
 }
@@ -893,6 +912,41 @@
 .d-detail-report-card-body.is-empty { font-size: 14px; color: var(--text-tertiary); margin: 0; }
 
 /* ───────── 분석 리포트 ───────── */
+.d-analysis-preparing {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 20px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card-ui);
+  text-align: center;
+}
+.d-analysis-preparing-badge {
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-200);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+.d-analysis-preparing-title {
+  margin: 4px 0 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.d-analysis-preparing-text {
+  max-width: 480px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
 .d-analysis-section {
   padding: 20px 0;
   border-top: 1px solid var(--border-tertiary);

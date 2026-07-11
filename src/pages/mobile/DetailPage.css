@@ -1272,6 +1272,36 @@
 .m-detail-guide-toggle svg.is-open {
   transform: rotate(180deg);
 }
+.m-detail-guide-preparing-badge {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--gray-200);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+.m-detail-guide-preparing {
+  margin: 0 16px;
+  padding: 24px 18px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card-ui);
+  text-align: center;
+}
+.m-detail-guide-preparing-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.m-detail-guide-preparing-text {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
 .m-detail-guide-ico {
   display: inline-flex;
   color: var(--green-600);
