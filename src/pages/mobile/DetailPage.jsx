@@ -293,7 +293,7 @@ export default function DetailPageMobile() {
           <ReviewSection productId={product.id} />
         </div>
 
-        {/* 7. 같은 카테고리 다른 제품 (가장 아래) */}
+        {/* 7. 비슷한 제품 (같은 제품군 우선, 없으면 같은 카테고리) */}
         <RelatedProducts currentRaw={raw} allProducts={categoryProducts} />
       </div>
 

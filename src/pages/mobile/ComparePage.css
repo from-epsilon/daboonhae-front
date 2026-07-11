@@ -269,41 +269,6 @@
   color: var(--text-tertiary);
   line-height: 1;
 }
-.m-compare-cell-grade {
-  min-width: 30px;
-  padding: 3px 7px;
-  border-radius: 999px;
-  background: var(--green-50);
-  color: var(--green-700);
-  font-family: var(--font-numeric);
-  font-size: var(--font-size-xxs);
-  font-weight: 800;
-  line-height: 1;
-  text-align: center;
-}
-.m-compare-cell-grade.is-na {
-  background: var(--gray-100);
-  color: var(--text-tertiary);
-}
-.m-compare-cell-grade.is-poor {
-  background: var(--red-50);
-  color: var(--red-700);
-}
-.m-compare-cell-grade.is-light,
-.m-compare-cell-grade.is-near {
-  background: var(--orange-50);
-  color: var(--orange-700);
-}
-.m-compare-cell-grade.is-grade-f { background: #fee2e2; color: #b91c1c; }
-.m-compare-cell-grade.is-grade-d { background: #fff0df; color: #c65a12; }
-.m-compare-cell-grade.is-grade-c { background: #fff6d6; color: #a66b00; }
-.m-compare-cell-grade.is-grade-b { background: #edf9d7; color: #668a12; }
-.m-compare-cell-grade.is-grade-bplus { background: #e5f8dc; color: #408319; }
-.m-compare-cell-grade.is-grade-aminus { background: #dff7e7; color: #16834b; }
-.m-compare-cell-grade.is-grade-a { background: #dcf6ee; color: #08775f; }
-.m-compare-cell-grade.is-grade-aplus { background: #e4f1ff; color: #326eb7; }
-.m-compare-cell-grade.is-grade-s { background: #eee8ff; color: #6843c4; }
-.m-compare-cell-grade.is-grade-splus { background: #f3e8ff; color: #8a35c8; }
 .m-compare-cell-note {
   max-width: 128px;
   color: var(--text-tertiary);

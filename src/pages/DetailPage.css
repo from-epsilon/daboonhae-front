@@ -3129,11 +3129,11 @@
 .d-detail-related-grid {
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;
 }
-.d-detail-related-grid > div {
+.d-detail-related-grid > .summary-card {
   transition: box-shadow 0.15s, border-color 0.15s;
   border-radius: var(--radius-md); cursor: pointer;
 }
-.d-detail-related-grid > div:hover {
+.d-detail-related-grid > .summary-card:hover {
   box-shadow: var(--shadow-md);
 }
 

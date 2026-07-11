@@ -331,6 +331,7 @@ function transformProduct(food) {
     category: food.food_type_categories?.name_ko ?? food.food_type_category_code ?? '',
     categoryCode: food.food_type_category_code ?? '',
     categoryIsActive: food.food_type_categories?.is_active === true,
+    familyId: food.family_id ?? null,
     family,
     purposeCategories,
     purposesFit: derivePurposesFit(nutrition),

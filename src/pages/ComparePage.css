@@ -268,41 +268,6 @@
   min-height: 72px;
   transition: background-color 150ms ease;
 }
-.d-compare-metric-grade {
-  min-width: 34px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: var(--green-50);
-  color: var(--green-700);
-  font-family: var(--font-numeric);
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  line-height: 1;
-  text-align: center;
-}
-.d-compare-metric-grade.is-na {
-  background: var(--gray-100);
-  color: var(--text-tertiary);
-}
-.d-compare-metric-grade.is-poor {
-  background: var(--red-50);
-  color: var(--red-700);
-}
-.d-compare-metric-grade.is-light,
-.d-compare-metric-grade.is-near {
-  background: var(--orange-50);
-  color: var(--orange-700);
-}
-.d-compare-metric-grade.is-grade-f { background: #fee2e2; color: #b91c1c; }
-.d-compare-metric-grade.is-grade-d { background: #fff0df; color: #c65a12; }
-.d-compare-metric-grade.is-grade-c { background: #fff6d6; color: #a66b00; }
-.d-compare-metric-grade.is-grade-b { background: #edf9d7; color: #668a12; }
-.d-compare-metric-grade.is-grade-bplus { background: #e5f8dc; color: #408319; }
-.d-compare-metric-grade.is-grade-aminus { background: #dff7e7; color: #16834b; }
-.d-compare-metric-grade.is-grade-a { background: #dcf6ee; color: #08775f; }
-.d-compare-metric-grade.is-grade-aplus { background: #e4f1ff; color: #326eb7; }
-.d-compare-metric-grade.is-grade-s { background: #eee8ff; color: #6843c4; }
-.d-compare-metric-grade.is-grade-splus { background: #f3e8ff; color: #8a35c8; }
 .d-compare-metric-note {
   max-width: 160px;
   color: var(--text-tertiary);

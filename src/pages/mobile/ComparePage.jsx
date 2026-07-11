@@ -67,8 +67,6 @@ function CompareGrid({
                     label={m.label}
                     value={presentation.value}
                     displayValue={presentation.displayValue}
-                    grade={presentation.grade}
-                    tone={presentation.tone}
                     note={presentation.note}
                     isRich={presentation.isRich}
                     supporting={presentation.supporting}

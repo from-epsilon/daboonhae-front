@@ -178,11 +178,6 @@ export default function RedirectPage() {
           </button>
         </div>
 
-        {/* 신뢰 안내 문구 */}
-        <p className="redirect-hint">
-          다분해가 검증한 판매처로 안전하게 연결됩니다
-        </p>
-
         {/* 제휴 수익 및 구매 유의 안내 */}
         <div className="redirect-notice">
           <p className="redirect-notice-title">잠깐! 다분해에서 알려드립니다</p>
