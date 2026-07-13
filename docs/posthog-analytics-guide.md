@@ -321,13 +321,15 @@ https://서비스도메인/?dh_staff=0
 3. PostHog Activity에서 해당 이벤트를 연다.
 4. Person properties에서 `$internal_or_test_user = true`를 확인한다.
 
-Product analytics 설정에는 PostHog가 기본 제공한 다음 조건만 유지한다.
+Product analytics 설정에는 cohort 대신 다음 inline Person property 조건 하나만 둔다.
 
 ```text
-User not in Internal/Test users
+Person property
+$internal_or_test_user
+is not set
 ```
 
-별도의 `is_internal` Event property 필터나 추가 cohort를 만들 필요가 없다. SDK의 `setInternalOrTestUser()`가 표준 Person property `$internal_or_test_user=true`를 설정하면 기본 `Internal/Test users` 분류가 이를 사용한다. 이후 각 Activity·Insight에서 `Filter out internal and test users` 토글을 켜면 해당 사용자가 제외된다.
+별도의 `is_internal` Event property 필터나 cohort를 만들 필요가 없다. SDK의 `setInternalOrTestUser()`는 표준 Person property `$internal_or_test_user=true`를 설정하지만 기존 cohort에 자동 가입시키지는 않는다. 이후 각 Activity·Insight에서 `Filter out internal and test users` 토글을 켜면 해당 Person property가 설정된 사용자가 제외된다.
 
 초기 연동 테스트로 이미 저장된 `localhost`, `127.0.0.1`, `utm_source=codex_test` 이벤트에는 내부 속성이 없을 수 있다. 초기 데이터는 분석 시작일 이후로 기간을 제한하거나 `$host`에서 `localhost`, `127.0.0.1`을 제외한다.
 
@@ -335,7 +337,7 @@ User not in Internal/Test users
 
 횟수보다 고유 사용자 기준을 우선한다. 새로고침과 반복 클릭으로 전환율이 부풀어 오르는 것을 줄이기 위해서다.
 
-모든 KPI에는 기본적으로 `Filter out internal and test users`를 활성화한다. Product analytics 설정에는 기본 `User not in Internal/Test users` 조건만 유지한다.
+모든 KPI에는 기본적으로 `Filter out internal and test users`를 활성화한다. Product analytics의 내부 사용자 필터는 Person property `$internal_or_test_user is not set`으로 정의한다.
 
 ### 핵심 퍼널: 구매처 이동
 
@@ -448,7 +450,7 @@ utm_campaign
 - [ ] 배포 후 각 내부 기기에서 `?dh_staff=1` 재접속
 - [ ] 등록 성공 안내 확인
 - [ ] Person properties에서 `$internal_or_test_user=true` 확인
-- [ ] Product analytics 설정에서 기본 `User not in Internal/Test users` 조건 유지
+- [ ] Product analytics 내부 사용자 필터에 Person property `$internal_or_test_user is not set` 적용
 - [ ] 커스텀 `is_internal` Event property 필터가 없는지 확인
 - [ ] 운영 대시보드에서 `Filter out internal and test users` 활성화
 
