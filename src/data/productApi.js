@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase.js';
 import { AMINO_ACID_KEYS, AMINO_ACID_KO_ALIASES } from './aminoAcids.js';
 import { NUTRIENT_GROUP, isNutrientGroup } from './nutrientGroups.js';
 import { PROTEIN_DRINK_SCORE_PROFILE } from './proteinDrinkScore.js';
+import { searchProducts, tokenizeSearchQuery } from './searchIndex.js';
 
 export { PROTEIN_DRINK_SCORE_PROFILE } from './proteinDrinkScore.js';
 
@@ -437,7 +438,7 @@ const FLAVOR_JOIN = `
 // ── 목록 select 절 (목록/검색/카테고리 순위 공통)
 // 상세 전용 원문·주의사항·출처 메타는 제외하여 전체 카탈로그 응답을 줄인다.
 const LIST_SELECT_BASE = (optional) => `
-  id, name, brand, image_url, storage_image_path,
+  id, name, brand, barcode, source_food_code, image_url, storage_image_path,
   flavor_code,
   net_content_amount, net_content_unit,
   package_unit_count, package_unit_name, package_unit_amount,
@@ -507,47 +508,6 @@ function isNoRowsError(error) {
   return error.code === 'PGRST116' || (error.message ?? '').toLowerCase().includes('no rows');
 }
 
-function mergeProducts(primary, secondary, limit = 50) {
-  const seen = new Set();
-  const merged = [];
-  for (const product of [...(primary ?? []), ...(secondary ?? [])]) {
-    const key = String(product?.id ?? '');
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    merged.push(product);
-    if (merged.length >= limit) break;
-  }
-  return merged;
-}
-
-async function fetchProductsByIds(ids) {
-  const uniqueIds = [...new Set((ids ?? []).filter((id) => id != null))];
-  if (uniqueIds.length === 0) return [];
-
-  if (optionalJoinsAvailable) {
-    const { data, error } = await supabase
-      .from('foods')
-      .select(LIST_SELECT_BASE(true))
-      .eq('is_active', true)
-      .eq('food_type_categories.is_active', true)
-      .in('id', uniqueIds);
-
-    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
-    if (!isOptionalJoinError(error)) throw error;
-    optionalJoinsAvailable = false;
-  }
-
-  const { data, error } = await supabase
-    .from('foods')
-    .select(LIST_SELECT_BASE(false))
-    .eq('is_active', true)
-    .eq('food_type_categories.is_active', true)
-    .in('id', uniqueIds);
-
-  if (error) throw error;
-  return onlyActiveCategoryRows(data).map(transformProduct);
-}
-
 async function searchAliasProductIds(query) {
   const normalized = normalizeSearchAlias(query);
   if (!normalized) return [];
@@ -555,7 +515,7 @@ async function searchAliasProductIds(query) {
     .from('food_aliases')
     .select('food_id')
     .ilike('normalized_alias', `%${normalized}%`)
-    .limit(50);
+    .limit(200);
 
   if (error) {
     if (isOptionalJoinError(error)) {
@@ -565,93 +525,6 @@ async function searchAliasProductIds(query) {
     throw error;
   }
   return [...new Set((data ?? []).map((row) => row.food_id).filter((id) => id != null))];
-}
-
-async function searchFoodTypeCodes(query) {
-  const escaped = query.replaceAll('%', '\\%').replaceAll('_', '\\_');
-  const { data, error } = await supabase
-    .from('food_type_categories')
-    .select('code')
-    .eq('is_active', true)
-    .or(`code.ilike.%${escaped}%,name_ko.ilike.%${escaped}%`)
-    .limit(20);
-
-  if (error) throw error;
-  return [...new Set((data ?? []).map((row) => row.code).filter(Boolean))];
-}
-
-async function searchFlavorCodes(query) {
-  const escaped = query.replaceAll('%', '\\%').replaceAll('_', '\\_');
-  const { data, error } = await supabase
-    .from('food_flavors')
-    .select('code')
-    .eq('is_active', true)
-    .or(`code.ilike.%${escaped}%,name_ko.ilike.%${escaped}%`)
-    .limit(20);
-
-  if (error) throw error;
-  return [...new Set((data ?? []).map((row) => row.code).filter(Boolean))];
-}
-
-async function fetchProductsByValues(column, values) {
-  const uniqueValues = [...new Set((values ?? []).filter(Boolean))];
-  if (uniqueValues.length === 0) return [];
-
-  if (optionalJoinsAvailable) {
-    const { data, error } = await supabase
-      .from('foods')
-      .select(LIST_SELECT_BASE(true))
-      .eq('is_active', true)
-      .eq('food_type_categories.is_active', true)
-      .in(column, uniqueValues)
-      .order('updated_at', { ascending: false })
-      .limit(50);
-
-    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
-    if (!isOptionalJoinError(error)) throw error;
-    optionalJoinsAvailable = false;
-  }
-
-  const { data, error } = await supabase
-    .from('foods')
-    .select(LIST_SELECT_BASE(false))
-    .eq('is_active', true)
-    .eq('food_type_categories.is_active', true)
-    .in(column, uniqueValues)
-    .order('updated_at', { ascending: false })
-    .limit(50);
-
-  if (error) throw error;
-  return onlyActiveCategoryRows(data).map(transformProduct);
-}
-
-async function searchProductsByFilter(orFilter) {
-  if (optionalJoinsAvailable) {
-    const { data, error } = await supabase
-      .from('foods')
-      .select(LIST_SELECT_BASE(true))
-      .eq('is_active', true)
-      .eq('food_type_categories.is_active', true)
-      .or(orFilter)
-      .order('updated_at', { ascending: false })
-      .limit(50);
-
-    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
-    if (!isOptionalJoinError(error)) throw error;
-    optionalJoinsAvailable = false;
-  }
-
-  const { data, error } = await supabase
-    .from('foods')
-    .select(LIST_SELECT_BASE(false))
-    .eq('is_active', true)
-    .eq('food_type_categories.is_active', true)
-    .or(orFilter)
-    .order('updated_at', { ascending: false })
-    .limit(50);
-
-  if (error) throw error;
-  return onlyActiveCategoryRows(data).map(transformProduct);
 }
 
 // ── 제품 목록 전체 조회
@@ -780,22 +653,39 @@ export function fetchProductsByCategory(categoryCode, { force = false } = {}) {
   return request;
 }
 
-// ── 텍스트 검색 (이름/브랜드/식품유형코드/바코드/원천코드)
+// ── 텍스트 검색
+// 전체 카탈로그에 토큰 AND 검색을 적용하고, alias 테이블에서 토큰별 매칭을 보강한다.
+// 목록 조회와 검색 조회가 같은 매칭 규칙을 사용하므로 띄어쓰기/중간 단어에 결과가 흔들리지 않는다.
 export async function searchProductsRemote(query) {
-  const escaped = query.replaceAll('%', '\\%').replaceAll('_', '\\_');
-  const orFilter = `name.ilike.%${escaped}%,brand.ilike.%${escaped}%,food_type_category_code.ilike.%${escaped}%,flavor_code.ilike.%${escaped}%,barcode.ilike.%${escaped}%,source_food_code.ilike.%${escaped}%`;
+  const tokens = tokenizeSearchQuery(query);
+  if (tokens.length === 0) return [];
 
-  const [direct, foodTypeCodes, flavorCodes, aliasIds] = await Promise.all([
-    searchProductsByFilter(orFilter),
-    searchFoodTypeCodes(query),
-    searchFlavorCodes(query),
-    searchAliasProductIds(query),
+  const [products, aliasIdGroups] = await Promise.all([
+    fetchProducts(),
+    Promise.all(tokens.map(searchAliasProductIds)),
   ]);
-  const [foodTypeMatches, flavorMatches, aliasMatches] = await Promise.all([
-    fetchProductsByValues('food_type_category_code', foodTypeCodes),
-    fetchProductsByValues('flavor_code', flavorCodes),
-    fetchProductsByIds(aliasIds),
-  ]);
+  const aliasTokensByProductId = new Map();
 
-  return mergeProducts(direct, [...foodTypeMatches, ...flavorMatches, ...aliasMatches]);
+  tokens.forEach((token, index) => {
+    for (const id of aliasIdGroups[index] ?? []) {
+      const key = String(id);
+      const matchedTokens = aliasTokensByProductId.get(key) ?? [];
+      matchedTokens.push(token);
+      aliasTokensByProductId.set(key, matchedTokens);
+    }
+  });
+
+  const searchableProducts = products.map((product) => {
+    const aliasTokens = aliasTokensByProductId.get(String(product.id));
+    if (!aliasTokens?.length) return product;
+    return {
+      ...product,
+      _raw: {
+        ...product._raw,
+        aliases: [...(product._raw?.aliases ?? []), ...aliasTokens],
+      },
+    };
+  });
+
+  return searchProducts(query, searchableProducts);
 }

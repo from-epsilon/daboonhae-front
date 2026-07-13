@@ -1,6 +1,7 @@
 // 검색 인덱스
-// - alias 사전: 영어 ↔ 한국어 매칭, 띄어쓰기 무시
-// - 매칭 규칙은 이 파일에서만 관리 (추후 필드 추가/스코어링 변경 용이)
+// - 공백/구두점으로 나눈 모든 검색어 토큰이 제품 정보에 있으면 매칭(AND)
+// - alias 사전은 각 토큰별로 영어 ↔ 한국어 확장
+// - 완전 일치/연속 구문 일치를 우선 정렬
 
 const ALIAS = {
   protein: ['단백질', '프로틴'],
@@ -24,18 +25,33 @@ const ALIAS = {
   konjac: ['곤약'],
 };
 
+const TOKEN_SEPARATOR = /[\s_\-./()[\]{}%,·・:：]+/g;
+
 function normalize(text) {
-  return String(text ?? '').toLowerCase().replace(/\s+/g, '');
+  return String(text ?? '')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(TOKEN_SEPARATOR, '');
 }
 
-function expandQueryTokens(query) {
-  const norm = normalize(query);
-  if (!norm) return [];
-  const tokens = new Set([norm]);
-  if (ALIAS[norm]) {
-    for (const alias of ALIAS[norm]) tokens.add(normalize(alias));
-  }
-  return [...tokens];
+export function tokenizeSearchQuery(query) {
+  return String(query ?? '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .split(TOKEN_SEPARATOR)
+    .map(normalize)
+    .filter(Boolean);
+}
+
+function expandToken(token) {
+  const variants = new Set([token]);
+  for (const alias of ALIAS[token] ?? []) variants.add(normalize(alias));
+  return [...variants].filter(Boolean);
+}
+
+function queryTokenGroups(query) {
+  return tokenizeSearchQuery(query).map(expandToken);
 }
 
 function buildSearchableText(product) {
@@ -43,19 +59,62 @@ function buildSearchableText(product) {
     product.name,
     product.brand,
     product.category,
+    product.categoryCode,
+    product.flavorName,
+    product.flavorCode,
+    product.sizeVariantLabel,
+    product.family?.name,
+    ...(product._raw?.aliases ?? []),
+    product._raw?.barcode,
+    product._raw?.sourceFoodCode,
     ...(product.ingredients?.proteinSources ?? []),
     ...(product.ingredients?.sweeteners ?? []),
   ];
   return normalize(parts.join(' '));
 }
 
+function includesAny(text, variants) {
+  return variants.some((variant) => text.includes(variant));
+}
+
+function matchScore(query, product, groups) {
+  const phrase = normalize(query);
+  const name = normalize(product.name);
+  const brand = normalize(product.brand);
+  const aliases = normalize((product._raw?.aliases ?? []).join(' '));
+  let score = 0;
+
+  if (name === phrase) score += 1000;
+  else if (name.includes(phrase)) score += 700;
+  else if (`${brand}${name}`.includes(phrase)) score += 650;
+  else if (aliases.includes(phrase)) score += 600;
+
+  for (const variants of groups) {
+    if (includesAny(name, variants)) score += 40;
+    else if (includesAny(brand, variants)) score += 30;
+    else if (includesAny(aliases, variants)) score += 20;
+    else score += 10;
+  }
+  return score;
+}
+
 export function searchProducts(query, products) {
-  const tokens = expandQueryTokens(query);
-  if (tokens.length === 0) return [];
-  return products.filter((product) => {
-    const haystack = buildSearchableText(product);
-    return tokens.some((t) => haystack.includes(t));
-  });
+  const groups = queryTokenGroups(query);
+  if (groups.length === 0) return [];
+
+  return products
+    .map((product, index) => ({ product, index }))
+    .filter(({ product }) => {
+      const haystack = buildSearchableText(product);
+      return groups.every((variants) => includesAny(haystack, variants));
+    })
+    .map(({ product, index }) => ({
+      product,
+      index,
+      score: matchScore(query, product, groups),
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map(({ product }) => product);
 }
 
 export function getSuggestions(query, products, limit = 8) {
