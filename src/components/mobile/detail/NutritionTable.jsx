@@ -37,10 +37,12 @@ const REQUIRED_ORDER = [
 
 const REQUIRED_CODES = new Set(REQUIRED_ORDER.map(r => r.code));
 
-function formatValue(fn) {
-  if (fn.amount_text) return fn.amount_text;
+function formatValue(fn, ratio = 1) {
+  if (ratio === 1 && fn.amount_text) return fn.amount_text;
   const unit = fn.unit || fn.nutrients?.default_unit || '';
-  return fn.amount != null ? `${fn.amount}${unit}` : '-';
+  if (fn.amount == null) return '-';
+  const converted = Math.round(fn.amount * ratio * 10) / 10;
+  return `${converted}${unit}`;
 }
 
 function getEmphasis(code, amount) {
@@ -64,7 +66,33 @@ function NutritionRow({ label, display, emphasis, indent = false }) {
   );
 }
 
-export function NutritionTable({ nutrition, serving, foodNutrients, categoryCode, children }) {
+export function NutritionTable({
+  nutrition,
+  serving,
+  foodNutrients,
+  categoryCode,
+  servingSize,
+  servingUnit,
+  unitPrice,
+  children,
+}) {
+  const [basis, setBasis] = useState('serving');
+  const basisUnit = servingUnit?.includes('ml') ? 'ml' : 'g';
+  const calories = Number(nutrition?.calories);
+  const basisOptions = [
+    { key: 'serving', label: '1회 제공량', enabled: true },
+    { key: 'per100', label: `100${basisUnit}`, enabled: servingSize > 0 && servingSize !== 100 },
+    { key: 'kcal', label: '100kcal', enabled: calories > 0 },
+    { key: 'price', label: '1,000원', enabled: unitPrice > 0 },
+  ].filter((option) => option.enabled);
+  const activeBasis = basisOptions.some((option) => option.key === basis) ? basis : 'serving';
+  const ratio = (() => {
+    if (activeBasis === 'per100') return 100 / servingSize;
+    if (activeBasis === 'kcal') return 100 / calories;
+    if (activeBasis === 'price') return 1000 / unitPrice;
+    return 1;
+  })();
+
   // 필수 영양소(탄단지당나트륨 등)와 그 외 미량성분(아미노산 등)을 분리
   // - 미량성분은 기본 접힘 → 핵심 지표가 묻히지 않도록
   const { mainRows, extraRows } = useMemo(() => {
@@ -84,8 +112,8 @@ export function NutritionTable({ nutrition, serving, foodNutrients, categoryCode
       mainRows.push({
         key: spec.code,
         label: fn.nutrients?.name_ko || spec.code,
-        display: formatValue(fn),
-        emphasis: getEmphasis(spec.code, fn.amount),
+        display: formatValue(fn, ratio),
+        emphasis: activeBasis === 'serving' ? getEmphasis(spec.code, fn.amount) : null,
         indent: spec.indent,
       });
     }
@@ -96,7 +124,7 @@ export function NutritionTable({ nutrition, serving, foodNutrients, categoryCode
         mainRows.push({
           key: 'leucine',
           label: leucine.nutrients?.name_ko || '류신',
-          display: formatValue(leucine),
+          display: formatValue(leucine, ratio),
           emphasis: null,
         });
       }
@@ -108,12 +136,12 @@ export function NutritionTable({ nutrition, serving, foodNutrients, categoryCode
       .map(fn => ({
         key: fn.nutrient_code,
         label: fn.nutrients?.name_ko || fn.nutrient_code,
-        display: formatValue(fn),
+        display: formatValue(fn, ratio),
         emphasis: null,
       }));
 
     return { mainRows, extraRows };
-  }, [categoryCode, foodNutrients]);
+  }, [activeBasis, categoryCode, foodNutrients, ratio]);
 
   const [showExtras, setShowExtras] = useState(false);
   const hasExtras = extraRows.length > 0;
@@ -124,8 +152,29 @@ export function NutritionTable({ nutrition, serving, foodNutrients, categoryCode
     <section className="m-detail-card m-detail-nutri">
       <header className="m-detail-card-head">
         <h2 className="m-detail-card-title">영양성분</h2>
-        {serving && <span className="m-detail-card-sub">{serving} 기준</span>}
+        {basisOptions.length > 1 ? (
+          <label className="m-detail-nutri-basis">
+            <span className="sr-only">영양성분 환산 기준</span>
+            <select
+              className="m-detail-nutri-basis-select"
+              value={activeBasis}
+              onChange={(event) => setBasis(event.target.value)}
+              aria-label="영양성분 환산 기준"
+            >
+              {basisOptions.map((option) => (
+                <option key={option.key} value={option.key}>{option.label} 기준</option>
+              ))}
+            </select>
+          </label>
+        ) : serving ? (
+          <span className="m-detail-card-sub">{serving} 기준</span>
+        ) : null}
       </header>
+      {activeBasis === 'price' && (
+        <p className="m-detail-nutri-basis-note">
+          등록된 구매링크의 개당 최저가 기준이며, 실제 가격과 다를 수 있습니다.
+        </p>
+      )}
       <ul className="m-detail-nutri-list">
         {mainRows.map((r) => (
           <NutritionRow

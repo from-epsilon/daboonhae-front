@@ -1106,6 +1106,23 @@ img.product-thumb { object-fit: cover; }
   transition: border-color 0.15s, color 0.15s, box-shadow 0.15s;
 }
 .site-feedback-fab:hover { border-color: var(--c-primary); color: var(--c-primary); }
+.site-feedback-fab-label {
+  overflow: hidden;
+  max-width: 100px;
+  white-space: nowrap;
+  transition: max-width 160ms ease, opacity 120ms ease;
+}
+.site-feedback-fab.is-compact {
+  width: 40px;
+  min-width: 40px;
+  padding-left: 0;
+  padding-right: 0;
+  justify-content: center;
+}
+.site-feedback-fab.is-compact .site-feedback-fab-label {
+  max-width: 0;
+  opacity: 0;
+}
 .site-feedback-panel {
   position: absolute; right: 0; bottom: calc(100% + 8px);
   width: 300px; background: var(--c-surface); border: 1px solid var(--c-border);
@@ -1136,6 +1153,12 @@ img.product-thumb { object-fit: cover; }
   .site-feedback { right: 12px; bottom: 12px; }
   .site-feedback-fab {
     padding: 8px 12px; min-height: 36px; font-size: 12px; gap: 4px;
+  }
+  .site-feedback-fab.is-compact {
+    width: 36px;
+    min-width: 36px;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
@@ -1342,6 +1365,21 @@ img.product-thumb { object-fit: cover; }
   background: var(--green-100);
   color: var(--green-800);
   box-shadow: 0 0 0 2px rgba(0, 134, 0, 0.08);
+}
+
+.m-foodcard-list-actions {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.m-foodcard-list-actions .d-foodcard-wide-action {
+  width: 29px;
+  height: 29px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
 }
 
 .header-nav {

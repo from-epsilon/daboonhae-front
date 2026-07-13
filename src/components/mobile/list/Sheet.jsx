@@ -112,6 +112,7 @@ export function Sheet({ open, onClose, title, height = '75vh', children, footer 
           style={{
             flex: 1,
             overflowY: 'auto',
+            overflowX: 'hidden',
             padding: '12px 16px 16px',
           }}
         >

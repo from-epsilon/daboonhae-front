@@ -5,7 +5,7 @@
 import { getHighlightValue } from '../../../data/categoryCardMetrics.js';
 import { getProteinDrinkScoreModel } from '../../../data/proteinDrinkScore.js';
 import { getBestUnitOffer } from '../../../data/purchaseLinks.js';
-import { SummaryPurchaseLink } from '../../summary/SummaryCard.jsx';
+import { SummaryCompareButton, SummaryPurchaseLink, SummaryWishlistButton } from '../../summary/SummaryCard.jsx';
 
 // 목적별 핵심 성분 스탯 — 라벨 위 + 수치 아래 정렬 컬럼 (1~3개, 1순위 강조)
 // - 카드 간 같은 위치에 같은 성분이 와서 가로 스캔으로 비교 가능
@@ -53,7 +53,7 @@ function HighlightStats({ food, metrics }) {
 // - onClick 시 디테일 진입 (상위에서 처리)
 // - rank: 1부터 시작하는 순위 (전달 시 썸네일 좌상단 배지로 표시, 1~3위는 브랜드 그린)
 // - metrics: 목적별 핵심 성분 정의 (없으면 기본 매크로 표시)
-function RecommendCard({ food, rank, metrics, onClick }) {
+function RecommendCard({ food, rank, metrics, onClick, onCompare, inCompare, onWishlist, inWishlist }) {
   const bestOffer = getBestUnitOffer(food.purchaseLinks);
 
   return (
@@ -70,6 +70,10 @@ function RecommendCard({ food, rank, metrics, onClick }) {
         ) : (
           <div className="m-home-rec-thumb-placeholder" />
         )}
+        <div className="m-home-rec-actions">
+          <SummaryWishlistButton food={food} onWishlist={onWishlist} inWishlist={inWishlist} />
+          <SummaryCompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+        </div>
       </div>
       {/* 텍스트 영역 */}
       <div className="m-home-rec-meta">
@@ -97,7 +101,16 @@ function RecommendCard({ food, rank, metrics, onClick }) {
 // - onItemClick(food)
 // - showRank: true 시 정렬 순서대로 1위부터 순위 배지 표시
 // - metrics: 목적별 핵심 성분 정의 (getPurposeHighlightMetrics 결과)
-export function RecommendSlider({ items, onItemClick, showRank = false, metrics }) {
+export function RecommendSlider({
+  items,
+  onItemClick,
+  onCompare,
+  hasCompare,
+  onWishlist,
+  hasWishlist,
+  showRank = false,
+  metrics,
+}) {
   if (!items || items.length === 0) {
     return <div className="m-home-empty">추천할 식품이 없습니다.</div>;
   }
@@ -110,6 +123,10 @@ export function RecommendSlider({ items, onItemClick, showRank = false, metrics 
             rank={showRank ? i + 1 : null}
             metrics={metrics}
             onClick={() => onItemClick && onItemClick(food)}
+            onCompare={onCompare ? () => onCompare(food) : undefined}
+            inCompare={hasCompare?.(food.id)}
+            onWishlist={onWishlist ? () => onWishlist(food) : undefined}
+            inWishlist={hasWishlist?.(food.id)}
           />
         </div>
       ))}

@@ -11,12 +11,20 @@ export default function SiteFeedbackButton() {
   const [text, setText] = useState('');
   const [status, setStatus] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [compact, setCompact] = useState(false);
   const closeTimerRef = useRef(null);
   const { pathname } = useLocation();
 
   useEffect(() => () => {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
   }, []);
+
+  useEffect(() => {
+    const updateCompact = () => setCompact(window.scrollY > 80);
+    updateCompact();
+    window.addEventListener('scroll', updateCompact, { passive: true });
+    return () => window.removeEventListener('scroll', updateCompact);
+  }, [pathname]);
 
   // 상세·비교 페이지에서는 숨김 (플로팅 버튼이 표/CTA를 가림)
   if (pathname.startsWith('/product/') || pathname === '/compare') return null;
@@ -110,12 +118,13 @@ export default function SiteFeedbackButton() {
         </div>
       )}
       <button
-        className="site-feedback-fab"
+        className={`site-feedback-fab${compact ? ' is-compact' : ''}`}
         onClick={toggleOpen}
         aria-label="의견을 주세요"
+        title={compact ? '의견을 주세요' : undefined}
       >
         <MessageCircle size={16} aria-hidden />
-        <span>의견을 주세요</span>
+        <span className="site-feedback-fab-label">의견을 주세요</span>
       </button>
     </div>
   );

@@ -1,4 +1,4 @@
-import { IconCheck, IconChevron, IconCompare, IconHeart, IconPlus } from '../ds/Icons.jsx';
+import { IconChevron, IconCompare, IconHeart } from '../ds/Icons.jsx';
 import { computeMetricValues, getHighlightValue } from '../../data/categoryCardMetrics.js';
 import { productPath } from '../../data/productUrl.js';
 import { getProteinDrinkScoreModel } from '../../data/proteinDrinkScore.js';
@@ -27,7 +27,7 @@ function SummaryThumb({ src, alt }) {
   return <img className="summary-card-thumb-img" src={src} alt={alt ?? ''} loading="lazy" />;
 }
 
-function SummaryCompareButton({ food, onCompare, inCompare }) {
+export function SummaryCompareButton({ food, onCompare, inCompare }) {
   if (!onCompare) return null;
   return (
     <button
@@ -46,7 +46,7 @@ function SummaryCompareButton({ food, onCompare, inCompare }) {
   );
 }
 
-function SummaryWishlistButton({ food, onWishlist, inWishlist }) {
+export function SummaryWishlistButton({ food, onWishlist, inWishlist }) {
   if (!onWishlist) return null;
   return (
     <button
@@ -222,25 +222,6 @@ const MOBILE_RECENT_METRICS = [
   { key: 'sugar', label: '당류', unit: 'g', perVol: true },
 ];
 
-function MobileSummaryCompareButton({ food, onCompare, inCompare }) {
-  if (!onCompare) return null;
-  return (
-    <button
-      type="button"
-      className={`mobile-summary-store${inCompare ? ' is-in' : ''}`}
-      onClick={(event) => {
-        event.stopPropagation();
-        onCompare(food);
-      }}
-      aria-pressed={inCompare}
-      aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
-    >
-      {inCompare ? <IconCheck size={13} stroke={2.2} /> : <IconPlus size={13} stroke={2.2} />}
-      <span>비교함</span>
-    </button>
-  );
-}
-
 function MobileSummaryMetrics({ food }) {
   if (food?.categoryCode === 'protein_drink') {
     return <SummaryStats stats={getProteinDrinkStats(food)} />;
@@ -269,7 +250,7 @@ function MobileSummaryMetrics({ food }) {
 }
 
 // 모바일 메인 '최근 추가' 전용 행 카드. 모바일 목록 카드와 구현을 공유하지 않는다.
-export function MobileSummaryListCard({ food, onClick, onCompare, inCompare }) {
+export function MobileSummaryListCard({ food, onClick, onCompare, inCompare, onWishlist, inWishlist }) {
   if (!food) return null;
   const bestOffer = getBestUnitOffer(food.purchaseLinks);
   return (
@@ -277,8 +258,11 @@ export function MobileSummaryListCard({ food, onClick, onCompare, inCompare }) {
       <div className="mobile-summary-media">
         <div className="mobile-summary-thumb">
           <SummaryThumb src={food.thumb} alt={food.name} />
+          <div className="summary-card-actions">
+            <SummaryWishlistButton food={food} onWishlist={onWishlist} inWishlist={inWishlist} />
+            <SummaryCompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
+          </div>
         </div>
-        <MobileSummaryCompareButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div className="mobile-summary-body">
         <div className="mobile-summary-brand">{food.brand}</div>

@@ -89,24 +89,42 @@ function CompareButton({ food, onCompare, inCompare }) {
   );
 }
 
-// 리스트 카드 비교함 버튼 — 썸네일 아래 라벨 버튼
-// - 담김 여부는 아이콘과 컬러로 표시하고, 텍스트는 비교함으로 고정
-function ListStoreButton({ food, onCompare, inCompare }) {
-  if (!onCompare) return null;
+// 모바일 리스트 카드 액션 — 데스크탑과 동일한 하트/비교 아이콘 구성
+function ListActionButtons({ food, onCompare, inCompare, onWishlist, inWishlist }) {
+  if (!onCompare && !onWishlist) return null;
   return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        onCompare(food);
-      }}
-      aria-pressed={inCompare}
-      aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
-      className={`m-foodcard-store${inCompare ? ' is-in' : ''}`}
-    >
-      {inCompare ? <IconCheck size={13} stroke={2.2} /> : <IconPlus size={13} stroke={2.2} />}
-      <span>비교함</span>
-    </button>
+    <div className="m-foodcard-list-actions">
+      {onWishlist && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onWishlist(food);
+          }}
+          aria-pressed={inWishlist}
+          aria-label={inWishlist ? `${food.name} 찜함에서 빼기` : `${food.name} 찜하기`}
+          title={inWishlist ? '찜함에서 빼기' : '찜하기'}
+          className={`d-foodcard-wide-action d-foodcard-wide-action--like${inWishlist ? ' is-in' : ''}`}
+        >
+          <IconHeart size={15} stroke={1.8} fill={inWishlist ? 'currentColor' : 'none'} />
+        </button>
+      )}
+      {onCompare && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCompare(food);
+          }}
+          aria-pressed={inCompare}
+          aria-label={inCompare ? `${food.name} 비교함에서 빼기` : `${food.name} 비교함에 담기`}
+          title={inCompare ? '비교함에서 빼기' : '비교함에 담기'}
+          className={`d-foodcard-wide-action d-foodcard-wide-action--compare${inCompare ? ' is-in' : ''}`}
+        >
+          <IconCompare size={15} stroke={1.8} />
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -154,7 +172,7 @@ function ServingMeta({ food, showCalories = false, variant }) {
 
 // list 레이아웃: 좌측 88px 컬럼(썸네일 + 담기 버튼) + 텍스트 영역
 // - 담긴 제품은 카드 좌측에 그린 강조선 + 버튼 '담김' 상태로 표시
-function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, sortKey }) {
+function FoodCardList({ food, onClick, onCompare, inCompare, onWishlist, inWishlist, tabId, subLabel, sortKey }) {
   const config = getCategoryCardConfig(tabId, subLabel);
   return (
     <div
@@ -168,9 +186,10 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, so
         cursor: 'pointer',
       }}
     >
-      <div style={{ flexShrink: 0, width: 88, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ flexShrink: 0, width: 88 }}>
         <div
           style={{
+            position: 'relative',
             width: 88,
             height: 88,
             borderRadius: 'var(--radius-sm)',
@@ -179,8 +198,14 @@ function FoodCardList({ food, onClick, onCompare, inCompare, tabId, subLabel, so
           }}
         >
           <ThumbImage src={food.thumb} alt={food.name} />
+          <ListActionButtons
+            food={food}
+            onCompare={onCompare}
+            inCompare={inCompare}
+            onWishlist={onWishlist}
+            inWishlist={inWishlist}
+          />
         </div>
-        <ListStoreButton food={food} onCompare={onCompare} inCompare={inCompare} />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
@@ -810,7 +835,7 @@ function ReviewMeta({ reviewCount }) {
 export function FoodCard({ food, onClick, layout = 'grid', onCompare, inCompare, onWishlist, inWishlist, sortKey, tabId, subLabel, showPurchase = false, metrics }) {
   if (!food) return null;
   if (layout === 'list') {
-    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;
+    return <FoodCardList food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} onWishlist={onWishlist} inWishlist={inWishlist} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;
   }
   if (layout === 'wide') {
     return <FoodCardWide food={food} onClick={onClick} onCompare={onCompare} inCompare={inCompare} onWishlist={onWishlist} inWishlist={inWishlist} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />;

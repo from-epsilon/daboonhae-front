@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { useCompare } from '../../store/CompareContext.jsx';
+import { useWishlist } from '../../store/WishlistContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { RecommendSlider } from '../../components/mobile/main/RecommendSlider.jsx';
 import { CategoryTabs } from '../../components/mobile/main/CategoryTabs.jsx';
@@ -100,7 +101,8 @@ function HomeSkeleton() {
 
 export default function MainPageMobile() {
   const navigate = useNavigate();
-  const { toggle, count } = useCompare();
+  const { toggle, count, has } = useCompare();
+  const wishlist = useWishlist();
   const { products: PRODUCTS, loading } = useProducts();
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -115,6 +117,7 @@ export default function MainPageMobile() {
     navigate(q ? `/list?q=${encodeURIComponent(q)}` : '/list');
   };
   const handleCompare = () => navigate('/compare');
+  const handleWishlist = () => navigate('/wishlist');
   const handleFoodClick = (food) => navigate(productPath(food));
   const handleToggleCompare = (food) => toggle(food.id);
 
@@ -122,7 +125,14 @@ export default function MainPageMobile() {
 
   if (loading) return (
     <>
-      <AppBar onSearch={handleSearch} onCompare={handleCompare} compareCount={count} onLogo={handleLogo} />
+      <AppBar
+        onSearch={handleSearch}
+        onCompare={handleCompare}
+        compareCount={count}
+        onWishlist={handleWishlist}
+        wishlistCount={wishlist.count}
+        onLogo={handleLogo}
+      />
       <HomeSkeleton />
       <SearchSheet
         open={searchOpen}
@@ -140,6 +150,8 @@ export default function MainPageMobile() {
         onSearch={handleSearch}
         onCompare={handleCompare}
         compareCount={count}
+        onWishlist={handleWishlist}
+        wishlistCount={wishlist.count}
         onLogo={handleLogo}
       />
 
@@ -178,6 +190,10 @@ export default function MainPageMobile() {
             key={recTabId}
             items={recommended}
             onItemClick={handleFoodClick}
+            onCompare={handleToggleCompare}
+            hasCompare={has}
+            onWishlist={(food) => wishlist.toggle(food.id)}
+            hasWishlist={wishlist.has}
             showRank
             metrics={getPurposeHighlightMetrics(recTabId)}
           />

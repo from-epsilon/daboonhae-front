@@ -3,6 +3,8 @@
 //   - onSearch: 검색 박스 클릭 핸들러
 //   - onCompare: 비교함 아이콘 클릭 핸들러
 //   - compareCount: 비교함 담긴 개수 (배지 표시용)
+//   - onWishlist: 찜함 아이콘 클릭 핸들러
+//   - wishlistCount: 찜한 제품 개수 (배지 표시용)
 //   - onLogo?: 로고(브랜드) 클릭 핸들러 (홈 이동용)
 //   - title?: 표시할 페이지 제목 (전달 시 로고+검색박스 자리에 텍스트만 표시)
 //   - onBack?: 좌측 IconBack 클릭 핸들러 (디테일 페이지용)
@@ -11,10 +13,10 @@
 //   - 우측 IconCompare + 카운트 배지로 교체
 //   - onBack/title 모드 추가 (디테일/서브 페이지 대응)
 import { useNavigate } from 'react-router-dom';
-import { IconSearch, IconCompare, IconBack } from './Icons.jsx';
+import { IconSearch, IconCompare, IconBack, IconHeart } from './Icons.jsx';
 
 // 비교함 카운트 배지 (compareCount > 0 일 때만)
-function CompareBadge({ count }) {
+function ShortcutBadge({ count }) {
   if (!count || count <= 0) return null;
   return (
     <span
@@ -57,7 +59,44 @@ function BrandLogo() {
   );
 }
 
-export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, onBack }) {
+function ShortcutButton({ onClick, label, count = 0, children }) {
+  if (typeof onClick !== 'function') return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        position: 'relative',
+        background: 'transparent',
+        border: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        color: 'var(--text-primary)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 28,
+        height: 28,
+        flexShrink: 0,
+      }}
+    >
+      {children}
+      <ShortcutBadge count={count} />
+    </button>
+  );
+}
+
+export function AppBar({
+  onSearch,
+  onCompare,
+  compareCount = 0,
+  onWishlist,
+  wishlistCount = 0,
+  onLogo,
+  title,
+  onBack,
+}) {
   const isSubPage = typeof onBack === 'function' || !!title;
   const navigate = useNavigate();
   // 로고 클릭 → onLogo 우선, 없으면 기본적으로 홈 이동 (데스크톱 포함 전역 동작)
@@ -117,29 +156,15 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, o
           >
             {title}
           </div>
-          {typeof onCompare === 'function' ? (
-            <button
-              type="button"
-              onClick={onCompare}
-              aria-label="비교함"
-              style={{
-                position: 'relative',
-                background: 'transparent',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                color: 'var(--text-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 28,
-                height: 28,
-                flexShrink: 0,
-              }}
-            >
-              <IconCompare />
-              <CompareBadge count={compareCount} />
-            </button>
+          {(typeof onWishlist === 'function' || typeof onCompare === 'function') ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <ShortcutButton onClick={onWishlist} label="찜함" count={wishlistCount}>
+                <IconHeart />
+              </ShortcutButton>
+              <ShortcutButton onClick={onCompare} label="비교함" count={compareCount}>
+                <IconCompare />
+              </ShortcutButton>
+            </div>
           ) : (
             <div aria-hidden="true" style={{ width: 28, height: 28, flexShrink: 0 }} />
           )}
@@ -202,28 +227,12 @@ export function AppBar({ onSearch, onCompare, compareCount = 0, onLogo, title, o
               성분·브랜드·영양소 검색
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => typeof onCompare === 'function' && onCompare()}
-            aria-label="비교함"
-            style={{
-              position: 'relative',
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              color: 'var(--text-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 28,
-              height: 28,
-              flexShrink: 0,
-            }}
-          >
+          <ShortcutButton onClick={onWishlist} label="찜함" count={wishlistCount}>
+            <IconHeart />
+          </ShortcutButton>
+          <ShortcutButton onClick={onCompare} label="비교함" count={compareCount}>
             <IconCompare />
-            <CompareBadge count={compareCount} />
-          </button>
+          </ShortcutButton>
         </>
       )}
     </div>

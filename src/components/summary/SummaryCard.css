@@ -217,11 +217,24 @@
 }
 
 .mobile-summary-thumb {
+  position: relative;
   width: 88px;
   height: 88px;
   overflow: hidden;
   border-radius: var(--radius-sm);
   background: var(--bg-white);
+}
+
+.mobile-summary-thumb .summary-card-actions {
+  right: 5px;
+  bottom: 5px;
+  gap: 5px;
+}
+
+.mobile-summary-thumb .d-foodcard-wide-action {
+  width: 29px;
+  height: 29px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
 }
 
 .mobile-summary-store {

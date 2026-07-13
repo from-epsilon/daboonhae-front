@@ -16,27 +16,50 @@ const TRUSTED_VENDOR_HOSTS = [
   { host: 'wellife.co.kr', vendorName: '대상웰라이프', allowSubdomains: true },
   { host: 'cjthemarket.com', vendorName: 'CJ더마켓', allowSubdomains: true },
 ];
+const LINKPRICE_HOST = 'click.linkprice.com';
+
+function parseSafeHttpsUrl(rawUrl) {
+  const url = new URL(rawUrl);
+  if (
+    url.protocol !== 'https:' ||
+    url.username ||
+    url.password ||
+    (url.port && url.port !== '443')
+  ) {
+    return null;
+  }
+  return url;
+}
+
+function vendorForHostname(hostname) {
+  return TRUSTED_VENDOR_HOSTS.find(({ host, allowSubdomains }) => (
+    hostname === host || (allowSubdomains && hostname.endsWith(`.${host}`))
+  ));
+}
 
 function getTrustedPurchaseTarget(rawUrl) {
   if (!rawUrl) return null;
 
   try {
-    const url = new URL(rawUrl);
-    if (
-      url.protocol !== 'https:' ||
-      url.username ||
-      url.password ||
-      (url.port && url.port !== '443')
-    ) {
-      return null;
-    }
+    const url = parseSafeHttpsUrl(rawUrl);
+    if (!url) return null;
 
     const hostname = url.hostname.toLowerCase();
-    const vendor = TRUSTED_VENDOR_HOSTS.find(({ host, allowSubdomains }) => (
-      hostname === host || (allowSubdomains && hostname.endsWith(`.${host}`))
-    ));
+    const vendor = vendorForHostname(hostname);
+    if (vendor) return { url: url.href, vendorName: vendor.vendorName };
 
-    return vendor ? { url: url.href, vendorName: vendor.vendorName } : null;
+    // CJ더마켓 제휴링크는 LinkPrice를 경유한다. 중계 호스트만 신뢰하지 않고
+    // tu 파라미터의 최종 목적지가 기존 허용 판매처인지까지 검증한다.
+    if (hostname === LINKPRICE_HOST) {
+      const destination = parseSafeHttpsUrl(url.searchParams.get('tu'));
+      if (!destination) return null;
+      const destinationVendor = vendorForHostname(destination.hostname.toLowerCase());
+      return destinationVendor
+        ? { url: url.href, vendorName: destinationVendor.vendorName }
+        : null;
+    }
+
+    return null;
   } catch {
     return null;
   }

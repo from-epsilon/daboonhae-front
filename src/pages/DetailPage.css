@@ -1800,7 +1800,7 @@
   top: calc(100% + 8px);
   right: 0;
   z-index: var(--z-dropdown);
-  display: block;
+  display: none;
   width: min(280px, calc(100vw - 48px));
   padding: 10px 12px;
   border-radius: var(--radius-sm);
@@ -1819,6 +1819,7 @@
 }
 .d-analysis-help:hover .d-analysis-help-bubble,
 .d-analysis-help:focus-visible .d-analysis-help-bubble {
+  display: block;
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -2570,6 +2571,36 @@
   .d-analysis-quality-panel {
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+  .d-analysis-amino-pattern-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .d-analysis-amino-pattern-rail {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 7px 12px;
+  }
+  .d-analysis-amino-pattern-legend {
+    width: auto;
+    grid-template-columns: 18px max-content;
+  }
+  .d-analysis-amino-pattern-chart {
+    box-sizing: border-box;
+    gap: 2px;
+    padding-inline: 8px;
+  }
+  .d-analysis-amino-pattern-value {
+    gap: 2px;
+    font-size: 10px;
+  }
+  .d-analysis-amino-pattern-value strong {
+    font-size: 10px;
+  }
+  .d-analysis-amino-pattern-value b {
+    display: none;
   }
   .d-analysis-judgment-grid {
     grid-template-columns: 1fr;

@@ -35,6 +35,7 @@ import {
 import { getFoodTypeByLabel, getFoodTypeByCode, getFoodTypeBySlug, getVisibleFoodTypes, isListProductVisible, categoryPath } from '../../data/categoryTabs.js';
 import NotFoundPage from '../NotFoundPage.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
+import { useWishlist } from '../../store/WishlistContext.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { productPath } from '../../data/productUrl.js';
 import './ListPage.css';
@@ -65,6 +66,7 @@ function ListSkeleton() {
 
 export default function ListPageMobile() {
   const { count: compareCount, toggle: toggleCompare, has: hasCompare } = useCompare();
+  const wishlist = useWishlist();
   const { products: PRODUCTS, loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -153,6 +155,7 @@ export default function ListPageMobile() {
   };
 
   const goCompare = () => navigate('/compare');
+  const goWishlist = () => navigate('/wishlist');
 
   const baseProducts = useMemo(() => {
     const visibleProducts = PRODUCTS.filter(isListProductVisible);
@@ -287,6 +290,8 @@ export default function ListPageMobile() {
         onSearch={() => setSearchOpen(true)}
         onCompare={goCompare}
         compareCount={compareCount}
+        onWishlist={goWishlist}
+        wishlistCount={wishlist.count}
         onLogo={() => navigate('/')}
       />
 
@@ -332,8 +337,10 @@ export default function ListPageMobile() {
                 subLabel={ft?.label}
                 sortKey={sortKey}
                 inCompare={hasCompare(p.id)}
+                inWishlist={wishlist.has(p.id)}
                 onClick={() => navigate(productPath(p))}
                 onCompare={(food) => toggleCompare(food.id)}
+                onWishlist={(food) => wishlist.toggle(food.id)}
               />
             );
           })}

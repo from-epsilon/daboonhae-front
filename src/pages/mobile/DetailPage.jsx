@@ -8,8 +8,9 @@ import { productPath, parseProductId } from '../../data/productUrl.js';
 import { useCategoryProducts, useProductDetail } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { getFoodTypeByCode } from '../../data/categoryTabs.js';
-import { getCategoryCardConfig } from '../../data/categoryCardMetrics.js';
+import { cheapestUnitPrice, getCategoryCardConfig } from '../../data/categoryCardMetrics.js';
 import { useCompare } from '../../store/CompareContext.jsx';
+import { useWishlist } from '../../store/WishlistContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
 import { Button } from '../../components/ds/Button.jsx';
 import { MacroRow } from '../../components/ds/MacroRow.jsx';
@@ -140,6 +141,7 @@ export default function DetailPageMobile() {
   const id = parseProductId(routeParam); // 슬러그-ID 또는 순수 ID에서 ID만 추출
   const navigate = useNavigate();
   const { has, toggle, isFull, max, count } = useCompare();
+  const wishlist = useWishlist();
   const activeSection = useActiveSection(id);
   const navRef = useRef(null);
 
@@ -188,6 +190,7 @@ export default function DetailPageMobile() {
   }
 
   const inCart = has(product.id);
+  const inWishlist = wishlist.has(product.id);
   const detailConfig = getDetailCardConfig(raw?.categoryCode);
   const showMacroSection = detailConfig?.showMacroBar !== false && !detailConfig?.macroBarVariant;
 
@@ -233,6 +236,8 @@ export default function DetailPageMobile() {
         title={product.name}
         onCompare={() => navigate('/compare')}
         compareCount={count}
+        onWishlist={() => navigate('/wishlist')}
+        wishlistCount={wishlist.count}
       />
 
       <div className="m-detail">
@@ -245,6 +250,7 @@ export default function DetailPageMobile() {
           sortBy="unit-first"
           pricePer={detailConfig?.purchasePricePer ?? 'unit'}
           servingsPerUnit={product.servingsPerUnit}
+          showUpdatedAt
         />
 
         {/* 2. 매크로 분포 */}
@@ -256,6 +262,9 @@ export default function DetailPageMobile() {
           serving={product.serving}
           foodNutrients={raw?._raw?.foodNutrients}
           categoryCode={raw?.categoryCode}
+          servingSize={product.servingSize}
+          servingUnit={product.servingUnit}
+          unitPrice={cheapestUnitPrice(product)}
         >
           <ProductNotice
             additionalContent={raw?._raw?.additionalContent}
@@ -302,6 +311,8 @@ export default function DetailPageMobile() {
       <StickyCTA
         inCart={inCart}
         onToggleCompare={handleToggleCompare}
+        inWishlist={inWishlist}
+        onToggleWishlist={() => wishlist.toggle(product.id)}
       />
     </>
   );

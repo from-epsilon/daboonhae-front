@@ -3,9 +3,11 @@
 // - 부모에서 정렬/슬라이스된 items를 받는다
 import { MobileSummaryListCard } from '../../summary/SummaryCard.jsx';
 import { useCompare } from '../../../store/CompareContext.jsx';
+import { useWishlist } from '../../../store/WishlistContext.jsx';
 
 export function RecentList({ items, onItemClick, onCompare }) {
   const { has } = useCompare();
+  const wishlist = useWishlist();
 
   if (!items || items.length === 0) {
     return <div className="m-home-empty">최근 추가된 식품이 없습니다.</div>;
@@ -19,6 +21,8 @@ export function RecentList({ items, onItemClick, onCompare }) {
             onClick={() => onItemClick && onItemClick(food)}
             onCompare={onCompare ? () => onCompare(food) : undefined}
             inCompare={has(food.id)}
+            onWishlist={() => wishlist.toggle(food.id)}
+            inWishlist={wishlist.has(food.id)}
           />
         </li>
       ))}
