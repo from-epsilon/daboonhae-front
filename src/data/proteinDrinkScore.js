@@ -28,27 +28,27 @@ export const AMINO_QUALITY_GRADE_ROWS = [
 ];
 
 export const CALORIE_EFFICIENCY_GRADE_ROWS = [
-  { range: '1.00+', grade: 'S+', label: '최상위 열량 효율' },
-  { range: '0.95~0.99', grade: 'S', label: '매우 우수' },
-  { range: '0.90~0.94', grade: 'A+', label: '우수' },
-  { range: '0.82~0.89', grade: 'A', label: '높은 편' },
-  { range: '0.72~0.81', grade: 'A-', label: '양호' },
-  { range: '0.62~0.71', grade: 'B+', label: '보통 이상' },
-  { range: '0.52~0.61', grade: 'B', label: '보통' },
-  { range: '0.35~0.51', grade: 'C', label: '낮은 편' },
-  { range: '0.35 미만', grade: 'D', label: '낮음' },
+  { range: '0.78+', grade: 'S+', label: '최상위 열량 효율' },
+  { range: '0.74~0.77', grade: 'S', label: '매우 우수' },
+  { range: '0.70~0.73', grade: 'A+', label: '우수' },
+  { range: '0.66~0.69', grade: 'A', label: '높은 편' },
+  { range: '0.60~0.65', grade: 'A-', label: '양호' },
+  { range: '0.52~0.59', grade: 'B+', label: '보통 이상' },
+  { range: '0.42~0.51', grade: 'B', label: '보통' },
+  { range: '0.25~0.41', grade: 'C', label: '낮은 편' },
+  { range: '0.25 미만', grade: 'D', label: '낮음' },
 ];
 
 export const PRICE_EFFICIENCY_GRADE_ROWS = [
-  { range: '1.80+', grade: 'S+', label: '최상위 가성비' },
-  { range: '1.50~1.79', grade: 'S', label: '매우 우수' },
-  { range: '1.35~1.49', grade: 'A+', label: '우수' },
-  { range: '1.20~1.34', grade: 'A', label: '높은 편' },
-  { range: '1.05~1.19', grade: 'A-', label: '양호' },
-  { range: '0.90~1.04', grade: 'B+', label: '보통 이상' },
-  { range: '0.75~0.89', grade: 'B', label: '보통' },
-  { range: '0.55~0.74', grade: 'C', label: '낮은 편' },
-  { range: '0.55 미만', grade: 'D', label: '낮음' },
+  { range: '1.30+', grade: 'S+', label: '최상위 가성비' },
+  { range: '1.18~1.29', grade: 'S', label: '매우 우수' },
+  { range: '1.10~1.17', grade: 'A+', label: '우수' },
+  { range: '1.02~1.09', grade: 'A', label: '높은 편' },
+  { range: '0.95~1.01', grade: 'A-', label: '양호' },
+  { range: '0.85~0.94', grade: 'B+', label: '보통 이상' },
+  { range: '0.70~0.84', grade: 'B', label: '보통' },
+  { range: '0.50~0.69', grade: 'C', label: '낮은 편' },
+  { range: '0.50 미만', grade: 'D', label: '낮음' },
 ];
 
 const LIMITING_AMINO_LABELS = {
@@ -178,7 +178,8 @@ export function getProteinDrinkScoreModel(product) {
   const priceBasis = firstDefined(core, 'price_factor_basis', 'priceFactorBasis');
   const rawPriceValue = finiteNumber(firstDefined(core, 'price_efficiency_value', 'priceEfficiencyValue'));
   const rawPriceTier = firstDefined(core, 'price_efficiency_tier', 'priceEfficiencyTier');
-  const priceMeasured = priceBasis === 'measured' && rawPriceValue != null && Boolean(rawPriceTier);
+  const hasPriceBasis = Boolean(priceBasis) && priceBasis !== 'missing_price_neutral_2000krw';
+  const priceMeasured = hasPriceBasis && rawPriceValue != null && Boolean(rawPriceTier);
   const aminoScoreItems = amino?.amino_acid_scores ?? amino?.aminoAcidScores ?? [];
 
   return {

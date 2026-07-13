@@ -8,7 +8,7 @@ import { productPath, parseProductId } from '../../data/productUrl.js';
 import { useCategoryProducts, useProductDetail } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { getFoodTypeByCode } from '../../data/categoryTabs.js';
-import { cheapestUnitPrice, getCategoryCardConfig } from '../../data/categoryCardMetrics.js';
+import { referenceUnitPrice, getCategoryCardConfig } from '../../data/categoryCardMetrics.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { useWishlist } from '../../store/WishlistContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
@@ -264,7 +264,8 @@ export default function DetailPageMobile() {
           categoryCode={raw?.categoryCode}
           servingSize={product.servingSize}
           servingUnit={product.servingUnit}
-          unitPrice={cheapestUnitPrice(product)}
+          unitPrice={referenceUnitPrice(product)}
+          priceBasisSource={product.referencePrice?.source}
         >
           <ProductNotice
             additionalContent={raw?._raw?.additionalContent}

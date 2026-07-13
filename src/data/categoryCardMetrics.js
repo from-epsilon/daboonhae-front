@@ -185,6 +185,14 @@ export function cheapestUnitPrice(food) {
   return best === Infinity ? null : best;
 }
 
+// 기준가격(원) — 구매링크 최저 단가와 정가 fallback을 비교해 고른 계산용 가격
+// - 가격 비교 UI는 purchaseLinks만 보여줘야 하므로 cheapestUnitPrice와 분리한다.
+export function referenceUnitPrice(food) {
+  const price = Number(food?.referencePrice?.unitPriceKrw);
+  if (Number.isFinite(price) && price > 0) return price;
+  return cheapestUnitPrice(food);
+}
+
 export function computeMetricValues(food, metric) {
   const n = food.nutrition ?? {};
   const total = n[metric.key];

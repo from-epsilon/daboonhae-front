@@ -2,7 +2,7 @@ import { Fragment, useMemo } from 'react';
 import { IconCheck, IconAlert, IconInfo } from '../../ds/Icons.jsx';
 import { getAdapted } from '../../../data/adapters.js';
 import { EAA_KEYS, BCAA_KEYS } from '../../../data/aminoAcids.js';
-import { cheapestUnitPrice } from '../../../data/categoryCardMetrics.js';
+import { referenceUnitPrice } from '../../../data/categoryCardMetrics.js';
 import { useResolvedProteinSources, useResolvedSweeteners, proteinGradeMeta } from '../../../data/proteinQuality.js';
 import {
   AMINO_QUALITY_GRADE_ROWS,
@@ -391,7 +391,7 @@ function AminoPatternSection({ product, nutrition }) {
         )}
         {hasFallback && (
           <p className="d-analysis-amino-pattern-note">
-            추정 표시는 제품의 개별 아미노산 실측값이 없어, 단백질 원료 품질 점수를 가중 반영한 값이에요.
+            추정 표시는 제품의 개별 아미노산 실측값이 없어, 단백질 원료를 기반으로 추정한 값이에요.
           </p>
         )}
       </div>
@@ -914,7 +914,7 @@ function metricValue(food, base, mode) {
   if (mode === 'total') return total;
   if (mode === 'kcal') return n.calories > 0 ? (total / n.calories) * 100 : null;
   if (mode === 'price') {
-    const unitPrice = cheapestUnitPrice(food);
+    const unitPrice = referenceUnitPrice(food);
     return unitPrice > 0 ? (total / unitPrice) * 1000 : null;
   }
   return null;
@@ -1157,7 +1157,10 @@ function calorieEfficiencyJudgment(product) {
 
 function priceEfficiencyJudgment(product) {
   const metric = getProteinDrinkScoreModel(product).priceEfficiency;
-  const unitPrice = formatUnitPrice(cheapestUnitPrice(product));
+  const unitPrice = formatUnitPrice(referenceUnitPrice(product));
+  const priceLine = product?.referencePrice?.source === 'list_price'
+    ? (unitPrice ? `정가: ${unitPrice}` : '정가: 가격 정보 없음')
+    : (unitPrice ? `현재 최저가: ${unitPrice}` : '현재 최저가: 가격 정보 없음');
   if (!metric.available) {
     return {
       value: null,
@@ -1176,7 +1179,7 @@ function priceEfficiencyJudgment(product) {
     tone: metric.tone,
     text: [
       '가격 대비 단백질 효율을 보여주는 등급이에요.',
-      unitPrice ? `현재 최저가: ${unitPrice}` : '현재 최저가: 가격 정보 없음',
+      priceLine,
     ],
     helpDetail: [
       '비슷한 단백질 품질이라면 가격이 낮을수록 좋게 봐요.',
@@ -1493,7 +1496,7 @@ function CategoryRankSection({ ranks }) {
         ))}
       </div>
       <p className="d-analysis-rank-note">
-        등급은 단백질, EAA, 류신, BCAA의 평균 상위 백분위로 표시합니다. 1,000원당 값은 등록된 구매링크의 개당 최저가로 계산합니다.
+        등급은 단백질, EAA, 류신, BCAA의 평균 상위 백분위로 표시합니다. 1,000원당 값은 구매링크 최저가와 정가 중 낮은 기준가격으로 계산합니다.
       </p>
     </AnalysisSection>
   );
@@ -1525,12 +1528,12 @@ const NEGATIVE_NUTRIENT_TIERS = {
     { max: Infinity, label: '과다', tone: 'high' },
   ],
   saturatedFat: [
-    { max: 0.5, label: '낮음', tone: 'low' },
-    { max: 1, label: '보통', tone: 'low' },
-    { max: 1.5, label: '조금 높음', tone: 'mid' },
-    { max: 2, label: '높음', tone: 'mid' },
-    { max: 2.5, label: '매우 높음', tone: 'high' },
-    { max: Infinity, label: '과다', tone: 'high' },
+    { max: 0.5, label: '매우 낮음', tone: 'low' },
+    { max: 1, label: '낮음', tone: 'low' },
+    { max: 1.5, label: '보통', tone: 'low' },
+    { max: 2.5, label: '조금 높음', tone: 'mid' },
+    { max: 3.5, label: '높음', tone: 'mid' },
+    { max: Infinity, label: '매우 높음', tone: 'high' },
   ],
   sodium: [
     { max: 200, label: '낮음', tone: 'low' },
@@ -1563,13 +1566,14 @@ function negativeNutrientText(type, amount) {
   }
 
   if (type === 'saturatedFat') {
+    // SUPABASE_PRODUCT_QUERY_GUIDE의 단백질음료 포화지방 표시 티어와 동일한 경계로 안내 문구를 맞춘다.
     if (n <= 0) return '포화지방 부담이 없습니다.';
-    if (n <= 0.5) return '포화지방 부담이 매우 낮습니다.';
-    if (n <= 1) return '포화지방 부담이 낮은 편입니다.';
-    if (n <= 1.5) return '포화지방이 조금 있는 편입니다.';
-    if (n <= 2) return '포화지방이 높은 편입니다.';
-    if (n <= 2.5) return '포화지방 부담이 큽니다.';
-    return '포화지방 부담이 매우 큽니다.';
+    if (n <= 0.5) return '포화지방이 매우 낮은 편입니다.';
+    if (n <= 1) return '포화지방이 낮은 편입니다.';
+    if (n <= 1.5) return '포화지방이 보통 수준입니다.';
+    if (n <= 2.5) return '포화지방이 조금 높은 편입니다.';
+    if (n <= 3.5) return '포화지방이 높은 편입니다.';
+    return '포화지방이 매우 높은 편입니다.';
   }
 
   if (type === 'sodium') {
@@ -2024,7 +2028,7 @@ function ShakeHero({ nutrition, foodNutrients, servingSize, servingUnit, prepara
 }
 
 function servingPrice(food) {
-  const unitPrice = cheapestUnitPrice(food);
+  const unitPrice = referenceUnitPrice(food);
   const servings = Number(food?.servingsPerUnit);
   if (!(unitPrice > 0)) return null;
   return servings > 0 ? unitPrice / servings : unitPrice;
@@ -2342,7 +2346,7 @@ function ShakeCategoryRankSection({ positions }) {
         ))}
       </div>
       <p className="d-analysis-rank-note">
-        위치는 현재 등록된 쉐이크 제품 중 해당 수치가 있는 제품만 대상으로 계산합니다. 1,000원당 값은 1회분당 최저가 기준입니다.
+        위치는 현재 등록된 쉐이크 제품 중 해당 수치가 있는 제품만 대상으로 계산합니다. 1,000원당 값은 구매링크 최저가와 정가 중 낮은 기준가격을 1회분 기준으로 환산합니다.
       </p>
     </AnalysisSection>
   );

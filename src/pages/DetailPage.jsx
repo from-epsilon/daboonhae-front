@@ -5,7 +5,7 @@ import { useCategoryProducts, useProductDetail } from '../store/ProductsContext.
 import { getAdapted } from '../data/adapters.js';
 import { categoryPath } from '../data/categoryTabs.js';
 import { getFoodTypeByCode } from '../data/categoryTabs.js';
-import { cheapestUnitPrice, getCategoryCardConfig } from '../data/categoryCardMetrics.js';
+import { referenceUnitPrice, getCategoryCardConfig } from '../data/categoryCardMetrics.js';
 import { AMINO_ACID_KEYS, AMINO_ACID_KO_ALIASES, AMINO_ACID_LABELS, EAA_AMINO_ACIDS, EAA_KEYS } from '../data/aminoAcids.js';
 import { NUTRIENT_GROUP, isNutrientGroup } from '../data/nutrientGroups.js';
 import { formatProteinSourceLabel, formatSweetenerLabel } from '../data/listFilters.js';
@@ -171,7 +171,10 @@ function DetailNutritionPreview({
   const basisUnit = servingUnit?.includes('ml') ? 'ml' : 'g';
   const canToggleBasis = servingSize > 0 && servingSize !== 100;
   const calories = nutrition.calories;
-  const unitPrice = cheapestUnitPrice(product);
+  const unitPrice = referenceUnitPrice(product);
+  const priceBasisHelp = product?.referencePrice?.source === 'list_price'
+    ? '정가를 개당 가격으로 환산한 값이며, 실제 구매 가격과 다를 수 있습니다.'
+    : '구매링크 최저가와 정가 중 낮은 기준가격으로 환산하며, 실제 가격과 다를 수 있습니다.';
   const basisOptions = [
     { key: 'serving', label: '1회 제공량', enabled: true },
     { key: 'per100', label: `100${basisUnit}`, enabled: canToggleBasis },
@@ -304,11 +307,11 @@ function DetailNutritionPreview({
                   {option.key === 'price' && (
                     <span
                       className="d-detail-card-nutri-price-help"
-                      aria-label="등록된 구매링크의 개당 최저가 기준이며, 실제 가격과 다를 수 있습니다."
+                      aria-label={priceBasisHelp}
                     >
                       ?
                       <span className="d-detail-card-nutri-price-help-bubble" role="tooltip">
-                        등록된 구매링크의 개당 최저가 기준이며, 실제 가격과 다를 수 있습니다.
+                        {priceBasisHelp}
                       </span>
                     </span>
                   )}

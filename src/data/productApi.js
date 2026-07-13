@@ -213,6 +213,60 @@ function parsePurchaseLinks(links) {
     }));
 }
 
+function unitPriceOfPurchaseLink(link) {
+  if (!link || typeof link.price !== 'number') return null;
+  const quantity = Number(link.quantity ?? 1);
+  return Number.isFinite(quantity) && quantity > 0 ? link.price / quantity : link.price;
+}
+
+function parseReferencePrice(food, purchaseLinks) {
+  // referencePrice는 구매링크 목록에 섞지 않는 계산/표시용 기준가격이다.
+  // unitPriceKrw는 기존 purchaseLinks의 unitPrice와 같은 "제품 1개" 기준으로 유지하고,
+  // 1회분 기준이 필요한 화면(쉐이크 분석 등)에서는 servingsPerUnit으로 별도 환산한다.
+  const purchaseCandidates = (purchaseLinks ?? [])
+    .map((link) => {
+      const unitPriceKrw = unitPriceOfPurchaseLink(link);
+      if (!(unitPriceKrw > 0)) return null;
+      return {
+        source: 'purchase_link',
+        unitPriceKrw,
+        rawPriceKrw: link.price,
+        quantity: link.quantity ?? 1,
+        vendorName: link.vendorName ?? '',
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.unitPriceKrw - b.unitPriceKrw);
+
+  const rawListPriceKrw = Number(food?.list_price_krw);
+  const servingCount =
+    Number(food?.net_content_amount) > 0 &&
+    Number(food?.serving_amount) > 0 &&
+    Number(food.net_content_amount) / Number(food.serving_amount) >= 1.5
+      ? Number(food.net_content_amount) / Number(food.serving_amount)
+      : null;
+  const listPrice = Number.isFinite(rawListPriceKrw) && rawListPriceKrw > 0
+    ? {
+        priceKrw: rawListPriceKrw,
+        unitPriceKrw: rawListPriceKrw,
+        servingCount,
+      }
+    : null;
+  const listPriceCandidate = listPrice
+    ? {
+        source: 'list_price',
+        unitPriceKrw: listPrice.unitPriceKrw,
+        rawPriceKrw: listPrice.priceKrw,
+        servingCount,
+      }
+    : null;
+  const referencePrice = [purchaseCandidates[0], listPriceCandidate]
+    .filter(Boolean)
+    .sort((a, b) => a.unitPriceKrw - b.unitPriceKrw)[0] ?? null;
+
+  return { listPrice, referencePrice };
+}
+
 function parseScoreSnapshots(snapshots) {
   if (!Array.isArray(snapshots)) return [];
   return snapshots
@@ -312,6 +366,7 @@ function transformProduct(food) {
   const servingsPerUnit = servingsPerUnitOf(food);
   const family = parseFamily(food.food_families);
   const purchaseLinks = parsePurchaseLinks(food.food_purchase_links);
+  const { listPrice, referencePrice } = parseReferencePrice(food, purchaseLinks);
   const scoreSnapshots = parseScoreSnapshots(food.food_score_snapshots);
   const proteinDrinkScore = pickScoreSnapshot(scoreSnapshots, PROTEIN_DRINK_SCORE_PROFILE);
   // 원재료 구간 마킹 → 단백질원료/대체당 추출
@@ -347,6 +402,8 @@ function transformProduct(food) {
     description: '',
     purchaseUrl: food.source_url ?? '#',
     purchaseLinks,
+    listPrice,
+    referencePrice,
     scoreSnapshots,
     recommendationScores: {
       proteinDrinkDefault: proteinDrinkScore,
@@ -374,6 +431,7 @@ function transformProduct(food) {
       isMfdsOfficial: food.is_mfds_official_source ?? false,
       sourceUrl: food.source_url ?? '',
       sourceFoodCode: food.source_food_code ?? '',
+      listPriceKrw: food.list_price_krw ?? null,
       aliases: (food.food_aliases ?? []).map((a) => a.alias).filter(Boolean),
     },
   };
@@ -439,6 +497,7 @@ const FLAVOR_JOIN = `
 // 상세 전용 원문·주의사항·출처 메타는 제외하여 전체 카탈로그 응답을 줄인다.
 const LIST_SELECT_BASE = (optional) => `
   id, name, brand, barcode, source_food_code, image_url, storage_image_path,
+  list_price_krw,
   flavor_code,
   net_content_amount, net_content_unit,
   package_unit_count, package_unit_name, package_unit_amount,
@@ -461,6 +520,7 @@ const LIST_SELECT_BASE = (optional) => `
 const DETAIL_SELECT_BASE = (optional) => `
   id, name, brand, barcode, image_url, storage_image_path,
   is_mfds_official_source, source_url, source_food_code,
+  list_price_krw,
   flavor_code,
   net_content_amount, net_content_unit,
   package_unit_count, package_unit_name, package_unit_amount,

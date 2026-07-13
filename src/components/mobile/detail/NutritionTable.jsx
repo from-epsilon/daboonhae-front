@@ -74,6 +74,7 @@ export function NutritionTable({
   servingSize,
   servingUnit,
   unitPrice,
+  priceBasisSource,
   children,
 }) {
   const [basis, setBasis] = useState('serving');
@@ -86,6 +87,9 @@ export function NutritionTable({
     { key: 'price', label: '1,000원', enabled: unitPrice > 0 },
   ].filter((option) => option.enabled);
   const activeBasis = basisOptions.some((option) => option.key === basis) ? basis : 'serving';
+  const priceBasisNote = priceBasisSource === 'list_price'
+    ? '정가를 개당 가격으로 환산한 값이며, 실제 구매 가격과 다를 수 있습니다.'
+    : '구매링크 최저가와 정가 중 낮은 기준가격으로 환산하며, 실제 가격과 다를 수 있습니다.';
   const ratio = (() => {
     if (activeBasis === 'per100') return 100 / servingSize;
     if (activeBasis === 'kcal') return 100 / calories;
@@ -172,7 +176,7 @@ export function NutritionTable({
       </header>
       {activeBasis === 'price' && (
         <p className="m-detail-nutri-basis-note">
-          등록된 구매링크의 개당 최저가 기준이며, 실제 가격과 다를 수 있습니다.
+          {priceBasisNote}
         </p>
       )}
       <ul className="m-detail-nutri-list">
