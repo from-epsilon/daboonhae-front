@@ -239,6 +239,8 @@ function FoodCardList({ food, onClick, onCompare, inCompare, onWishlist, inWishl
         sortBy="unit-first"
         pricePer={config.purchasePricePer ?? 'unit'}
         servingsPerUnit={food.servingsPerUnit}
+        variant="mobile-list"
+        affiliateText="다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다."
         className="fc-card-offers m-foodcard-list-offers"
       />
     </div>
