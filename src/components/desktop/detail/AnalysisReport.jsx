@@ -476,7 +476,7 @@ function AminoPatternSection({ product, nutrition }) {
         )}
         {hasFallback && (
           <p className="d-analysis-amino-pattern-note">
-            추정 표시는 제품의 실측값이 없어, 원재료를 기반으로 추정한 값이에요.
+            추정치는 제품의 실측값이 없어, 원재료를 기반으로 추정한 값이에요.
           </p>
         )}
       </div>
