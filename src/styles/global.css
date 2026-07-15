@@ -1369,8 +1369,8 @@ img.product-thumb { object-fit: cover; }
 
 .m-foodcard-list-actions {
   position: absolute;
-  right: 5px;
-  bottom: 5px;
+  top: 14px;
+  right: 12px;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -1380,6 +1380,39 @@ img.product-thumb { object-fit: cover; }
   width: 29px;
   height: 29px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+}
+.m-foodcard-list-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.m-foodcard-list-media {
+  width: 88px;
+  flex: 0 0 88px;
+}
+.m-foodcard-list-thumb {
+  width: 88px;
+  height: 88px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+}
+.m-foodcard-list-body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.m-foodcard-list-heading {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 68px;
+}
+.m-foodcard-list-offers {
+  width: 100%;
 }
 
 .header-nav {

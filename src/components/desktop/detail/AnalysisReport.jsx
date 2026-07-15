@@ -1,5 +1,6 @@
-import { Fragment, useMemo } from 'react';
-import { IconCheck, IconAlert, IconInfo } from '../../ds/Icons.jsx';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { IconCheck, IconAlert, IconClose, IconInfo } from '../../ds/Icons.jsx';
 import { getAdapted } from '../../../data/adapters.js';
 import { EAA_KEYS, BCAA_KEYS } from '../../../data/aminoAcids.js';
 import { referenceUnitPrice } from '../../../data/categoryCardMetrics.js';
@@ -104,6 +105,90 @@ function AnalysisSection({ title, icon, children, compact = false }) {
       </h3>
       {children}
     </div>
+  );
+}
+
+function AnalysisHelp({ label, modalTitle = '설명', className = '', rich = false, children }) {
+  const [open, setOpen] = useState(false);
+  const closeRef = useRef(null);
+
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    const preventBackgroundScroll = (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target?.closest('.m-analysis-help-sheet-body')) event.preventDefault();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('touchmove', preventBackgroundScroll, { passive: false });
+    document.addEventListener('wheel', preventBackgroundScroll, { passive: false });
+    window.requestAnimationFrame(() => closeRef.current?.focus({ preventScroll: true }));
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('touchmove', preventBackgroundScroll);
+      document.removeEventListener('wheel', preventBackgroundScroll);
+    };
+  }, [open]);
+
+  const handleOpen = () => {
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches) {
+      setOpen(true);
+    }
+  };
+
+  const modal = open && typeof document !== 'undefined'
+    ? createPortal(
+        <div className="m-analysis-help-modal" role="presentation">
+          <button
+            type="button"
+            className="m-analysis-help-backdrop"
+            aria-label="설명 닫기"
+            onClick={() => setOpen(false)}
+          />
+          <section
+            className={`m-analysis-help-sheet${rich ? ' is-rich' : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={modalTitle}
+          >
+            <header className="m-analysis-help-sheet-head">
+              <h3>{modalTitle}</h3>
+              <button
+                ref={closeRef}
+                type="button"
+                className="m-analysis-help-sheet-close"
+                aria-label="닫기"
+                onClick={() => setOpen(false)}
+              >
+                <IconClose size={20} />
+              </button>
+            </header>
+            <div className="m-analysis-help-sheet-body">{children}</div>
+          </section>
+        </div>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <>
+      <button
+        type="button"
+        className={`d-analysis-help${className ? ` ${className}` : ''}`}
+        aria-label={label}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={handleOpen}
+      >
+        ?
+        <span className={`d-analysis-help-bubble${rich ? ' is-rich' : ''}`} role="tooltip">{children}</span>
+      </button>
+      {modal}
+    </>
   );
 }
 
@@ -890,10 +975,13 @@ function ProteinQualityChart({ nutrition }) {
                 <strong>
                   {item.label}
                   {item.help && (
-                    <span className="d-analysis-help d-analysis-quality-help" tabIndex="0" aria-label={item.help}>
-                      ?
-                      <span className="d-analysis-help-bubble" role="tooltip">{item.help}</span>
-                    </span>
+                    <AnalysisHelp
+                      className="d-analysis-quality-help"
+                      label={`${item.label} 설명`}
+                      modalTitle={item.label}
+                    >
+                      {item.help}
+                    </AnalysisHelp>
                   )}
                 </strong>
                 <span>{item.displayValue}</span>
@@ -1040,10 +1128,9 @@ function JudgmentCard({ title, value, valueExtra, label, tone, text, help, hideL
           <div className="d-analysis-judgment-actions">
             {!hideLabel && label && <span className={`d-analysis-row-tag is-${tone}`}>{label}</span>}
             {help && (
-              <span className="d-analysis-help" tabIndex="0" aria-label={help}>
-                ?
-                <span className="d-analysis-help-bubble" role="tooltip">{help}</span>
-              </span>
+              <AnalysisHelp label={`${title} 설명`} modalTitle={title}>
+                {help}
+              </AnalysisHelp>
             )}
           </div>
         )}
@@ -1349,10 +1436,14 @@ function SummaryGradeRow({ title, value, tone, grade: gradeProp, text, help, hel
         <div className="d-analysis-grade-head">
           <span className="d-analysis-grade-title">{title}</span>
           {(help || helpContent) && (
-            <span className="d-analysis-help d-analysis-grade-help" tabIndex="0" aria-label={tooltipLabel}>
-              ?
-              <span className={`d-analysis-help-bubble${helpContent ? ' is-rich' : ''}`} role="tooltip">{helpContent ?? help}</span>
-            </span>
+            <AnalysisHelp
+              className="d-analysis-grade-help"
+              label={tooltipLabel}
+              modalTitle={tooltipLabel}
+              rich={Boolean(helpContent)}
+            >
+              {helpContent ?? help}
+            </AnalysisHelp>
           )}
         </div>
         <p className="d-analysis-grade-text">

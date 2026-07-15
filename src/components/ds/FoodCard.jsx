@@ -89,7 +89,7 @@ function CompareButton({ food, onCompare, inCompare }) {
   );
 }
 
-// 모바일 리스트 카드 액션 — 데스크탑과 동일한 하트/비교 아이콘 구성
+// 모바일 리스트 카드 액션 — 데스크탑 wide 카드처럼 카드 우측 상단에 배치
 function ListActionButtons({ food, onCompare, inCompare, onWishlist, inWishlist }) {
   if (!onCompare && !onWishlist) return null;
   return (
@@ -170,8 +170,7 @@ function ServingMeta({ food, showCalories = false, variant }) {
   return <div className="fc-serving-meta">{parts.join(' · ')}</div>;
 }
 
-// list 레이아웃: 좌측 88px 컬럼(썸네일 + 담기 버튼) + 텍스트 영역
-// - 담긴 제품은 카드 좌측에 그린 강조선 + 버튼 '담김' 상태로 표시
+// list 레이아웃: 상단 제품 요약(썸네일 + 정보), 하단 전체 너비 가격 비교
 function FoodCardList({ food, onClick, onCompare, inCompare, onWishlist, inWishlist, tabId, subLabel, sortKey }) {
   const config = getCategoryCardConfig(tabId, subLabel);
   return (
@@ -180,71 +179,68 @@ function FoodCardList({ food, onClick, onCompare, inCompare, onWishlist, inWishl
       className={`m-foodcard-list${inCompare ? ' is-in-store' : ''}`}
       style={{
         display: 'flex',
-        gap: 12,
+        flexDirection: 'column',
+        gap: 0,
         padding: '14px 12px 14px 0',
         borderBottom: '1px solid var(--border-tertiary)',
         cursor: 'pointer',
+        position: 'relative',
       }}
     >
-      <div style={{ flexShrink: 0, width: 88 }}>
-        <div
-          style={{
-            position: 'relative',
-            width: 88,
-            height: 88,
-            borderRadius: 'var(--radius-sm)',
-            overflow: 'hidden',
-            background: '#fff',
-          }}
-        >
-          <ThumbImage src={food.thumb} alt={food.name} />
-          <ListActionButtons
-            food={food}
-            onCompare={onCompare}
-            inCompare={inCompare}
-            onWishlist={onWishlist}
-            inWishlist={inWishlist}
-          />
+      <ListActionButtons
+        food={food}
+        onCompare={onCompare}
+        inCompare={inCompare}
+        onWishlist={onWishlist}
+        inWishlist={inWishlist}
+      />
+      <div className="m-foodcard-list-main">
+        <div className="m-foodcard-list-media">
+          <div className="m-foodcard-list-thumb">
+            <ThumbImage src={food.thumb} alt={food.name} />
+          </div>
+        </div>
+        <div className="m-foodcard-list-body">
+          <div className="m-foodcard-list-heading">
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
+            <a
+              href={productHref(food)}
+              onClick={(e) => handleNameClick(e, onClick)}
+              style={{
+                fontSize: 14,
+                color: 'var(--text-primary)',
+                fontWeight: 500,
+                lineHeight: 1.4,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textDecoration: 'none',
+              }}
+            >
+              <ProductNameContent food={food} config={config} />
+            </a>
+            <ServingMeta
+              food={food}
+              showCalories={Boolean(config.primaryMetrics) || config.showServingCalories === true}
+              variant={config.servingMetaVariant}
+            />
+          </div>
+          {config.showMacroBar !== false && config.macroBarVariant && (
+            <MacroRow {...food.macros} variant={config.macroBarVariant} />
+          )}
+          <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
         </div>
       </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{food.brand}</div>
-        <a
-          href={productHref(food)}
-          onClick={(e) => handleNameClick(e, onClick)}
-          style={{
-            fontSize: 14,
-            color: 'var(--text-primary)',
-            fontWeight: 500,
-            lineHeight: 1.4,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textDecoration: 'none',
-          }}
-        >
-          <ProductNameContent food={food} config={config} />
-        </a>
-        <ServingMeta
-          food={food}
-          showCalories={Boolean(config.primaryMetrics) || config.showServingCalories === true}
-          variant={config.servingMetaVariant}
-        />
-        {config.showMacroBar !== false && config.macroBarVariant && (
-          <MacroRow {...food.macros} variant={config.macroBarVariant} />
-        )}
-        <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
-        <PurchaseOffers
-          offers={food.purchaseLinks}
-          productId={food.id}
-          compact
-          sortBy="unit-first"
-          pricePer={config.purchasePricePer ?? 'unit'}
-          servingsPerUnit={food.servingsPerUnit}
-          className="fc-card-offers"
-        />
-      </div>
+      <PurchaseOffers
+        offers={food.purchaseLinks}
+        productId={food.id}
+        compact
+        sortBy="unit-first"
+        pricePer={config.purchasePricePer ?? 'unit'}
+        servingsPerUnit={food.servingsPerUnit}
+        className="fc-card-offers m-foodcard-list-offers"
+      />
     </div>
   );
 }

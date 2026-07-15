@@ -161,6 +161,119 @@
 .m-detail #analysis .d-analysis-ingr-card {
   border-radius: var(--radius-md);
 }
+.m-detail #analysis .d-analysis-help-bubble {
+  display: none !important;
+}
+
+.m-analysis-help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal, 1000) + 10);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  touch-action: none;
+}
+.m-analysis-help-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(17, 24, 39, 0.46);
+}
+.m-analysis-help-sheet {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: min(76dvh, 640px);
+  padding: 0 18px calc(18px + env(safe-area-inset-bottom));
+  border-radius: 22px 22px 0 0;
+  background: var(--bg-white);
+  box-shadow: 0 -12px 36px rgba(17, 24, 39, 0.18);
+  animation: m-analysis-help-sheet-in 180ms ease-out;
+}
+.m-analysis-help-sheet::before {
+  content: '';
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--gray-300);
+}
+.m-analysis-help-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 58px;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+.m-analysis-help-sheet-head h3 {
+  min-width: 0;
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+.m-analysis-help-sheet-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--gray-100);
+  color: var(--text-secondary);
+}
+.m-analysis-help-sheet-body {
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 16px 0 2px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+.m-analysis-help-sheet .d-analysis-protein-grade-table {
+  min-width: 0;
+  color: var(--text-primary);
+}
+.m-analysis-help-sheet .d-analysis-protein-grade-row {
+  grid-template-columns: minmax(72px, 1fr) 42px minmax(0, 1.35fr);
+  gap: 8px;
+  padding: 8px 2px;
+  border-top-color: var(--border-tertiary);
+  font-size: 11px;
+}
+.m-analysis-help-sheet .d-analysis-protein-grade-row.is-head {
+  color: var(--text-tertiary);
+}
+.m-analysis-help-sheet .d-analysis-protein-grade-row strong {
+  color: var(--text-primary);
+}
+.m-analysis-help-sheet .d-analysis-protein-grade-note {
+  border-top-color: var(--border-tertiary);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+@keyframes m-analysis-help-sheet-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 
 /* ============================================================
    HERO
@@ -1563,6 +1676,9 @@
 @media (prefers-reduced-motion: reduce) {
   .m-detail * {
     transition: none !important;
+    animation: none !important;
+  }
+  .m-analysis-help-sheet {
     animation: none !important;
   }
 }
