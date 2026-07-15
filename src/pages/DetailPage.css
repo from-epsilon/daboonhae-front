@@ -1771,6 +1771,7 @@
   line-height: 1.5;
   color: var(--text-secondary);
   word-break: keep-all;
+  white-space: pre-line;
 }
 .d-analysis-help {
   position: relative;
@@ -2520,6 +2521,7 @@
 .d-analysis-ingr-grade.is-low { background: var(--gray-100); border-color: var(--gray-300); color: var(--text-secondary); }
 .d-analysis-ingr-text {
   margin: 0; font-size: 13px; line-height: 1.55; color: var(--text-secondary);
+  white-space: pre-line;
 }
 .d-analysis-support {
   display: flex;

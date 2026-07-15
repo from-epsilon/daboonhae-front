@@ -421,7 +421,7 @@ function AminoPatternSection({ product, nutrition }) {
             {hasFallback && (
               <span className="d-analysis-amino-pattern-legend d-analysis-amino-pattern-legend--fallback">
                 <i aria-hidden="true" />
-                원료 추정
+                추정치
               </span>
             )}
           </div>
@@ -476,7 +476,7 @@ function AminoPatternSection({ product, nutrition }) {
         )}
         {hasFallback && (
           <p className="d-analysis-amino-pattern-note">
-            추정 표시는 제품의 개별 아미노산 실측값이 없어, 단백질 원료를 기반으로 추정한 값이에요.
+            추정 표시는 제품의 실측값이 없어, 원재료를 기반으로 추정한 값이에요.
           </p>
         )}
       </div>
