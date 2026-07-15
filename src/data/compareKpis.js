@@ -165,7 +165,6 @@ const PROTEIN_DRINK_COMPARE_METRICS = [
     unit: '점',
     select: (model) => model.aminoQuality,
     formatValue: (value) => Math.round(value).toLocaleString(),
-    getNote: (metric) => metric.limiting ? `제한: ${metric.limiting}` : null,
   }),
   scoreMetric({
     key: 'calorieEfficiency',
@@ -180,6 +179,8 @@ const PROTEIN_DRINK_COMPARE_METRICS = [
     formatValue: formatEfficiencyValue,
     getNote: (metric) => metric.available ? null : '가격 정보 없음',
   }),
+  nutrientMetric('eaa', '필수아미노산', 'mg', 'max', { zeroAsMissing: true, supporting: true }),
+  nutrientMetric('bcaa', 'BCAA', 'mg', 'max', { zeroAsMissing: true, supporting: true }),
   nutrientMetric('calories', '열량', 'kcal', null, { supporting: true }),
   nutrientMetric('carbs', '탄수화물', 'g', null, { supporting: true }),
   nutrientMetric('sugar', '당류', 'g', null, { supporting: true }),
