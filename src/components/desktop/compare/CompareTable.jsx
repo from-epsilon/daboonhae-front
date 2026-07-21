@@ -5,6 +5,7 @@
 // 행 종류:
 //   1) 헤더 행: 빈 라벨 셀 + 제품 카드들(썸네일/브랜드/이름/X/Score) [+AddSlot]
 //   2) 카테고리별 KPI 행들
+import { useState } from 'react';
 import { CompareHeaderRow } from './CompareHeaderRow.jsx';
 import { CompareMetricRow } from './CompareMetricRow.jsx';
 import { ComparePurchaseRow } from './ComparePurchaseRow.jsx';
@@ -29,6 +30,7 @@ export function CompareTable({
   canAdd,
   remaining,
 }) {
+  const [aminoDetailsOpen, setAminoDetailsOpen] = useState(false);
   const dataColCount = products.length + (canAdd ? 1 : 0);
   const gridTemplate = buildGridTemplate(dataColCount);
   const rowStyle = { gridTemplateColumns: gridTemplate };
@@ -67,20 +69,25 @@ export function CompareTable({
       />
 
       {/* 2) KPI 행들 */}
-      {metrics.map((m) => (
-        <CompareMetricRow
-          key={m.key}
-          metric={m}
-          label={m.label}
-          products={products}
-          metricKey={m.key}
-          unit={m.unit}
-          bestSet={bestByKey[m.key]}
-          rowStyle={rowStyle}
-          hasAdd={canAdd}
-          dragState={dragState}
-        />
-      ))}
+      {metrics.map((m) => {
+        if (m.detailGroup === 'aminoAcids' && !aminoDetailsOpen && !m.collapsedVisible) return null;
+        return (
+          <CompareMetricRow
+            key={m.key}
+            metric={m}
+            label={m.label}
+            products={products}
+            metricKey={m.key}
+            unit={m.unit}
+            bestSet={bestByKey[m.key]}
+            rowStyle={rowStyle}
+            hasAdd={canAdd}
+            dragState={dragState}
+            expanded={m.toggleGroup === 'aminoAcids' ? aminoDetailsOpen : undefined}
+            onToggle={m.toggleGroup === 'aminoAcids' ? () => setAminoDetailsOpen((open) => !open) : undefined}
+          />
+        );
+      })}
     </section>
   );
 }

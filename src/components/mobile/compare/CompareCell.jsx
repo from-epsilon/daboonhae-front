@@ -2,6 +2,7 @@
 // - 각 셀이 자체 라벨을 위에 표기 (좌측 라벨 컬럼 제거 대응)
 // - isBest=true 일 때 그린 텍스트로 강조
 // - direction=null 이면 강조 없음 (중립 지표)
+import { ChevronDown } from 'lucide-react';
 
 // 숫자 포맷 (정수면 그대로, 소수는 한 자리)
 function fmt(v) {
@@ -18,18 +19,53 @@ function gradeClass(grade) {
     .replace(/[^a-z0-9]/g, '');
 }
 
-export function CompareCell({ label, value, displayValue, grade, tone, note, unit, isBest, isRich = false, supporting = false }) {
+export function CompareCell({
+  label,
+  value,
+  displayValue,
+  grade,
+  tone,
+  note,
+  unit,
+  isBest,
+  isRich = false,
+  supporting = false,
+  compact = false,
+  detailLevel,
+  expandable = false,
+  expanded,
+  onToggle,
+}) {
   // best 여부에 따라 클래스 분기 (CSS 토큰만 사용)
   const cls = [
     'm-compare-cell',
     isBest ? 'm-compare-cell--best' : '',
     isRich ? 'm-compare-cell--rich' : '',
     supporting ? 'm-compare-cell--supporting' : '',
+    compact ? 'm-compare-cell--compact' : '',
+    detailLevel ? 'm-compare-cell--detail' : '',
+    detailLevel ? `m-compare-cell--detail-level-${detailLevel}` : '',
   ].filter(Boolean).join(' ');
 
   return (
     <div className={cls}>
-      <span className="m-compare-cell-label">{label}</span>
+      {expandable ? (
+        <button
+          type="button"
+          className="m-compare-cell-label m-compare-cell-label--toggle"
+          aria-expanded={expanded}
+          onClick={onToggle}
+        >
+          <span>{label}</span>
+          <ChevronDown
+            size={13}
+            aria-hidden="true"
+            className={`m-compare-cell-chevron${expanded ? ' is-open' : ''}`}
+          />
+        </button>
+      ) : (
+        <span className="m-compare-cell-label">{label}</span>
+      )}
       {grade && (
         <span className={`m-compare-cell-grade is-${tone ?? 'neutral'} is-grade-${gradeClass(grade)}${grade === 'N/A' ? ' is-na' : ''}`}>
           {grade}

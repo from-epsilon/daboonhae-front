@@ -2,6 +2,7 @@
 // - 행 자체가 grid: 160px(라벨) + 데이터 컬럼들(각 1fr)
 // - 우수값(best)은 텍스트 컬러로만 강조
 import { getCompareMetricPresentation } from '../../../data/compareKpis.js';
+import { ChevronDown } from 'lucide-react';
 
 // 숫자 포맷 (정수면 그대로, 소수는 한 자리)
 function fmt(v) {
@@ -55,6 +56,8 @@ export function CompareMetricRow({
   rowStyle,
   hasAdd,
   dragState,
+  expanded,
+  onToggle,
 }) {
   // 행의 최대값 계산 (막대 정규화 기준)
   const presentations = products.map((product) => (
@@ -62,10 +65,34 @@ export function CompareMetricRow({
       ? getCompareMetricPresentation(product, metric)
       : { value: product?.nutrition?.[metricKey], grade: null, tone: null, note: null, displayValue: null }
   ));
+  const rowClass = [
+    'd-compare-row',
+    metric?.supporting ? 'd-compare-row--supporting' : '',
+    metric?.compact ? 'd-compare-row--compact' : '',
+    metric?.detailGroup ? 'd-compare-row--detail' : '',
+    metric?.detailLevel ? `d-compare-row--detail-level-${metric.detailLevel}` : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={`d-compare-row${metric?.supporting ? ' d-compare-row--supporting' : ''}`} style={rowStyle}>
+    <div className={rowClass} style={rowStyle}>
       <div className="d-compare-row-label">
-        <span className="d-compare-row-label-text">{label}</span>
+        {metric?.toggleGroup ? (
+          <button
+            type="button"
+            className="d-compare-row-label-toggle"
+            aria-expanded={expanded}
+            onClick={onToggle}
+          >
+            <span className="d-compare-row-label-text">{label}</span>
+            <ChevronDown
+              size={15}
+              aria-hidden="true"
+              className={`d-compare-row-label-chevron${expanded ? ' is-open' : ''}`}
+            />
+          </button>
+        ) : (
+          <span className="d-compare-row-label-text">{label}</span>
+        )}
       </div>
       {products.map((p, idx) => {
         const isDragging = dragState?.draggedId != null && String(dragState.draggedId) === String(p.id);

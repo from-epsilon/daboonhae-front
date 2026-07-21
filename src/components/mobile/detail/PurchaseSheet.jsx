@@ -8,9 +8,9 @@ import { getVendorLogo } from '../../../utils/vendorLogo.js';
 const FREE_SHIPPING_TARGET_TOTAL = 19800;
 const UNIT_PRICE_EPSILON = 0.0001;
 
-// 가격 포맷 (없으면 '가격 문의')
+// 가격 포맷 (없으면 '가격 확인')
 function formatPrice(price) {
-  if (typeof price !== 'number') return '가격 문의';
+  if (typeof price !== 'number') return '가격 확인';
   return `${price.toLocaleString()}원`;
 }
 
@@ -22,7 +22,7 @@ function unitPriceOf(offer) {
 }
 
 function formatUnitPrice(unitPrice) {
-  if (typeof unitPrice !== 'number') return '가격 문의';
+  if (typeof unitPrice !== 'number') return '가격 확인';
   return `개당 ${Math.round(unitPrice).toLocaleString()}원`;
 }
 

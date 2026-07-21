@@ -20,6 +20,29 @@
   box-shadow: 0 1px 0 var(--border-tertiary);
 }
 
+/* 제품 카테고리 칩: 높이는 한 줄로 유지하고 좌우 스와이프로 탐색 */
+.m-list-category-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-tertiary);
+  background: var(--bg-white);
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.m-list-category-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.m-list-category-chips > * {
+  flex: 0 0 auto;
+}
+
 /* 카드 리스트 영역 */
 .m-list-cards {
   padding: 0 16px 24px;

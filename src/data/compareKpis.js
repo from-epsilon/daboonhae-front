@@ -1,4 +1,4 @@
-import { AMINO_ACID_KEYS } from './aminoAcids.js';
+import { AMINO_ACID_KEYS, BCAA_KEYS, EAA_AMINO_ACIDS } from './aminoAcids.js';
 import { NUTRIENT_GROUP, isNutrientGroup } from './nutrientGroups.js';
 import { bestUnitPriceOf } from './purchaseLinks.js';
 import { formatEfficiencyValue, getProteinDrinkScoreModel } from './proteinDrinkScore.js';
@@ -82,6 +82,7 @@ function rawNutrientMetric(fn, groupLabel) {
     unit: rawNutrientUnit(fn),
     direction: 'max',
     supporting: true,
+    compact: true,
     getValue: (product) => {
       const value = getRawNutrientAmount(product, nutrientCode);
       return value != null && value > 0 ? value : null;
@@ -125,16 +126,20 @@ function nutrientMetric(key, label, unit, direction = null, options = {}) {
     unit,
     direction,
     supporting: options.supporting === true,
+    detailGroup: options.detailGroup,
+    detailLevel: options.detailLevel,
+    collapsedVisible: options.collapsedVisible === true,
     getValue: (product) => valueOf(product, key, options),
   };
 }
 
-function scoreMetric({ key, label, unit = '', select, formatValue, getNote }) {
+function scoreMetric({ key, label, unit = '', select, formatValue, getNote, toggleGroup }) {
   return {
     key,
     label,
     unit,
     direction: 'max',
+    toggleGroup,
     getValue: (product) => select(getProteinDrinkScoreModel(product))?.value ?? null,
     getGrade: (product) => select(getProteinDrinkScoreModel(product))?.tier ?? null,
     getTone: (product) => select(getProteinDrinkScoreModel(product))?.tone ?? null,
@@ -144,6 +149,36 @@ function scoreMetric({ key, label, unit = '', select, formatValue, getNote }) {
     formatValue,
   };
 }
+
+const AMINO_DETAIL_OPTIONS = {
+  zeroAsMissing: true,
+  supporting: true,
+  detailGroup: 'aminoAcids',
+};
+
+const PROTEIN_DRINK_AMINO_DETAIL_METRICS = [
+  nutrientMetric('eaa', '필수아미노산', 'mg', 'max', {
+    ...AMINO_DETAIL_OPTIONS,
+    detailLevel: 1,
+    collapsedVisible: true,
+  }),
+  nutrientMetric('bcaa', 'BCAA', 'mg', 'max', {
+    ...AMINO_DETAIL_OPTIONS,
+    detailLevel: 2,
+    collapsedVisible: true,
+  }),
+  ...EAA_AMINO_ACIDS.map(({ code, label }) => nutrientMetric(
+    code,
+    label,
+    'mg',
+    'max',
+    {
+      ...AMINO_DETAIL_OPTIONS,
+      detailLevel: BCAA_KEYS.includes(code) ? 3 : 2,
+      collapsedVisible: code === 'leucine',
+    },
+  )),
+];
 
 const PROTEIN_DRINK_COMPARE_METRICS = [
   scoreMetric({
@@ -165,7 +200,9 @@ const PROTEIN_DRINK_COMPARE_METRICS = [
     unit: '점',
     select: (model) => model.aminoQuality,
     formatValue: (value) => Math.round(value).toLocaleString(),
+    toggleGroup: 'aminoAcids',
   }),
+  ...PROTEIN_DRINK_AMINO_DETAIL_METRICS,
   scoreMetric({
     key: 'calorieEfficiency',
     label: '칼로리 효율',
@@ -179,8 +216,6 @@ const PROTEIN_DRINK_COMPARE_METRICS = [
     formatValue: formatEfficiencyValue,
     getNote: (metric) => metric.available ? null : '가격 정보 없음',
   }),
-  nutrientMetric('eaa', '필수아미노산', 'mg', 'max', { zeroAsMissing: true, supporting: true }),
-  nutrientMetric('bcaa', 'BCAA', 'mg', 'max', { zeroAsMissing: true, supporting: true }),
   nutrientMetric('calories', '열량', 'kcal', null, { supporting: true }),
   nutrientMetric('carbs', '탄수화물', 'g', null, { supporting: true }),
   nutrientMetric('sugar', '당류', 'g', null, { supporting: true }),

@@ -6,7 +6,7 @@ const UNIT_PRICE_EPSILON = 0.0001;
 const DEFAULT_AFFILIATE_TEXT = '※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다. 구매자에게 추가로 발생하는 비용은 없습니다.';
 
 function formatPurchasePrice(price) {
-  if (typeof price !== 'number') return '가격 문의';
+  if (typeof price !== 'number') return '가격 확인';
   return `${price.toLocaleString()}원`;
 }
 

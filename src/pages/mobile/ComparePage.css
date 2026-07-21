@@ -263,25 +263,72 @@
 /* 데이터 셀 (지표 라벨 + 값) — 좌측 라벨 컬럼 제거로 각 셀이 자체 라벨 표기 */
 .m-compare-cell {
   position: relative;
-  min-height: 58px;
-  padding: 8px var(--space-3);
+  min-height: 54px;
+  padding: 7px var(--space-3);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   border-bottom: 1px solid var(--bg-divider);
   color: var(--text-primary);
 }
 .m-compare-cell--rich {
-  min-height: 96px;
+  min-height: 80px;
 }
 .m-compare-cell-label {
   font-family: var(--font-body);
   font-size: var(--font-size-xxs);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-tertiary);
   line-height: 1;
+}
+.m-compare-cell-label--toggle {
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+.m-compare-cell-label--toggle:focus-visible {
+  outline: 2px solid var(--green-500);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.m-compare-cell-chevron {
+  transition: transform 160ms ease;
+}
+.m-compare-cell-chevron.is-open {
+  transform: rotate(180deg);
+}
+.m-compare-cell--detail {
+  gap: 2px;
+  min-height: 46px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.m-compare-cell--detail .m-compare-cell-num {
+  font-size: 14px;
+}
+.m-compare-cell--detail-level-1 .m-compare-cell-label { margin-left: 8px; }
+.m-compare-cell--detail-level-2 .m-compare-cell-label { margin-left: 14px; }
+.m-compare-cell--detail-level-3 .m-compare-cell-label { margin-left: 20px; }
+.m-compare-cell--detail .m-compare-cell-unit {
+  font-size: 9px;
+}
+.m-compare-cell--compact {
+  min-height: 46px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.m-compare-cell--compact .m-compare-cell-num {
+  font-size: 14px;
+}
+.m-compare-cell--compact .m-compare-cell-unit {
+  font-size: 9px;
 }
 .m-compare-cell-grade {
   position: absolute;
@@ -290,7 +337,7 @@
   color: var(--green-700);
   font-family: var(--font-numeric);
   font-size: var(--font-size-xxs);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1;
   text-align: center;
 }
@@ -324,7 +371,7 @@
 }
 .m-compare-cell-num {
   font-size: var(--font-size-m);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1;
 }
 .m-compare-cell-unit {
@@ -363,13 +410,13 @@
 }
 
 .m-compare-purchase-cell {
-  min-height: 92px;
-  gap: 5px;
+  min-height: 84px;
+  gap: 4px;
 }
 .m-compare-purchase-price {
   font-family: var(--font-numeric);
   font-size: var(--font-size-m);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   color: var(--text-primary);
 }
@@ -407,7 +454,7 @@
   color: var(--white);
   font-family: var(--font-body);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
 }
 .m-compare-purchase-empty {
@@ -491,61 +538,6 @@
   font-family: var(--font-numeric);
   font-size: var(--font-size-xxs);
   color: var(--text-tertiary);
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
-   하단 요약 (Compare, don't rank)
-   ──────────────────────────────────────────────────────────────────────── */
-.m-compare-summary {
-  margin: var(--space-4) var(--space-4) var(--space-5);
-  padding: var(--space-4);
-  background: var(--bg-white);
-  border: 1px solid var(--border-tertiary);
-  border-radius: var(--radius-lg);
-}
-.m-compare-summary-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: var(--space-2);
-}
-.m-compare-summary-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--green-500);
-}
-.m-compare-summary-title {
-  font-family: var(--font-display);
-  font-size: var(--font-size-s);
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.m-compare-summary-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.m-compare-summary-item {
-  font-family: var(--font-body);
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  line-height: var(--lh-base);
-  padding-left: 10px;
-  position: relative;
-}
-.m-compare-summary-item::before {
-  content: '';
-  position: absolute;
-  top: 9px;
-  left: 0;
-  width: 3px;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--gray-400);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────

@@ -5,17 +5,15 @@
 //      - 헤더 행: 썸네일/브랜드/이름/X + ScoreGauge
 //      - 카테고리별 KPI 행들
 //      - max 미만일 때 마지막 컬럼 = AddSlot (점선 박스)
-//   3) 자동 비교 요약 (Compare, don't rank 톤)
 //   빈 상태 → 일러스트 없이 텍스트 + CTA
 //
-// 모바일 폴더의 compareUtils.js는 순수 utility라 데스크탑에서도 그대로 import (수정 금지)
+// 모바일 폴더의 compareUtils.js는 순수 utility라 데스크탑에서도 그대로 사용
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { CompareTable } from '../components/desktop/compare/CompareTable.jsx';
-import { CompareSummary } from '../components/desktop/compare/CompareSummary.jsx';
 import { EmptyCompare } from '../components/desktop/compare/EmptyCompare.jsx';
 import Seo from '../components/global/Seo.jsx';
 import { productPath } from '../data/productUrl.js';
@@ -23,7 +21,7 @@ import {
   LOWEST_UNIT_PRICE_COMPARE_METRIC,
   getCompareMetricsForProducts,
 } from '../data/compareKpis.js';
-import { getBestIndices, buildCompareSummary } from '../components/mobile/compare/compareUtils.js';
+import { getBestIndices } from '../components/mobile/compare/compareUtils.js';
 import './ComparePage.css';
 
 // 페이지 헤더 (SRP)
@@ -85,9 +83,6 @@ export default function ComparePage() {
     [products],
   );
 
-  // 자동 요약 문장
-  const summary = useMemo(() => buildCompareSummary(products), [products]);
-
   // ───────── 핸들러 (SRP)
   const handleRemove = (id) => remove(id);
   const handleClear = () => clear();
@@ -111,7 +106,6 @@ export default function ComparePage() {
         <EmptyCompare max={max} onBrowse={handleBrowse} />
       ) : (
         <>
-          <CompareSummary sentences={summary} />
           <CompareTable
             products={products}
             bestByKey={bestByKey}

@@ -7,8 +7,7 @@
 //      • 행: 헤더(썸네일/브랜드/이름/X) / 카테고리별 KPI
 //      • 각 행에서 우수값은 그린 텍스트로 강조 (Compare, don't rank — 1위/2위 X)
 //   → AddSlot (max 미만일 때 가로 스크롤 마지막)
-//   → CompareSummary (자동 비교 한 줄)
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
@@ -19,7 +18,6 @@ import { CompareCell } from '../../components/mobile/compare/CompareCell.jsx';
 import { ComparePurchaseCell } from '../../components/mobile/compare/ComparePurchaseCell.jsx';
 import { AddSlot } from '../../components/mobile/compare/AddSlot.jsx';
 import { EmptyCompare } from '../../components/mobile/compare/EmptyCompare.jsx';
-import { CompareSummary } from '../../components/mobile/compare/CompareSummary.jsx';
 import { useCompareColumnReorder } from '../../components/compare/useCompareColumnReorder.js';
 import Seo from '../../components/global/Seo.jsx';
 import { productPath } from '../../data/productUrl.js';
@@ -28,7 +26,7 @@ import {
   getCompareMetricsForProducts,
   getCompareMetricPresentation,
 } from '../../data/compareKpis.js';
-import { getBestIndices, buildCompareSummary } from '../../components/mobile/compare/compareUtils.js';
+import { getBestIndices } from '../../components/mobile/compare/compareUtils.js';
 import './ComparePage.css';
 
 // 비교 그리드 본문 — 좌측 라벨 컬럼 없이, 각 셀이 자체 라벨을 표기
@@ -45,7 +43,11 @@ function CompareGrid({
   remaining,
   onReorder,
 }) {
+  const [aminoDetailsOpen, setAminoDetailsOpen] = useState(false);
   const { draggedId, targetId, dropPosition, dragOffsetX, getColumnProps } = useCompareColumnReorder({ products, onReorder });
+  const visibleMetrics = metrics.filter((metric) => (
+    metric.detailGroup !== 'aminoAcids' || aminoDetailsOpen || metric.collapsedVisible
+  ));
 
   return (
     <div className="m-compare-grid">
@@ -72,7 +74,7 @@ function CompareGrid({
               />
 
               {/* 영양소 셀들 — 라벨 + 값 */}
-              {metrics.map((m) => {
+              {visibleMetrics.map((m) => {
                 const presentation = getCompareMetricPresentation(p, m);
                 const isBest = bestByKey[m.key]?.has(idx) ?? false;
                 return (
@@ -86,6 +88,11 @@ function CompareGrid({
                     note={presentation.note}
                     isRich={presentation.isRich}
                     supporting={presentation.supporting}
+                    compact={m.compact}
+                    detailLevel={m.detailLevel}
+                    expandable={m.toggleGroup === 'aminoAcids'}
+                    expanded={m.toggleGroup === 'aminoAcids' ? aminoDetailsOpen : undefined}
+                    onToggle={m.toggleGroup === 'aminoAcids' ? () => setAminoDetailsOpen((open) => !open) : undefined}
                     unit={m.unit}
                     isBest={isBest}
                   />
@@ -139,9 +146,6 @@ export default function ComparePageMobile() {
     [products],
   );
 
-  // 자동 요약 문장
-  const summary = useMemo(() => buildCompareSummary(products), [products]);
-
   // ───────── 핸들러 (SRP)
   const handleBack = () => navigate('/');
   const handleRemove = (id) => remove(id);
@@ -188,9 +192,6 @@ export default function ComparePageMobile() {
               전체 지우기
             </button>
           </div>
-
-          {/* 핵심 차이를 먼저 읽고 상세 표를 확인하도록 상단에 배치 */}
-          <CompareSummary sentences={summary} />
 
           {/* 본문 그리드 */}
           <CompareGrid
