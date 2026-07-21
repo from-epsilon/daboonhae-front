@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>다분해 로고</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --brand-green: #00c600; /* 다분해 브랜드 그린 */
+      --ink: #222222;         /* 글자 검정 */
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+    /* ── 로고 락업 ── */
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.15em;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 900;
+      font-size: 96px;      /* 이 값만 바꾸면 로고 전체 크기 스케일됨 */
+      line-height: 1;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .logo-mark {
+      width: 1.1em;
+      height: 1.1em;
+      flex-shrink: 0;
+    }
+    .logo-word .ink   { color: var(--ink); }          /* 다 · 해 · 점 */
+    .logo-word .green { color: var(--brand-green); }  /* 분 */
+  </style>
+</head>
+<body>
+  <span class="logo">
+    <!-- 심볼: 열린 링 + 떠오르는 점 3개 (= 분해) -->
+    <svg class="logo-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M 32 8 A 24 24 0 1 0 56 32" fill="none" stroke="var(--brand-green)" stroke-width="7.5" stroke-linecap="round" />
+      <circle cx="49.5" cy="14.5" r="3.6" fill="var(--brand-green)" />
+      <circle cx="41" cy="6.5" r="2.4" fill="var(--brand-green)" opacity="0.75" />
+      <circle cx="57" cy="22" r="2" fill="var(--brand-green)" opacity="0.5" />
+    </svg>
+    <!-- 워드마크: 다(검) 분(초록) 해(검) .(검) -->
+    <span class="logo-word"><span class="ink">다</span><span class="green">분</span><span class="ink">해</span><span class="ink">.</span></span>
+  </span>
+</body>
+</html>

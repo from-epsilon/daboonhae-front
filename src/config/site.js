@@ -5,9 +5,11 @@ export const SITE_NAME = '다분해';
 export const SITE_TAGLINE = '다이어트 식품 비교·해석 플랫폼';
 export const DEFAULT_DESCRIPTION =
   '다이어트 식품의 영양성분을 분해하고 제품 간 가격·성분을 비교합니다. 식약처 공시 영양정보 기반.';
-// 기본 공유 이미지 — 전용 1200x630 에셋 준비 전까지 기존 배너 이미지로 대체(깨진 미리보기 방지)
-// TODO: /og/default.png(1200x630 전용 OG) 추가되면 이 값 교체
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/assets/banner/grain-protein.png`;
+// 기본 공유 이미지 — 전용 1200x630 브랜드 OG 배너(카톡·인스타 summary_large_image 대응)
+// 생성 스크립트: scripts/og-render.mjs (brand/daboonhae-logo-lockup.png 기반)
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/og/default.png`;
+export const DEFAULT_OG_IMAGE_WIDTH = 1200;
+export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 export const OG_LOCALE = 'ko_KR';
 
 // 절대 URL 헬퍼 — 항상 SITE_URL 기준 (canonical은 쿼리 제거된 정규 경로 권장)
