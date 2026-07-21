@@ -4,6 +4,8 @@ import {
   SITE_TAGLINE,
   DEFAULT_DESCRIPTION,
   DEFAULT_OG_IMAGE,
+  DEFAULT_OG_IMAGE_WIDTH,
+  DEFAULT_OG_IMAGE_HEIGHT,
   OG_LOCALE,
   absUrl,
 } from '../../config/site.js';
@@ -32,6 +34,9 @@ export default function Seo({
   const desc = description ?? DEFAULT_DESCRIPTION;
   const canonical = canonicalPath ? absUrl(canonicalPath) : undefined;
   const image = ogImage ? absUrl(ogImage) : DEFAULT_OG_IMAGE;
+  // 크기 힌트는 크기를 확실히 아는 기본 배너에만 선언(카톡 스크랩봇이 미리보기를 안정적으로 그림).
+  // 라우트별 커스텀 이미지(제품 사진 등)는 실측 크기를 모르므로 선언하지 않는다(불일치 방지).
+  const isDefaultImage = !ogImage;
   const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 
   return (
@@ -48,6 +53,14 @@ export default function Seo({
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={desc} />
       <meta property="og:image" content={image} />
+      <meta property="og:image:alt" content={fullTitle} />
+      {isDefaultImage && (
+        <meta property="og:image:width" content={String(DEFAULT_OG_IMAGE_WIDTH)} />
+      )}
+      {isDefaultImage && (
+        <meta property="og:image:height" content={String(DEFAULT_OG_IMAGE_HEIGHT)} />
+      )}
+      {isDefaultImage && <meta property="og:image:type" content="image/png" />}
       {canonical && <meta property="og:url" content={canonical} />}
 
       {/* Twitter */}
