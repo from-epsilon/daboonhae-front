@@ -274,11 +274,15 @@ function parseScoreSnapshots(snapshots) {
     .map((snapshot) => ({
       profileCode: snapshot.profile_code,
       profileVersion: snapshot.profile_version ?? null,
+      revision: snapshot.revision ?? 0,
+      revisionLabel: snapshot.revision_label ?? '',
+      status: snapshot.status ?? null,
       score: typeof snapshot.score === 'number' ? snapshot.score : Number(snapshot.score ?? 0),
       confidence: typeof snapshot.confidence === 'number' ? snapshot.confidence : Number(snapshot.confidence ?? 0),
       components: snapshot.components ?? null,
       reasons: Array.isArray(snapshot.reasons) ? snapshot.reasons : [],
       computedAt: snapshot.computed_at ?? null,
+      publishedAt: snapshot.published_at ?? null,
     }));
 }
 
@@ -288,7 +292,11 @@ function pickScoreSnapshot(snapshots, profileCode) {
     .sort((a, b) => {
       const versionDiff = (b.profileVersion ?? -Infinity) - (a.profileVersion ?? -Infinity);
       if (versionDiff !== 0) return versionDiff;
-      return new Date(b.computedAt ?? 0).getTime() - new Date(a.computedAt ?? 0).getTime();
+      const revisionDiff = (b.revision ?? -Infinity) - (a.revision ?? -Infinity);
+      if (revisionDiff !== 0) return revisionDiff;
+      const bTimestamp = b.publishedAt ?? b.computedAt;
+      const aTimestamp = a.publishedAt ?? a.computedAt;
+      return new Date(bTimestamp ?? 0).getTime() - new Date(aTimestamp ?? 0).getTime();
     })[0] ?? null;
 }
 
@@ -485,8 +493,9 @@ const PURCHASE_JOIN = `
   food_purchase_links ( vendor_name, url, quantity, price, is_fast_delivery, is_active, updated_at ),
 `;
 const SCORE_JOIN = `
-  food_score_snapshots (
-    profile_code, profile_version, score, confidence, components, reasons, computed_at
+  food_score_snapshots:current_food_score_snapshots (
+    profile_code, profile_version, revision, revision_label, status,
+    score, confidence, components, reasons, computed_at, published_at
   ),
 `;
 const FLAVOR_JOIN = `
