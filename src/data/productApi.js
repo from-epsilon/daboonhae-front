@@ -551,7 +551,7 @@ const ALIAS_JOIN = `
   food_aliases ( alias, normalized_alias ),
 `;
 const PROFILE_SCORE_JOIN = `
-    food_score_snapshots:current_food_score_snapshots (
+    food_score_snapshots:market_food_score_snapshots (
     profile_code, profile_version, revision, revision_label, status,
     score, confidence, components, reasons, computed_at, published_at
   ),
