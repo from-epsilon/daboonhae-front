@@ -1,5 +1,5 @@
 // Supabase 제품 데이터 조회 + mock shape 변환
-// - foods 테이블 기준, food_type_categories / food_nutrients 조인
+// - foods의 식품 정보와 현재 food_product_profiles의 버전 정보를 조합
 // - food_families / food_purpose_category_links / food_aliases는 기본적으로 함께 조회,
 //   anon 권한이 막혀 있으면(permission denied) 자동으로 빼고 재조회(폴백)
 // - 기존 mockProducts.js와 동일한 shape으로 변환하여 adapters/analyzers 호환 유지
@@ -408,7 +408,7 @@ function transformProduct(food) {
       lactoseFree,
     },
     description: '',
-    purchaseUrl: food.source_url ?? '#',
+    purchaseUrl: purchaseLinks[0]?.url ?? '#',
     purchaseLinks,
     listPrice,
     referencePrice,
@@ -437,7 +437,6 @@ function transformProduct(food) {
       nutritionBasisType: basis.type,
       sizeVariantLabel: food.size_variant_label ?? '',
       isMfdsOfficial: food.is_mfds_official_source ?? false,
-      sourceUrl: food.source_url ?? '',
       sourceFoodCode: food.source_food_code ?? '',
       listPriceKrw: food.list_price_krw ?? null,
       aliases: (food.food_aliases ?? []).map((a) => a.alias).filter(Boolean),
@@ -473,7 +472,47 @@ async function attachFoodCategoryNutrientDescriptions(food) {
 }
 
 function onlyActiveCategoryRows(rows) {
-  return (rows ?? []).filter((food) => food?.food_type_categories?.is_active === true);
+  return (rows ?? []).filter(
+    (food) =>
+      food?.food_type_categories?.is_active === true &&
+      currentProductProfileOf(food)?.is_market_active === true,
+  );
+}
+
+function currentProductProfileOf(food) {
+  const profile = food?.current_product_profile;
+  return Array.isArray(profile) ? profile[0] : profile;
+}
+
+function flattenCurrentProductProfile(food) {
+  const profile = currentProductProfileOf(food);
+  if (!profile) return null;
+
+  const {
+    id: productProfileId,
+    food_profile_nutrients: foodProfileNutrients,
+    food_purchase_links: foodPurchaseLinks,
+    ...profileFields
+  } = profile;
+
+  return {
+    ...food,
+    ...profileFields,
+    id: food.id,
+    name: food.name,
+    brand: food.brand,
+    updated_at: food.updated_at,
+    product_profile_id: productProfileId,
+    food_nutrients: foodProfileNutrients ?? [],
+    food_purchase_links: foodPurchaseLinks ?? [],
+  };
+}
+
+function transformCurrentProductRows(rows) {
+  return onlyActiveCategoryRows(rows)
+    .map(flattenCurrentProductProfile)
+    .filter(Boolean)
+    .map(transformProduct);
 }
 
 // ── 선택 조인 절 (RLS 허용 시에만 포함)
@@ -489,9 +528,6 @@ const PURPOSE_JOIN = `
 const ALIAS_JOIN = `
   food_aliases ( alias, normalized_alias ),
 `;
-const PURCHASE_JOIN = `
-  food_purchase_links ( vendor_name, url, quantity, price, is_fast_delivery, is_active, updated_at ),
-`;
 const SCORE_JOIN = `
   food_score_snapshots:current_food_score_snapshots (
     profile_code, profile_version, revision, revision_label, status,
@@ -501,53 +537,68 @@ const SCORE_JOIN = `
 const FLAVOR_JOIN = `
   food_flavors ( code, name_ko, display_order, is_active ),
 `;
+const CURRENT_PROFILE_LIST_JOIN = `
+  current_product_profile:food_product_profiles!foods_current_product_profile_id_fkey!inner (
+    id, revision_label, is_market_active,
+    barcode, source_food_code, image_url, storage_image_path,
+    list_price_krw,
+    net_content_amount, net_content_unit,
+    package_unit_count, package_unit_name, package_unit_amount,
+    serving_amount, nutrition_basis_type,
+    allergens_text, ingredient_annotations,
+    food_purchase_links!food_purchase_links_product_profile_id_fkey (
+      vendor_name, url, quantity, price, is_fast_delivery, is_active, updated_at
+    ),
+    food_profile_nutrients (
+      nutrient_code, amount, unit, amount_text,
+      nutrients ( code, name_ko, default_unit, group_name, display_order )
+    )
+  )
+`;
+const CURRENT_PROFILE_DETAIL_JOIN = `
+  current_product_profile:food_product_profiles!foods_current_product_profile_id_fkey!inner (
+    id, revision_label, is_market_active,
+    barcode, source_food_code, image_url, storage_image_path,
+    is_mfds_official_source, list_price_krw,
+    net_content_amount, net_content_unit,
+    package_unit_count, package_unit_name, package_unit_amount,
+    serving_amount, serving_description, nutrition_basis_type,
+    ingredients_text, allergens_text, cross_contamination_text,
+    caution_notes, additional_content, ingredient_annotations,
+    food_purchase_links!food_purchase_links_product_profile_id_fkey (
+      vendor_name, url, quantity, price, is_fast_delivery, is_active, updated_at
+    ),
+    food_profile_nutrients (
+      nutrient_code, amount, unit, amount_text,
+      nutrients ( code, name_ko, name_en, default_unit, group_name, display_order, benefits_text, cautions_text )
+    )
+  )
+`;
 
 // ── 목록 select 절 (목록/검색/카테고리 순위 공통)
 // 상세 전용 원문·주의사항·출처 메타는 제외하여 전체 카탈로그 응답을 줄인다.
 const LIST_SELECT_BASE = (optional) => `
-  id, name, brand, barcode, source_food_code, image_url, storage_image_path,
-  list_price_krw,
-  flavor_code,
-  net_content_amount, net_content_unit,
-  package_unit_count, package_unit_name, package_unit_amount,
-  serving_amount, nutrition_basis_type,
-  allergens_text, ingredient_annotations,
+  id, name, brand, flavor_code,
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories!inner ( code, name_ko, is_active ),
   ${FLAVOR_JOIN}
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
-  ${PURCHASE_JOIN}
   ${SCORE_JOIN}
-  food_nutrients (
-    nutrient_code, amount, unit, amount_text,
-    nutrients ( code, name_ko, default_unit, group_name, display_order )
-  )
+  ${CURRENT_PROFILE_LIST_JOIN}
 `;
 
 // ── 단건 상세 select 절. optional=true면 family/purpose/alias 조인 포함
 const DETAIL_SELECT_BASE = (optional) => `
-  id, name, brand, barcode, image_url, storage_image_path,
-  is_mfds_official_source, source_url, source_food_code,
-  list_price_krw,
-  flavor_code,
-  net_content_amount, net_content_unit,
-  package_unit_count, package_unit_name, package_unit_amount,
-  serving_amount, serving_description, nutrition_basis_type,
-  ingredients_text, allergens_text, cross_contamination_text,
-  caution_notes, additional_content, ingredient_annotations,
+  id, name, brand, flavor_code,
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories!inner ( code, name_ko, is_active ),
   ${FLAVOR_JOIN}
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
-  ${PURCHASE_JOIN}
   ${SCORE_JOIN}
-  food_nutrients (
-    nutrient_code, amount, unit, amount_text,
-    nutrients ( code, name_ko, name_en, default_unit, group_name, display_order, benefits_text, cautions_text )
-  )${optional ? ',' : ''}
-  ${optional ? ALIAS_JOIN.trim().replace(/,$/, '') : ''}
+  ${optional ? ALIAS_JOIN : ''}
+  ${CURRENT_PROFILE_DETAIL_JOIN}
 `;
 
 // 선택 조인은 기본 사용한다. 운영 DB 정책이 아직 닫혀 있으면 자동 폴백한다.
@@ -606,7 +657,7 @@ async function fetchProductsUncached() {
       .eq('food_type_categories.is_active', true)
       .order('updated_at', { ascending: false });
 
-    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
+    if (!error) return transformCurrentProductRows(data);
     if (!isOptionalJoinError(error)) throw error;
     optionalJoinsAvailable = false;
     console.warn('[productApi] 선택 조인(food_families/purpose/aliases) 불가, 기본 조인으로 폴백');
@@ -620,7 +671,7 @@ async function fetchProductsUncached() {
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return onlyActiveCategoryRows(data).map(transformProduct);
+  return transformCurrentProductRows(data);
 }
 
 export function fetchProducts({ force = false } = {}) {
@@ -646,8 +697,14 @@ async function fetchProductByIdUncached(id) {
       .single();
 
     if (!error) {
-      if (data?.food_type_categories?.is_active !== true) return null;
-      return transformProduct(await attachFoodCategoryNutrientDescriptions(data));
+      if (
+        data?.food_type_categories?.is_active !== true ||
+        currentProductProfileOf(data)?.is_market_active !== true
+      ) return null;
+      const food = flattenCurrentProductProfile(data);
+      return food
+        ? transformProduct(await attachFoodCategoryNutrientDescriptions(food))
+        : null;
     }
     if (isNoRowsError(error)) return null;
     if (!isOptionalJoinError(error)) throw error;
@@ -664,8 +721,14 @@ async function fetchProductByIdUncached(id) {
 
   if (isNoRowsError(error)) return null;
   if (error) throw error;
-  if (data?.food_type_categories?.is_active !== true) return null;
-  return transformProduct(await attachFoodCategoryNutrientDescriptions(data));
+  if (
+    data?.food_type_categories?.is_active !== true ||
+    currentProductProfileOf(data)?.is_market_active !== true
+  ) return null;
+  const food = flattenCurrentProductProfile(data);
+  return food
+    ? transformProduct(await attachFoodCategoryNutrientDescriptions(food))
+    : null;
 }
 
 export function fetchProductById(id, { force = false } = {}) {
@@ -692,7 +755,7 @@ async function fetchProductsByCategoryUncached(categoryCode) {
       .eq('food_type_category_code', categoryCode)
       .order('updated_at', { ascending: false });
 
-    if (!error) return onlyActiveCategoryRows(data).map(transformProduct);
+    if (!error) return transformCurrentProductRows(data);
     if (!isOptionalJoinError(error)) throw error;
     optionalJoinsAvailable = false;
   }
@@ -706,7 +769,7 @@ async function fetchProductsByCategoryUncached(categoryCode) {
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return onlyActiveCategoryRows(data).map(transformProduct);
+  return transformCurrentProductRows(data);
 }
 
 export function fetchProductsByCategory(categoryCode, { force = false } = {}) {
