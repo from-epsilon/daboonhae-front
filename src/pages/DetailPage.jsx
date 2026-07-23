@@ -109,7 +109,18 @@ function normalizePreviewKoName(value) {
 
 const PREVIEW_AMINO_CODE_SET = new Set(AMINO_ACID_KEYS);
 const PREVIEW_AMINO_AGG_CODES = new Set(['src_eaa_mg', 'src_bcaa_mg', 'eaa', 'bcaa']);
-const PREVIEW_LEFT_FIXED_CODES = new Set(['energy_kcal', 'carbohydrate_g', 'sugars_g', 'fat_g']);
+const PREVIEW_LEFT_FIXED_CODES = new Set([
+  'energy_kcal',
+  'carbohydrate_g',
+  'sugars_g',
+  'dietary_fiber',
+  'src_알룰로오스_g',
+  'fat_g',
+  'trans_fat_g',
+  'saturated_fat_g',
+  'cholesterol_mg',
+  'sodium_mg',
+]);
 const PREVIEW_RIGHT_FIXED_CODES = new Set(['protein_g', 'src_eaa_mg', 'src_bcaa_mg', 'eaa', 'bcaa', 'leucine']);
 const PREVIEW_CARB_CHILD_CODES = new Set(['sugars_g', 'dietary_fiber', 'src_알룰로오스_g']);
 const PREVIEW_FAT_CHILD_CODES = new Set(['saturated_fat_g', 'trans_fat_g']);
@@ -194,7 +205,13 @@ function DetailNutritionPreview({
     { key: 'energy_kcal', label: '열량', fn: byCode.get('energy_kcal'), fallbackValue: nutrition.calories, unit: 'kcal', showMissing: true },
     { key: 'carbohydrate_g', label: '탄수화물', fn: byCode.get('carbohydrate_g'), fallbackValue: nutrition.carbs, unit: 'g', showMissing: true },
     { key: 'sugars_g', label: '당류', fn: byCode.get('sugars_g'), fallbackValue: nutrition.sugar, unit: 'g', depth: 1, showMissing: true },
+    { key: 'dietary_fiber', label: byCode.get('dietary_fiber')?.nutrients?.name_ko || '식이섬유', fn: byCode.get('dietary_fiber'), fallbackValue: nutrition.fiber, unit: 'g', depth: 1, extra: true },
+    { key: 'src_알룰로오스_g', label: byCode.get('src_알룰로오스_g')?.nutrients?.name_ko || '알룰로스', fn: byCode.get('src_알룰로오스_g'), fallbackValue: nutrition.allulose, unit: 'g', depth: 1, extra: true },
     { key: 'fat_g', label: '지방', fn: byCode.get('fat_g'), fallbackValue: nutrition.fat, unit: 'g', showMissing: true },
+    { key: 'trans_fat_g', label: byCode.get('trans_fat_g')?.nutrients?.name_ko || '트랜스지방', fn: byCode.get('trans_fat_g'), fallbackValue: nutrition.transFat, unit: 'g', depth: 1, extra: true },
+    { key: 'saturated_fat_g', label: byCode.get('saturated_fat_g')?.nutrients?.name_ko || '포화지방', fn: byCode.get('saturated_fat_g'), fallbackValue: nutrition.saturatedFat, unit: 'g', depth: 1, extra: true },
+    { key: 'cholesterol_mg', label: byCode.get('cholesterol_mg')?.nutrients?.name_ko || '콜레스테롤', fn: byCode.get('cholesterol_mg'), fallbackValue: nutrition.cholesterol, unit: 'mg', extra: true },
+    { key: 'sodium_mg', label: byCode.get('sodium_mg')?.nutrients?.name_ko || '나트륨', fn: byCode.get('sodium_mg'), fallbackValue: nutrition.sodium, unit: 'mg', extra: true },
   ];
   const fixedRightRows = [
     { key: 'protein_g', label: '단백질', fn: byCode.get('protein_g'), fallbackValue: nutrition.protein, unit: 'g', showMissing: true },
