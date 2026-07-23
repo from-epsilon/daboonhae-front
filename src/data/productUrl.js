@@ -1,4 +1,5 @@
-// 제품 상세 URL — 슬러그 + ID 하이브리드 (/product/하림-닭가슴살-블랙페퍼-5)
+// 제품 상세 URL — 슬러그 + 버전 ID 하이브리드
+// (/product/얼티브-프로틴-초코맛-18p351)
 // - 슬러그는 가독성·키워드용, 끝의 ID로 안정적 조회(슬러그가 바뀌어도 안 깨짐)
 // - 한글은 SEO상 그대로 두는 게 키워드 매칭에 유리(구글이 한글 URL을 잘 처리)
 
@@ -23,10 +24,13 @@ export function productPath(product) {
   return slug ? `/product/${slug}-${product.id}` : `/product/${product.id}`;
 }
 
-// 라우트 파라미터에서 ID 추출 — 항상 마지막 숫자 run이 ID (슬러그-ID / 순수 ID 모두 처리)
-// productPath가 항상 '-{id}'로 끝나므로 끝의 숫자 = ID
+// 라우트 파라미터에서 버전 ID(18p351) 또는 기존 식품 ID(18)를 추출한다.
+// 기존 숫자 URL은 API에서 해당 식품의 현재 버전으로 해석한다.
 export function parseProductId(param) {
   if (param == null) return null;
-  const m = String(param).match(/(\d+)$/);
-  return m ? m[1] : String(param);
+  const text = String(param);
+  const versioned = text.match(/(\d+p\d+)$/);
+  if (versioned) return versioned[1];
+  const legacy = text.match(/(\d+)$/);
+  return legacy ? legacy[1] : text;
 }

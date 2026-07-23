@@ -170,8 +170,12 @@ function compareProteinRecommend(a, b) {
   const confidenceDiff = getProteinDrinkRecommendConfidence(b) - getProteinDrinkRecommendConfidence(a);
   if (confidenceDiff !== 0) return confidenceDiff;
 
-  const idDiff = Number(a?.id) - Number(b?.id);
-  if (Number.isFinite(idDiff) && idDiff !== 0) return idDiff;
+  const idDiff = String(a?.id ?? '').localeCompare(
+    String(b?.id ?? ''),
+    'en',
+    { numeric: true },
+  );
+  if (idDiff !== 0) return idDiff;
 
   return String(a?.name ?? '').localeCompare(String(b?.name ?? ''), 'ko');
 }

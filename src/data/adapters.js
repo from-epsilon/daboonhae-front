@@ -157,6 +157,11 @@ export function getAdapted(product) {
 
   return {
     id: product.id,
+    foodId: product.foodId ?? product.id,
+    productProfileId: product.productProfileId ?? null,
+    revisionLabel: product.revisionLabel ?? '',
+    isCurrentProfile: product.isCurrentProfile === true,
+    baseName: product.baseName ?? product.name,
     brand: product.brand,
     name: product.name,
     thumb: product.thumbnail,
