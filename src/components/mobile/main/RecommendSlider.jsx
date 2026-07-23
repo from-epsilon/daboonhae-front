@@ -6,6 +6,7 @@ import { getHighlightValue } from '../../../data/categoryCardMetrics.js';
 import { getProteinDrinkScoreModel } from '../../../data/proteinDrinkScore.js';
 import { getBestUnitOffer } from '../../../data/purchaseLinks.js';
 import { SummaryCompareButton, SummaryPurchaseLink, SummaryWishlistButton } from '../../summary/SummaryCard.jsx';
+import ProductNameText from '../../global/ProductNameText.jsx';
 
 // 목적별 핵심 성분 스탯 — 라벨 위 + 수치 아래 정렬 컬럼 (1~3개, 1순위 강조)
 // - 카드 간 같은 위치에 같은 성분이 와서 가로 스캔으로 비교 가능
@@ -79,7 +80,7 @@ function RecommendCard({ food, rank, metrics, onClick, onCompare, inCompare, onW
       <div className="m-home-rec-meta">
         <div className="m-home-rec-brand">{food.brand}</div>
         <div className="m-home-rec-name">
-          {food.name}
+          <ProductNameText product={food} />
           {food.categoryCode === 'protein_drink' && (
             <span className="m-home-rec-inline-meta">
               {' '}{[

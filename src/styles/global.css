@@ -267,6 +267,16 @@ select:focus-visible {
 .ranking-rank { font-weight: 500; color: var(--c-primary); }
 .ranking-brand { font-size: 12px; color: var(--c-text-sub); }
 .ranking-name { font-size: 14px; font-weight: 600; }
+.product-revision-label {
+  display: inline;
+  margin-left: 0.42em;
+  color: inherit;
+  font-size: 0.72em;
+  font-weight: inherit;
+  line-height: 1.2;
+  white-space: nowrap;
+  vertical-align: 0.06em;
+}
 .ranking-empty { color: var(--c-text-sub); padding: 16px; }
 
 /* ───────── List Page ───────── */

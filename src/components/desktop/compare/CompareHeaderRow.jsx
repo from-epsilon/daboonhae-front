@@ -4,6 +4,7 @@
 // - 이미지 실패 시 placeholder
 import { useState } from 'react';
 import { IconClose } from '../../ds/Icons.jsx';
+import ProductNameText from '../../global/ProductNameText.jsx';
 
 // 이미지 로딩 실패 시 fallback (외부 의존성 차단)
 function Thumb({ src, alt }) {
@@ -62,7 +63,7 @@ export function CompareHeaderRow({ product, onRemove, onOpen, dragProps, isDragg
         <Thumb src={product.thumb} alt={product.name} />
         <div className="d-compare-col-brand">{product.brand}</div>
         <div className="d-compare-col-name">
-          <span>{product.name}</span>
+          <span><ProductNameText product={product} /></span>
           {product.serving && (
             <span className="d-compare-col-volume">{product.serving}</span>
           )}

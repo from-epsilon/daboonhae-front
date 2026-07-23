@@ -19,6 +19,7 @@ import {
   splitProteinSortKey,
 } from '../../data/listSort.js';
 import PurchaseOffers from '../global/PurchaseOffers.jsx';
+import ProductNameText from '../global/ProductNameText.jsx';
 import { productPath } from '../../data/productUrl.js';
 
 // 제품 상세 경로 — 크롤러가 따라갈 실제 href (슬러그+ID 하이브리드, 사이트맵 없이도 발견 가능)
@@ -148,7 +149,7 @@ function ProductNameContent({ food, config }) {
   const variantLabel = config.titleVariant === 'size' ? sizeVariantLabelOf(food) : null;
   return (
     <>
-      {food.name}
+      <ProductNameText product={food} />
       {variantLabel && <span className="fc-title-variant">{variantLabel}</span>}
     </>
   );
@@ -736,7 +737,7 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
           onClick={(e) => handleNameClick(e, onClick)}
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
-          {food.name}
+          <ProductNameText product={food} />
           {/* 용량 — 제품명 옆 인라인 */}
           {food.serving && (
             <span className="fc-grid-serving">
@@ -785,7 +786,7 @@ export function PurposeRecommendCard({ food, onClick, onCompare, inCompare, metr
           onClick={(e) => handleNameClick(e, onClick)}
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
-          {food.name}
+          <ProductNameText product={food} />
           {food.serving && (
             <span className="fc-grid-serving">
               {' '}{food.serving}

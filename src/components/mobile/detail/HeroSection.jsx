@@ -7,6 +7,7 @@ import { IconCheck } from '../../ds/Icons.jsx';
 import { MacroRow } from '../../ds/MacroRow.jsx';
 import { formatProteinSourceLabel, formatSweetenerLabel } from '../../../data/listFilters.js';
 import { useProteinResolver, useSweetenerResolver } from '../../../data/proteinQuality.js';
+import ProductNameText from '../../global/ProductNameText.jsx';
 
 // 이미지 영역 — 정사각 흰 배경 + 1px 보더
 function HeroImage({ src, alt }) {
@@ -132,7 +133,7 @@ export function HeroSection({ product, config }) {
         <div className="m-detail-hero-meta">
           <div className="m-detail-hero-brand">{brand}</div>
           <h1 className="m-detail-hero-name">
-            {name}
+            <ProductNameText product={product} />
             {titleVariant && <span className="m-detail-hero-variant">{titleVariant}</span>}
           </h1>
         </div>

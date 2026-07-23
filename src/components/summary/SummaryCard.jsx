@@ -9,6 +9,7 @@ import {
   unitPriceOf,
 } from '../../data/purchaseLinks.js';
 import { getVendorLogo } from '../../utils/vendorLogo.js';
+import ProductNameText from '../global/ProductNameText.jsx';
 import './SummaryCard.css';
 
 function productHref(food) {
@@ -206,7 +207,7 @@ export function SummaryCard({
           href={productHref(food)}
           onClick={(event) => handleNameClick(event, onClick)}
         >
-          {food.name}
+          <ProductNameText product={food} />
           <SummaryInlineMeta food={food} />
         </a>
         <SummaryStats stats={stats} />
@@ -271,7 +272,7 @@ export function MobileSummaryListCard({ food, onClick, onCompare, inCompare, onW
           href={productHref(food)}
           onClick={(event) => handleNameClick(event, onClick)}
         >
-          {food.name}
+          <ProductNameText product={food} />
           {food.categoryCode === 'protein_drink' && <SummaryInlineMeta food={food} />}
         </a>
         {food.categoryCode !== 'protein_drink' && food.serving && (

@@ -16,6 +16,7 @@ import { useWishlist } from '../store/WishlistContext.jsx';
 
 import { ChevronDown } from 'lucide-react';
 import ProductThumb from '../components/global/ProductThumb.jsx';
+import ProductNameText from '../components/global/ProductNameText.jsx';
 import { MacroRow } from '../components/ds/MacroRow.jsx';
 import { IconCompare, IconHeart } from '../components/ds/Icons.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
@@ -493,7 +494,7 @@ function ProductOverview({
             <div className="d-detail-overview-title">
               <span className="d-detail-header-brand">{product.brand}</span>
               <h1 className="d-detail-header-name">
-                {product.name}
+                <ProductNameText product={product} />
                 {titleVariant && <span className="d-detail-header-variant">{titleVariant}</span>}
               </h1>
             </div>

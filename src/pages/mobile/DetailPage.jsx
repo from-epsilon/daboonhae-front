@@ -12,6 +12,7 @@ import { referenceUnitPrice, getCategoryCardConfig } from '../../data/categoryCa
 import { useCompare } from '../../store/CompareContext.jsx';
 import { useWishlist } from '../../store/WishlistContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
+import ProductNameText from '../../components/global/ProductNameText.jsx';
 import { Button } from '../../components/ds/Button.jsx';
 import { MacroRow } from '../../components/ds/MacroRow.jsx';
 import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
@@ -233,7 +234,7 @@ export default function DetailPageMobile() {
       />
       <AppBar
         onBack={() => navigate(-1)}
-        title={product.name}
+        title={<ProductNameText product={product} />}
         onCompare={() => navigate('/compare')}
         compareCount={count}
         onWishlist={() => navigate('/wishlist')}

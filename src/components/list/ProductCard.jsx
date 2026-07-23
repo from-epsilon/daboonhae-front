@@ -3,6 +3,7 @@ import { Check, Plus } from 'lucide-react';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { formatMetric } from '../../utils/format.js';
 import ProductThumb from '../global/ProductThumb.jsx';
+import ProductNameText from '../global/ProductNameText.jsx';
 import { productPath } from '../../data/productUrl.js';
 
 // 제품 카드
@@ -26,7 +27,7 @@ export default function ProductCard({ product, purpose }) {
       <Link to={productPath(product)} className="product-card-link">
         <ProductThumb product={product} size="card" />
         <div className="product-brand">{product.brand}</div>
-        <div className="product-name">{product.name}</div>
+        <div className="product-name"><ProductNameText product={product} /></div>
         <div className="product-volume">{product.volume}</div>
 
         <div className="product-metrics">

@@ -1,4 +1,5 @@
 import ProductThumb from '../global/ProductThumb.jsx';
+import ProductNameText from '../global/ProductNameText.jsx';
 
 // 제품 요약 섹션
 // - 썸네일·브랜드·제품명·용량 + 영양·원료·알레르기 등 카드에 못 담은 정보까지 표시
@@ -20,7 +21,7 @@ export default function ProductSummary({ product }) {
         <ProductThumb product={product} size="card" />
         <div className="product-summary-meta">
           <div className="summary-brand">{product.brand}</div>
-          <h1 className="summary-name">{product.name}</h1>
+          <h1 className="summary-name"><ProductNameText product={product} /></h1>
           <div className="summary-volume">{product.volume}</div>
           <p className="summary-description">{product.description}</p>
         </div>

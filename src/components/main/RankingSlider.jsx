@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProducts } from '../../store/ProductsContext.jsx';
 import { usePurpose } from '../../store/PurposeContext.jsx';
 import ProductThumb from '../global/ProductThumb.jsx';
+import ProductNameText from '../global/ProductNameText.jsx';
 import { productPath } from '../../data/productUrl.js';
 
 // 인기 랭킹 / 추천 카드 슬라이드
@@ -49,7 +50,7 @@ export default function RankingSlider() {
             <div className="ranking-rank">#{idx + 1}</div>
             <ProductThumb product={p} size="card" />
             <div className="ranking-brand">{p.brand}</div>
-            <div className="ranking-name">{p.name}</div>
+            <div className="ranking-name"><ProductNameText product={p} /></div>
           </Link>
         ))}
       </div>

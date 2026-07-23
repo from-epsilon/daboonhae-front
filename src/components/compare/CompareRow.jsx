@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { formatMetric } from '../../utils/format.js';
 import ProductThumb from '../global/ProductThumb.jsx';
+import ProductNameText from '../global/ProductNameText.jsx';
 import { productPath } from '../../data/productUrl.js';
 
 // 비교 페이지의 단일 제품 컬럼 (가로 나열의 단위)
@@ -23,7 +24,7 @@ export default function CompareRow({ product, purpose, onRemove }) {
         <ProductThumb product={product} size="compact" />
         <div className="compare-col-meta">
           <div className="compare-brand">{product.brand}</div>
-          <Link to={productPath(product)} className="compare-name">{product.name}</Link>
+          <Link to={productPath(product)} className="compare-name"><ProductNameText product={product} /></Link>
           <div className="compare-volume">{product.volume}</div>
         </div>
       </div>

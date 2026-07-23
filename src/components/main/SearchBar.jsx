@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSuggestions } from '../../data/searchIndex.js';
 import { useProducts } from '../../store/ProductsContext.jsx';
+import ProductNameText from '../global/ProductNameText.jsx';
 
 // 메인 검색바
 // - 자동완성 드롭다운 + 키보드 탐색(↑↓ Enter Esc)
@@ -104,7 +105,7 @@ export default function SearchBar() {
               onMouseEnter={() => setActiveIndex(i)}
               onMouseDown={() => goToProduct(s.id)}
             >
-              <span className="search-suggestion-name">{s.name}</span>
+              <span className="search-suggestion-name"><ProductNameText product={s} /></span>
               <span className="search-suggestion-brand">{s.brand}</span>
             </li>
           ))}

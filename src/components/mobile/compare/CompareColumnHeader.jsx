@@ -4,6 +4,7 @@
 // - 이미지 로딩 실패 시 회색 placeholder 표시
 import { useState } from 'react';
 import { IconClose } from '../../ds/Icons.jsx';
+import ProductNameText from '../../global/ProductNameText.jsx';
 
 // 이미지 로딩 실패 시 노출할 placeholder (썸네일 외부 의존성 차단)
 function Thumb({ src, alt }) {
@@ -53,7 +54,7 @@ export function CompareColumnHeader({ product, onRemove, onOpen, dragProps }) {
         <Thumb src={product.thumb} alt={product.name} />
         <div className="m-compare-col-brand">{product.brand}</div>
         <div className="m-compare-col-name">
-          <span>{product.name}</span>
+          <span><ProductNameText product={product} /></span>
           {product.serving && (
             <span className="m-compare-col-volume">{product.serving}</span>
           )}
