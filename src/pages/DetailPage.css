@@ -1402,6 +1402,7 @@
 .d-analysis-amino-pattern-value strong {
   font-family: var(--font-numeric);
   font-size: 12px;
+  font-weight: 600;
   color: var(--text-primary);
 }
 .d-analysis-amino-pattern-value em {
