@@ -14,10 +14,14 @@ import { useProteinResolver, useSweetenerResolver } from '../../data/proteinQual
 import {
   getProteinDrinkRecommendScore,
   PROTEIN_SORT_BASES,
+  PROTEIN_SORT_CALORIE_EFFICIENCY,
   PROTEIN_SORT_MODES,
+  PROTEIN_SORT_PRICE_EFFICIENCY,
+  PROTEIN_SORT_QUALITY,
   PROTEIN_SORT_RECOMMEND,
   splitProteinSortKey,
 } from '../../data/listSort.js';
+import { formatEfficiencyValue, getProteinDrinkScoreModel } from '../../data/proteinDrinkScore.js';
 import PurchaseOffers from '../global/PurchaseOffers.jsx';
 import ProductNameText from '../global/ProductNameText.jsx';
 import { productPath } from '../../data/productUrl.js';
@@ -315,7 +319,9 @@ function TieredMetricsBlock({ food, config, sortKey }) {
   const sweeteners = config.showSweetenerMeta ? (food.ingredients?.sweeteners ?? food.sweeteners ?? []) : [];
   const isProteinMetricSort = isTieredMetricSort(sortKey, primary);
   const isRecommend = sortKey === PROTEIN_SORT_RECOMMEND;
-  const isCaloriesSort = sortKey === 'calories_asc';
+  const isScoreMetricSort = sortKey === PROTEIN_SORT_QUALITY
+    || sortKey === PROTEIN_SORT_CALORIE_EFFICIENCY
+    || sortKey === PROTEIN_SORT_PRICE_EFFICIENCY;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4 }}>
@@ -325,7 +331,7 @@ function TieredMetricsBlock({ food, config, sortKey }) {
         <>
           <RecommendScore food={food} variant="secondary" />
           {isProteinMetricSort && <SelectedProteinMetric food={food} metrics={primary} sortKey={sortKey} />}
-          {isCaloriesSort && <SelectedCaloriesMetric food={food} />}
+          {isScoreMetricSort && <SelectedScoreMetric food={food} sortKey={sortKey} />}
         </>
       )}
 
@@ -436,16 +442,29 @@ function SelectedProteinMetric({ food, metrics, sortKey }) {
   );
 }
 
-function SelectedCaloriesMetric({ food }) {
-  const calories = formatInlineNumber(food?.nutrition?.calories);
-  if (calories === null) return null;
+function SelectedScoreMetric({ food, sortKey }) {
+  const isPrice = sortKey === PROTEIN_SORT_PRICE_EFFICIENCY;
+  const isQuality = sortKey === PROTEIN_SORT_QUALITY;
+  const metricKey = isQuality
+    ? 'aminoQuality'
+    : isPrice
+      ? 'priceEfficiency'
+      : 'calorieEfficiency';
+  const metric = getProteinDrinkScoreModel(food)?.[metricKey];
+  const value = isQuality
+    ? (Number.isFinite(metric?.value) ? Math.round(metric.value).toLocaleString() : null)
+    : formatEfficiencyValue(metric?.value);
+  if (value == null) return null;
 
   return (
     <div className="fc-selected-metric">
-      <span className="fc-meta-label fc-selected-metric-name">칼로리</span>
+      <span className="fc-meta-label fc-selected-metric-name">
+        {isQuality ? '단백질 퀄리티' : isPrice ? '가성비' : '칼로리 효율'}
+      </span>
       <span className="fc-selected-metric-value">
-        {calories}<span className="fc-selected-metric-unit">kcal</span>
-        <span className="fc-selected-metric-basis">1회 제공량 기준</span>
+        <span className={`fc-selected-metric-tier is-${metric.tone}`}>{metric.tier}</span>
+        <span className="fc-selected-metric-unit"> · {value}{isQuality ? '점' : ''}</span>
+        {!isQuality && <span className="fc-selected-metric-basis">효율 점수</span>}
       </span>
     </div>
   );

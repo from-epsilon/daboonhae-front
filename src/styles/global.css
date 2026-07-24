@@ -685,6 +685,15 @@ select:focus-visible {
   font-weight: 500;
   color: var(--text-tertiary);
 }
+.fc-selected-metric-tier.is-poor { color: var(--rating-poor-text); }
+.fc-selected-metric-tier.is-light { color: var(--rating-light-text); }
+.fc-selected-metric-tier.is-near { color: var(--rating-near-text); }
+.fc-selected-metric-tier.is-solid { color: var(--rating-solid-text); }
+.fc-selected-metric-tier.is-strong { color: var(--rating-strong-text); }
+.fc-selected-metric-tier.is-high { color: var(--rating-high-text); }
+.fc-selected-metric-tier.is-very-high { color: var(--rating-very-high-text); }
+.fc-selected-metric-tier.is-caution,
+.fc-selected-metric-tier.is-neutral { color: var(--text-tertiary); }
 .fc-selected-metric-basis {
   margin-left: 5px;
   font-size: 11px;
@@ -1899,6 +1908,9 @@ img.product-thumb { object-fit: cover; }
   .psort-segment {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .psort-axis.is-core .psort-segment {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .psort-opt {
     justify-content: center;

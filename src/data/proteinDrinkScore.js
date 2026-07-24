@@ -15,16 +15,16 @@ export const PROTEIN_GRADE_ROWS = [
 ];
 
 export const AMINO_QUALITY_GRADE_ROWS = [
-  { range: '125+', grade: 'S+', label: '기준을 크게 초과' },
-  { range: '115~124', grade: 'S', label: '기준을 충분히 초과' },
-  { range: '105~114', grade: 'A+', label: '기준을 안정적으로 초과' },
-  { range: '97~104', grade: 'A', label: '기준 충족' },
-  { range: '90~96', grade: 'A-', label: '기준에 근접' },
-  { range: '80~89', grade: 'B+', label: '일부 부족' },
-  { range: '70~79', grade: 'B', label: '부족' },
-  { range: '60~69', grade: 'C', label: '많이 부족' },
-  { range: '50~59', grade: 'D', label: '매우 부족' },
-  { range: '50 미만', grade: 'F', label: '심하게 부족' },
+  { range: '145+', grade: 'S+', label: '최상위' },
+  { range: '140~144', grade: 'S', label: '매우 우수' },
+  { range: '130~139', grade: 'A+', label: '우수' },
+  { range: '115~129', grade: 'A', label: '높은 편' },
+  { range: '100~114', grade: 'A-', label: '기준 충족' },
+  { range: '90~99', grade: 'B+', label: '기준 근접' },
+  { range: '80~89', grade: 'B', label: '일부 부족' },
+  { range: '70~79', grade: 'C', label: '부족' },
+  { range: '50~69', grade: 'D', label: '많이 부족' },
+  { range: '50 미만', grade: 'F', label: '매우 부족' },
 ];
 
 export const CALORIE_EFFICIENCY_GRADE_ROWS = [
@@ -103,14 +103,14 @@ export function aminoQualityTier(value) {
   const score = finiteNumber(value);
   if (score == null || score <= 0) return 'N/A';
   if (score < 50) return 'F';
-  if (score < 60) return 'D';
-  if (score < 70) return 'C';
-  if (score < 80) return 'B';
-  if (score < 90) return 'B+';
-  if (score < 97) return 'A-';
-  if (score < 105) return 'A';
-  if (score < 115) return 'A+';
-  if (score < 125) return 'S';
+  if (score < 70) return 'D';
+  if (score < 80) return 'C';
+  if (score < 90) return 'B';
+  if (score < 100) return 'B+';
+  if (score < 115) return 'A-';
+  if (score < 130) return 'A';
+  if (score < 140) return 'A+';
+  if (score < 145) return 'S';
   return 'S+';
 }
 
