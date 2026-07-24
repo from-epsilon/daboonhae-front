@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppBar } from '../components/ds/AppBar.jsx';
 import { SummaryCard } from '../components/summary/SummaryCard.jsx';
@@ -6,7 +5,7 @@ import Seo from '../components/global/Seo.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { productPath } from '../data/productUrl.js';
 import { useCompare } from '../store/CompareContext.jsx';
-import { useProducts } from '../store/ProductsContext.jsx';
+import { useProductsByIds } from '../store/ProductsContext.jsx';
 import { useWishlist } from '../store/WishlistContext.jsx';
 import { useIsMobile } from '../hooks/useMediaQuery.js';
 import './WishlistPage.css';
@@ -27,15 +26,8 @@ export default function WishlistPage() {
   const navigate = useNavigate();
   const wishlist = useWishlist();
   const compare = useCompare();
-  const { products: allProducts, loading } = useProducts();
+  const { products, loading } = useProductsByIds(wishlist.ids);
   const isMobile = useIsMobile();
-
-  const products = useMemo(
-    () => wishlist.ids
-      .map((id) => allProducts.find((p) => String(p.id) === String(id)))
-      .filter(Boolean),
-    [wishlist.ids, allProducts],
-  );
 
   const handleToggleCompare = (id) => {
     if (!compare.has(id) && compare.isFull) {

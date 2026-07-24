@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProducts } from '../store/ProductsContext.jsx';
+import { useHomeProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { IconChevron } from '../components/ds/Icons.jsx';
 import { FoodCardSkeleton } from '../components/ds/Skeleton.jsx';
 import { HOME_PURPOSE_TABS } from '../data/categoryTabs.js';
-import { getPurposeRecommendedProducts } from '../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../data/categoryCardMetrics.js';
 
 import Seo from '../components/global/Seo.jsx';
@@ -32,14 +31,6 @@ function SectionHeader({ title, subtitle, moreLabel, onMore }) {
         </button>
       )}
     </header>
-  );
-}
-
-// 목적별 추천 — 선택한 목적에 속한 제품을 목적별 추천 점수순 상위 10개로 (5열 × 2행)
-function usePurposeRecommended(products, tabId) {
-  return useMemo(
-    () => getPurposeRecommendedProducts(products, tabId, 10),
-    [products, tabId],
   );
 }
 
@@ -69,13 +60,6 @@ function PurposeSegment({ value, onChange }) {
   );
 }
 
-function useRecent(adapted) {
-  return useMemo(
-    () => [...adapted].sort((a, b) => (a.id < b.id ? 1 : -1)).slice(0, 8),
-    [adapted],
-  );
-}
-
 function HomeSkeletonDesktop() {
   return (
     <div className="d-home">
@@ -92,12 +76,16 @@ function HomeSkeletonDesktop() {
 export default function MainPage() {
   const navigate = useNavigate();
   const { toggle } = useCompare();
-  const { products: PRODUCTS, loading } = useProducts();
-
-  const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
+  const { recommendations, recent: recentProducts, loading } = useHomeProducts();
   const [recTabId, setRecTabId] = useState(HOME_PURPOSE_TABS[0].id);
-  const recommended = usePurposeRecommended(PRODUCTS, recTabId);
-  const recent = useRecent(adapted);
+  const recommended = useMemo(
+    () => (recommendations[recTabId] ?? []).map(getAdapted),
+    [recommendations, recTabId],
+  );
+  const recent = useMemo(
+    () => recentProducts.map(getAdapted),
+    [recentProducts],
+  );
 
   const handleFoodClick = (food) => navigate(productPath(food));
   const handleToggleCompare = (food) => toggle(food.id);
@@ -116,7 +104,7 @@ export default function MainPage() {
         }}
       />
 
-      <CategoryTabsDesktop products={PRODUCTS} />
+      <CategoryTabsDesktop />
 
       {/* 목적별 추천 식품 — 제목·세그먼트·전체보기 한 행 + 점수 순위 그리드 */}
       <section className="d-home-section">

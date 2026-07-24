@@ -10,7 +10,7 @@ import {
   CALORIE_EFFICIENCY_GRADE_ROWS,
   PRICE_EFFICIENCY_GRADE_ROWS,
   PROTEIN_GRADE_ROWS,
-  formatEfficiencyValue,
+  formatEfficiencyReferenceValue,
   getProteinDrinkScoreModel,
 } from '../../../data/proteinDrinkScore.js';
 import { IngredientList } from './IngredientList.jsx';
@@ -1230,15 +1230,15 @@ function calorieEfficiencyJudgment(product) {
       grade: 'N/A',
       tone: 'caution',
       text: '칼로리 효율 티어 데이터가 없어요.',
-      helpDetail: '비슷한 단백질 품질이라면 칼로리가 낮을수록 좋게 봐요.',
+      helpDetail: '닭가슴살 단백질 20g 기준 환산 칼로리가 낮을수록 높은 등급이에요.',
     };
   }
   return {
-    value: formatEfficiencyValue(metric.value),
+    value: `${formatEfficiencyReferenceValue(metric.value)}kcal`,
     grade: metric.tier,
     tone: metric.tone,
-    text: '적은 칼로리로 단백질을 얼마나 잘 채워주는지 평가한 등급이에요.',
-    helpDetail: '비슷한 단백질 품질이라면 칼로리가 낮을수록 좋게 봐요.',
+    text: '닭가슴살 단백질 20g과 같은 수준의 필수아미노산을 채우는 데 필요한 칼로리예요.',
+    helpDetail: '닭가슴살 단백질 20g 기준 환산 칼로리가 낮을수록 높은 등급이에요.',
   };
 }
 
@@ -1255,21 +1255,21 @@ function priceEfficiencyJudgment(product) {
       tone: 'caution',
       text: '가격 정보가 없습니다.',
       helpDetail: [
-        '가격이 확인되면 단백질 품질 대비 가격이 괜찮은지 보여줄게요.',
+        '가격이 확인되면 닭가슴살 단백질 20g 기준 환산 가격을 보여줄게요.',
         '가격 정보는 실제 판매처와 다를 수 있어요.',
       ],
     };
   }
   return {
-    value: formatEfficiencyValue(metric.value),
+    value: `${formatEfficiencyReferenceValue(metric.value)}원`,
     grade: metric.tier,
     tone: metric.tone,
     text: [
-      '가격 대비 단백질 효율을 보여주는 등급이에요.',
+      '닭가슴살 단백질 20g과 같은 수준의 필수아미노산을 채우는 데 드는 가격이에요.',
       priceLine,
     ],
     helpDetail: [
-      '비슷한 단백질 품질이라면 가격이 낮을수록 좋게 봐요.',
+      '닭가슴살 단백질 20g 기준 환산 가격이 낮을수록 높은 등급이에요.',
       '가격 정보는 실제 판매처와 다를 수 있어요.',
     ],
   };
@@ -1424,7 +1424,7 @@ function SummaryGradeRow({ title, value, tone, grade: gradeProp, text, help, hel
   const isMissingValue = value === '정보 없음' || value === '데이터 없음' || value == null;
   const grade = gradeProp ?? gradeForTone(tone);
   const gradeClass = String(grade).toLowerCase().replace(/\+/g, 'plus').replace(/-/g, 'minus').replace(/[^a-z0-9]/g, '');
-  const valueMatch = typeof value === 'string' ? value.match(/^(.+?)(g|mg)$/) : null;
+  const valueMatch = typeof value === 'string' ? value.match(/^(.+?)(kcal|mg|g|원)$/) : null;
   const tooltipLabel = helpLabel ?? help;
 
   return (
@@ -1500,7 +1500,7 @@ function KeyJudgmentSection({ product, nutrition, proteinVerdict }) {
         helpContent={(
           <EfficiencyGradeTooltip
             ariaLabel="칼로리 효율 등급 기준"
-            valueHeader="값"
+            valueHeader="닭가슴살 단백질 20g 기준"
             rows={CALORIE_EFFICIENCY_GRADE_ROWS}
             detail={calorieEfficiency.helpDetail}
           />
@@ -1516,7 +1516,7 @@ function KeyJudgmentSection({ product, nutrition, proteinVerdict }) {
         helpContent={(
           <EfficiencyGradeTooltip
             ariaLabel="가성비 등급 기준"
-            valueHeader="값"
+            valueHeader="닭가슴살 단백질 20g 기준"
             rows={PRICE_EFFICIENCY_GRADE_ROWS}
             detail={priceEfficiency.helpDetail}
           />

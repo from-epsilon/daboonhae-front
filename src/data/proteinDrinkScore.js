@@ -28,28 +28,30 @@ export const AMINO_QUALITY_GRADE_ROWS = [
 ];
 
 export const CALORIE_EFFICIENCY_GRADE_ROWS = [
-  { range: '0.95+', grade: 'S+', label: '최상위 열량 효율' },
-  { range: '0.90~0.94', grade: 'S', label: '매우 우수' },
-  { range: '0.85~0.89', grade: 'A+', label: '우수' },
-  { range: '0.80~0.84', grade: 'A', label: '높은 편' },
-  { range: '0.70~0.79', grade: 'A-', label: '양호' },
-  { range: '0.60~0.69', grade: 'B+', label: '보통 이상' },
-  { range: '0.50~0.59', grade: 'B', label: '보통' },
-  { range: '0.30~0.49', grade: 'C', label: '낮은 편' },
-  { range: '0.30 미만', grade: 'D', label: '낮음' },
+  { range: '85kcal 이하', grade: 'S+', label: '최상위 열량 효율' },
+  { range: '86~95kcal', grade: 'S', label: '매우 우수' },
+  { range: '96~105kcal', grade: 'A+', label: '우수' },
+  { range: '106~115kcal', grade: 'A', label: '높은 편' },
+  { range: '116~130kcal', grade: 'A-', label: '양호' },
+  { range: '131~155kcal', grade: 'B+', label: '보통 이상' },
+  { range: '156~180kcal', grade: 'B', label: '보통' },
+  { range: '181~300kcal', grade: 'C', label: '낮은 편' },
+  { range: '301kcal 이상', grade: 'D', label: '낮음' },
 ];
 
 export const PRICE_EFFICIENCY_GRADE_ROWS = [
-  { range: '1.05+', grade: 'S+', label: '최상위 가성비' },
-  { range: '0.95~1.04', grade: 'S', label: '매우 우수' },
-  { range: '0.90~0.94', grade: 'A+', label: '우수' },
-  { range: '0.80~0.89', grade: 'A', label: '높은 편' },
-  { range: '0.75~0.79', grade: 'A-', label: '양호' },
-  { range: '0.70~0.74', grade: 'B+', label: '보통 이상' },
-  { range: '0.55~0.69', grade: 'B', label: '보통' },
-  { range: '0.40~0.54', grade: 'C', label: '낮은 편' },
-  { range: '0.40 미만', grade: 'D', label: '낮음' },
+  { range: '1,100원 이하', grade: 'S+', label: '최상위 가성비' },
+  { range: '1,101~1,200원', grade: 'S', label: '매우 우수' },
+  { range: '1,201~1,300원', grade: 'A+', label: '우수' },
+  { range: '1,301~1,450원', grade: 'A', label: '높은 편' },
+  { range: '1,451~1,650원', grade: 'A-', label: '양호' },
+  { range: '1,651~2,000원', grade: 'B+', label: '보통 이상' },
+  { range: '2,001~3,000원', grade: 'B', label: '보통' },
+  { range: '3,001~5,000원', grade: 'C', label: '낮은 편' },
+  { range: '5,001원 이상', grade: 'D', label: '낮음' },
 ];
+
+export const CHICKEN_BREAST_AMINO_REFERENCE_FACTOR = 1.24;
 
 const LIMITING_AMINO_LABELS = {
   ...AMINO_ACID_LABELS,
@@ -62,6 +64,7 @@ const LIMITING_AMINO_LABELS = {
 };
 
 function finiteNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
   const number = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(number) ? number : null;
 }
@@ -114,11 +117,47 @@ export function aminoQualityTier(value) {
   return 'S+';
 }
 
-export function formatEfficiencyValue(value) {
+function per20gProtein(value, protein) {
+  const amount = finiteNumber(value);
+  const proteinAmount = finiteNumber(protein);
+  if (amount == null || proteinAmount == null || amount <= 0 || proteinAmount <= 0) return null;
+  return (amount * 20) / proteinAmount;
+}
+
+export function chickenEquivalentCalorieTier(value) {
+  const number = finiteNumber(value);
+  if (number == null || number <= 0) return 'N/A';
+  const displayedValue = Math.round(number);
+  if (displayedValue <= 85) return 'S+';
+  if (displayedValue <= 95) return 'S';
+  if (displayedValue <= 105) return 'A+';
+  if (displayedValue <= 115) return 'A';
+  if (displayedValue <= 130) return 'A-';
+  if (displayedValue <= 155) return 'B+';
+  if (displayedValue <= 180) return 'B';
+  if (displayedValue <= 300) return 'C';
+  return 'D';
+}
+
+export function chickenEquivalentPriceTier(value) {
+  const number = finiteNumber(value);
+  if (number == null || number <= 0) return 'N/A';
+  const displayedValue = Math.round(number);
+  if (displayedValue <= 1100) return 'S+';
+  if (displayedValue <= 1200) return 'S';
+  if (displayedValue <= 1300) return 'A+';
+  if (displayedValue <= 1450) return 'A';
+  if (displayedValue <= 1650) return 'A-';
+  if (displayedValue <= 2000) return 'B+';
+  if (displayedValue <= 3000) return 'B';
+  if (displayedValue <= 5000) return 'C';
+  return 'D';
+}
+
+export function formatEfficiencyReferenceValue(value) {
   const number = finiteNumber(value);
   if (number == null) return null;
-  // DB 티어 경계를 반올림으로 넘어 보이지 않도록 상세 리포트와 동일하게 내림 처리한다.
-  return (Math.floor((number + Number.EPSILON) * 100) / 100).toFixed(2);
+  return Math.round(number).toLocaleString();
 }
 
 function normalizeAminoKey(value) {
@@ -201,11 +240,56 @@ export function getProteinDrinkScoreModel(product) {
   const proteinValue = finiteNumber(product?.nutrition?.protein);
   const proteinTier = firstDefined(core, 'protein_amount_tier', 'proteinAmountTier') || proteinAmountTier(proteinValue);
   const aminoValue = finiteNumber(firstDefined(amino, 'quality_score', 'qualityScore'));
-  const calorieValue = finiteNumber(firstDefined(core, 'calorie_efficiency_value', 'calorieEfficiencyValue'));
-  const calorieTier = firstDefined(core, 'calorie_efficiency_tier', 'calorieEfficiencyTier');
+  const aminoFactor =
+    finiteNumber(firstDefined(core, 'amino_quality_factor', 'aminoQualityFactor'))
+    ?? (aminoValue == null ? null : aminoValue / 100);
+  const coreValues = core?.values ?? {};
+  const efficiencyProteinValue =
+    finiteNumber(firstDefined(coreValues, 'serving_g', 'servingG')) ?? proteinValue;
+  const rawCaloriePer20g =
+    finiteNumber(firstDefined(core, 'kcal_per_20g_protein', 'kcalPer20gProtein'))
+    ?? per20gProtein(firstDefined(coreValues, 'kcal', 'calories'), efficiencyProteinValue)
+    ?? per20gProtein(product?.nutrition?.calories, proteinValue);
+  const calorieValue =
+    finiteNumber(firstDefined(
+      core,
+      'chicken_protein_20g_equivalent_kcal',
+      'chickenProtein20gEquivalentKcal',
+    ))
+    ?? (
+      rawCaloriePer20g != null && aminoFactor != null && aminoFactor > 0
+        ? rawCaloriePer20g * CHICKEN_BREAST_AMINO_REFERENCE_FACTOR / aminoFactor
+        : null
+    );
+  const calorieTier =
+    firstDefined(
+      core,
+      'chicken_protein_20g_equivalent_kcal_tier',
+      'chickenProtein20gEquivalentKcalTier',
+    )
+    || chickenEquivalentCalorieTier(calorieValue);
   const priceBasis = firstDefined(core, 'price_factor_basis', 'priceFactorBasis');
-  const rawPriceValue = finiteNumber(firstDefined(core, 'price_efficiency_value', 'priceEfficiencyValue'));
-  const rawPriceTier = firstDefined(core, 'price_efficiency_tier', 'priceEfficiencyTier');
+  const rawPricePer20g =
+    finiteNumber(firstDefined(core, 'price_per_20g_protein', 'pricePer20gProtein'))
+    ?? per20gProtein(firstDefined(coreValues, 'unit_price_krw', 'unitPriceKrw'), efficiencyProteinValue);
+  const rawPriceValue =
+    finiteNumber(firstDefined(
+      core,
+      'chicken_protein_20g_equivalent_price_krw',
+      'chickenProtein20gEquivalentPriceKrw',
+    ))
+    ?? (
+      rawPricePer20g != null && aminoFactor != null && aminoFactor > 0
+        ? rawPricePer20g * CHICKEN_BREAST_AMINO_REFERENCE_FACTOR / aminoFactor
+        : null
+    );
+  const rawPriceTier =
+    firstDefined(
+      core,
+      'chicken_protein_20g_equivalent_price_tier',
+      'chickenProtein20gEquivalentPriceTier',
+    )
+    || chickenEquivalentPriceTier(rawPriceValue);
   const hasPriceBasis = Boolean(priceBasis)
     && !String(priceBasis).startsWith('missing_price_neutral_');
   const priceMeasured = hasPriceBasis && rawPriceValue != null && Boolean(rawPriceTier);

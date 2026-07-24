@@ -1,7 +1,10 @@
 import { AMINO_ACID_KEYS, BCAA_KEYS, EAA_AMINO_ACIDS } from './aminoAcids.js';
 import { NUTRIENT_GROUP, isNutrientGroup } from './nutrientGroups.js';
 import { bestUnitPriceOf } from './purchaseLinks.js';
-import { formatEfficiencyValue, getProteinDrinkScoreModel } from './proteinDrinkScore.js';
+import {
+  formatEfficiencyReferenceValue,
+  getProteinDrinkScoreModel,
+} from './proteinDrinkScore.js';
 
 const PROTEIN_DRINK_CODE = 'protein_drink';
 const PROTEIN_DRINK_LABEL = '단백질 음료';
@@ -133,12 +136,21 @@ function nutrientMetric(key, label, unit, direction = null, options = {}) {
   };
 }
 
-function scoreMetric({ key, label, unit = '', select, formatValue, getNote, toggleGroup }) {
+function scoreMetric({
+  key,
+  label,
+  unit = '',
+  direction = 'max',
+  select,
+  formatValue,
+  getNote,
+  toggleGroup,
+}) {
   return {
     key,
     label,
     unit,
-    direction: 'max',
+    direction,
     toggleGroup,
     getValue: (product) => select(getProteinDrinkScoreModel(product))?.value ?? null,
     getGrade: (product) => select(getProteinDrinkScoreModel(product))?.tier ?? null,
@@ -206,15 +218,22 @@ const PROTEIN_DRINK_COMPARE_METRICS = [
   scoreMetric({
     key: 'calorieEfficiency',
     label: '칼로리 효율',
+    unit: 'kcal',
+    direction: 'min',
     select: (model) => model.calorieEfficiency,
-    formatValue: formatEfficiencyValue,
+    formatValue: formatEfficiencyReferenceValue,
+    getNote: () => '닭가슴살 단백질 20g 기준',
   }),
   scoreMetric({
     key: 'priceEfficiency',
     label: '가성비',
+    unit: '원',
+    direction: 'min',
     select: (model) => model.priceEfficiency,
-    formatValue: formatEfficiencyValue,
-    getNote: (metric) => metric.available ? null : '가격 정보 없음',
+    formatValue: formatEfficiencyReferenceValue,
+    getNote: (metric) => (
+      metric.available ? '닭가슴살 단백질 20g 기준' : '가격 정보 없음'
+    ),
   }),
   nutrientMetric('calories', '열량', 'kcal', null, { supporting: true }),
   nutrientMetric('carbs', '탄수화물', 'g', null, { supporting: true }),

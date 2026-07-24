@@ -9,7 +9,7 @@
 //   → AddSlot (max 미만일 때 가로 스크롤 마지막)
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProducts } from '../../store/ProductsContext.jsx';
+import { useProductsByIds } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { AppBar } from '../../components/ds/AppBar.jsx';
@@ -117,11 +117,11 @@ function CompareGrid({
 export default function ComparePageMobile() {
   const navigate = useNavigate();
   const { ids, remove, clear, reorder, max } = useCompare();
-  const { products: allProducts } = useProducts();
+  const { products: storedProducts, loading } = useProductsByIds(ids);
 
   const products = useMemo(
-    () => ids.map(id => allProducts.find(p => String(p.id) === String(id))).filter(Boolean).map(getAdapted),
-    [ids, allProducts],
+    () => storedProducts.map(getAdapted),
+    [storedProducts],
   );
   const metrics = useMemo(() => getCompareMetricsForProducts(products), [products]);
 
@@ -156,12 +156,14 @@ export default function ComparePageMobile() {
   };
   const handleAdd = () => navigate('/list');
 
-  const isEmpty = products.length === 0;
+  const isLoading = loading && ids.length > 0;
+  const isEmpty = !isLoading && products.length === 0;
   const canAdd = products.length < max;
   const remaining = max - products.length;
-  const titleText = isEmpty
+  const visibleCount = isLoading ? ids.length : products.length;
+  const titleText = visibleCount === 0
     ? '제품 비교'
-    : `제품 비교 (${products.length}/${max})`;
+    : `제품 비교 (${visibleCount}/${max})`;
 
   return (
     <>
@@ -173,7 +175,9 @@ export default function ComparePageMobile() {
         // 우측 슬롯은 균형용 spacer. '전체 지우기'는 본문 상단 액션바에 노출.
       />
 
-      {isEmpty ? (
+      {isLoading ? (
+        <div className="m-compare m-compare--loading" aria-busy="true" />
+      ) : isEmpty ? (
         <div className="m-compare m-compare--empty-wrap">
           <EmptyCompare max={max} onBrowse={() => navigate('/list')} />
         </div>

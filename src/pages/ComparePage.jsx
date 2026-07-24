@@ -10,7 +10,7 @@
 // 모바일 폴더의 compareUtils.js는 순수 utility라 데스크탑에서도 그대로 사용
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProducts } from '../store/ProductsContext.jsx';
+import { useProductsByIds } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { CompareTable } from '../components/desktop/compare/CompareTable.jsx';
@@ -54,11 +54,11 @@ function PageHeader({ count, max, onClear }) {
 export default function ComparePage() {
   const navigate = useNavigate();
   const { ids, remove, clear, reorder, max } = useCompare();
-  const { products: allProducts } = useProducts();
+  const { products: storedProducts, loading } = useProductsByIds(ids);
 
   const products = useMemo(
-    () => ids.map(id => allProducts.find(p => String(p.id) === String(id))).filter(Boolean).map(getAdapted),
-    [ids, allProducts],
+    () => storedProducts.map(getAdapted),
+    [storedProducts],
   );
   const metrics = useMemo(() => getCompareMetricsForProducts(products), [products]);
 
@@ -93,16 +93,19 @@ export default function ComparePage() {
   const handleAdd = () => navigate('/list');
   const handleBrowse = () => navigate('/list');
 
-  const isEmpty = products.length === 0;
+  const isLoading = loading && ids.length > 0;
+  const isEmpty = !isLoading && products.length === 0;
   const canAdd = products.length < max;
   const remaining = max - products.length;
 
   return (
     <div className="page d-compare">
       <Seo title="제품 비교" noindex />
-      <PageHeader count={products.length} max={max} onClear={handleClear} />
+      <PageHeader count={isLoading ? ids.length : products.length} max={max} onClear={handleClear} />
 
-      {isEmpty ? (
+      {isLoading ? (
+        <div className="d-compare-loading" aria-busy="true" />
+      ) : isEmpty ? (
         <EmptyCompare max={max} onBrowse={handleBrowse} />
       ) : (
         <>

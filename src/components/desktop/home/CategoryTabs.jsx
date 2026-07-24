@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
 import { categoryPath } from '../../../data/categoryTabs.js';
 
 // 데스크톱 홈 카테고리 아이콘 그리드
@@ -19,12 +18,8 @@ const ITEMS = [
 ];
 
 // 목적별 그룹 제목 없이 카테고리 아이콘을 한 그리드로 노출
-export default function CategoryTabsDesktop({ products = [] }) {
+export default function CategoryTabsDesktop() {
   const navigate = useNavigate();
-  const items = useMemo(() => {
-    const visibleCodes = new Set(products.map((p) => p?.categoryCode).filter(Boolean));
-    return ITEMS.filter((item) => visibleCodes.has(item.code));
-  }, [products]);
 
   const handleItemClick = (item) => {
     navigate(categoryPath(item.code));
@@ -33,7 +28,7 @@ export default function CategoryTabsDesktop({ products = [] }) {
   return (
     <section className="d-home-cattabs">
       <div className="d-home-cattabs-grid">
-        {items.map((item) => (
+        {ITEMS.map((item) => (
           <button
             key={item.label}
             type="button"

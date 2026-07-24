@@ -21,7 +21,10 @@ import {
   PROTEIN_SORT_RECOMMEND,
   splitProteinSortKey,
 } from '../../data/listSort.js';
-import { formatEfficiencyValue, getProteinDrinkScoreModel } from '../../data/proteinDrinkScore.js';
+import {
+  formatEfficiencyReferenceValue,
+  getProteinDrinkScoreModel,
+} from '../../data/proteinDrinkScore.js';
 import PurchaseOffers from '../global/PurchaseOffers.jsx';
 import ProductNameText from '../global/ProductNameText.jsx';
 import { productPath } from '../../data/productUrl.js';
@@ -453,7 +456,7 @@ function SelectedScoreMetric({ food, sortKey }) {
   const metric = getProteinDrinkScoreModel(food)?.[metricKey];
   const value = isQuality
     ? (Number.isFinite(metric?.value) ? Math.round(metric.value).toLocaleString() : null)
-    : formatEfficiencyValue(metric?.value);
+    : formatEfficiencyReferenceValue(metric?.value);
   if (value == null) return null;
 
   return (
@@ -463,8 +466,12 @@ function SelectedScoreMetric({ food, sortKey }) {
       </span>
       <span className="fc-selected-metric-value">
         <span className={`fc-selected-metric-tier is-${metric.tone}`}>{metric.tier}</span>
-        <span className="fc-selected-metric-unit"> · {value}{isQuality ? '점' : ''}</span>
-        {!isQuality && <span className="fc-selected-metric-basis">효율 점수</span>}
+        <span className="fc-selected-metric-unit">
+          {' · '}{value}{isQuality ? '점' : isPrice ? '원' : 'kcal'}
+        </span>
+        {!isQuality && (
+          <span className="fc-selected-metric-basis">닭가슴살 단백질 20g 기준</span>
+        )}
       </span>
     </div>
   );

@@ -11,7 +11,7 @@ import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
 import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import { Pagination } from '../../components/ds/Pagination.jsx';
-import { useProductSearch, useProducts } from '../../store/ProductsContext.jsx';
+import { useListProducts, useProductSearch } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
 import { getAdapted } from '../../data/adapters.js';
 import { applySort, resolveSortKey } from '../../data/listSort.js';
@@ -32,7 +32,7 @@ import {
   saveListViewState,
   setListPageSearchParam,
 } from '../../data/listViewState.js';
-import { getFoodTypeByLabel, getFoodTypeByCode, getFoodTypeBySlug, getVisibleFoodTypes, isListProductVisible, categoryPath } from '../../data/categoryTabs.js';
+import { LIST_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeByCode, getFoodTypeBySlug, isListProductVisible, categoryPath } from '../../data/categoryTabs.js';
 import NotFoundPage from '../NotFoundPage.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { useWishlist } from '../../store/WishlistContext.jsx';
@@ -67,16 +67,12 @@ function ListSkeleton() {
 export default function ListPageMobile() {
   const { count: compareCount, toggle: toggleCompare, has: hasCompare } = useCompare();
   const wishlist = useWishlist();
-  const { products: PRODUCTS, loading } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   // 카테고리 경로형 URL(/category/:slug) — 경로의 슬러그가 카테고리의 단일 출처
   const { categorySlug } = useParams();
   const routeFoodType = categorySlug ? getFoodTypeBySlug(categorySlug) : null;
   const q = searchParams.get('q') ?? '';
-  const remoteSearch = useProductSearch(q);
-  const listLoading = loading || remoteSearch.loading;
-  const subParam = searchParams.get('sub') ?? '';
   const pageParam = getListPageFromSearchParams(searchParams);
   const initialListStateRef = useRef(null);
   if (initialListStateRef.current === null) {
@@ -84,12 +80,21 @@ export default function ListPageMobile() {
   }
   const initialListState = initialListStateRef.current;
 
-  // 카테고리는 URL(경로) 우선 → sub 쿼리 → 세션 복원 순
-  const [activeSub, setActiveSub] = useState(() => routeFoodType?.label || subParam || initialListState.activeSub || 'all');
+  // 카테고리는 URL 경로만 단일 출처로 사용한다. /list는 항상 전체로 시작한다.
+  const [activeSub, setActiveSub] = useState(() => routeFoodType?.label || 'all');
   const [filterState, setFilterState] = useState(() => initialListState.filterState || {});
   const [sortKey, setSortKey] = useState(() => initialListState.sortKey || 'default');
   const [page, setPage] = useState(() => pageParam || initialListState.page || 1);
-  const visibleFoodTypes = useMemo(() => getVisibleFoodTypes(PRODUCTS), [PRODUCTS]);
+
+  // activeSub이 라벨이면 해당 식품유형 코드(food_type_category_code) 찾기
+  const activeCode = useMemo(() => {
+    if (activeSub === 'all') return null;
+    return getFoodTypeByLabel(activeSub)?.code ?? null;
+  }, [activeSub]);
+  const { products: PRODUCTS, loading } = useListProducts(activeCode);
+  const remoteSearch = useProductSearch(q, { categoryCode: activeCode });
+  const listLoading = loading || remoteSearch.loading;
+  const visibleFoodTypes = LIST_FOOD_TYPES;
 
   const setListPage = useCallback((nextPage, { replace = true, scroll = false } = {}) => {
     const normalized = Number.isFinite(nextPage) ? Math.max(1, Math.trunc(nextPage)) : 1;
@@ -130,12 +135,6 @@ export default function ListPageMobile() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
-
-  // activeSub이 라벨이면 해당 식품유형 코드(food_type_category_code) 찾기
-  const activeCode = useMemo(() => {
-    if (activeSub === 'all') return null;
-    return getFoodTypeByLabel(activeSub)?.code ?? null;
-  }, [activeSub]);
 
   // 칩 선택 → 카테고리 경로형 URL로 이동 (URL이 카테고리의 단일 출처)
   const handleSubSelect = useCallback((label) => {

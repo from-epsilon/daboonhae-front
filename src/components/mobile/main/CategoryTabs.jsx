@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
 import { categoryPath } from '../../../data/categoryTabs.js';
 
 // 홈 카테고리 아이콘 그리드
@@ -18,12 +17,8 @@ const ITEMS = [
 ];
 
 // 목적별 그룹 제목 없이 카테고리 아이콘을 한 그리드로 노출
-export function CategoryTabs({ products = [] }) {
+export function CategoryTabs() {
   const navigate = useNavigate();
-  const items = useMemo(() => {
-    const visibleCodes = new Set(products.map((p) => p?.categoryCode).filter(Boolean));
-    return ITEMS.filter((item) => visibleCodes.has(item.code));
-  }, [products]);
 
   const handleItemClick = (item) => {
     navigate(categoryPath(item.code));
@@ -32,7 +27,7 @@ export function CategoryTabs({ products = [] }) {
   return (
     <div className="m-cat-tabs">
       <div className="m-cat-grid">
-        {items.map((item) => (
+        {ITEMS.map((item) => (
           <button
             key={item.label}
             type="button"

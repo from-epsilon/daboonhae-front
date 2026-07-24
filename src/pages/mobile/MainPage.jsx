@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProducts } from '../../store/ProductsContext.jsx';
+import { useHomeProducts } from '../../store/ProductsContext.jsx';
 import { getAdapted } from '../../data/adapters.js';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { useWishlist } from '../../store/WishlistContext.jsx';
@@ -14,7 +14,6 @@ import Footer from '../../components/desktop/home/Footer.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { productPath } from '../../data/productUrl.js';
 import { HOME_PURPOSE_TABS } from '../../data/categoryTabs.js';
-import { getPurposeRecommendedProducts } from '../../data/homeRecommendations.js';
 import { getPurposeHighlightMetrics } from '../../data/categoryCardMetrics.js';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import './MainPage.css';
@@ -34,13 +33,6 @@ function SectionHeader({ title, subtitle, moreLabel, onMore }) {
       )}
     </header>
   );
-}
-
-// 목적별 추천 — 선택한 목적에 속한 제품을 목적별 추천 점수순 상위 8개로
-function usePurposeRecommended(products, tabId) {
-  return useMemo(() => {
-    return getPurposeRecommendedProducts(products, tabId, 8);
-  }, [products, tabId]);
 }
 
 // 추천 섹션 목적 선택 — 세그먼트 컨트롤 (회색 트랙 + 활성 흰 카드)
@@ -67,12 +59,6 @@ function PurposeSegment({ value, onChange }) {
       })}
     </div>
   );
-}
-
-function useRecent(adapted) {
-  return useMemo(() => {
-    return [...adapted].sort((a, b) => (a.id < b.id ? 1 : -1)).slice(0, 5);
-  }, [adapted]);
 }
 
 function HomeSkeleton() {
@@ -103,13 +89,18 @@ export default function MainPageMobile() {
   const navigate = useNavigate();
   const { toggle, count, has } = useCompare();
   const wishlist = useWishlist();
-  const { products: PRODUCTS, loading } = useProducts();
+  const { recommendations, recent: recentProducts, loading } = useHomeProducts();
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const adapted = useMemo(() => PRODUCTS.map(getAdapted), [PRODUCTS]);
   const [recTabId, setRecTabId] = useState(HOME_PURPOSE_TABS[0].id);
-  const recommended = usePurposeRecommended(PRODUCTS, recTabId);
-  const recent = useRecent(adapted);
+  const recommended = useMemo(
+    () => (recommendations[recTabId] ?? []).slice(0, 8).map(getAdapted),
+    [recommendations, recTabId],
+  );
+  const recent = useMemo(
+    () => recentProducts.slice(0, 5).map(getAdapted),
+    [recentProducts],
+  );
 
   const handleSearch = () => setSearchOpen(true);
   const handleSearchSubmit = (next) => {
@@ -174,7 +165,7 @@ export default function MainPageMobile() {
 
         {/* 1. 카테고리 탭 — 히어로와 딱 붙임 */}
         <section className="m-home-section m-home-section--cattabs">
-          <CategoryTabs products={PRODUCTS} />
+          <CategoryTabs />
         </section>
 
         <div className="m-home-divider" aria-hidden="true" />

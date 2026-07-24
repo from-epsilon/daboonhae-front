@@ -2,11 +2,13 @@
 // - 전체 카탈로그는 실제로 필요한 화면에서만 지연 조회
 // - 상세/카테고리 보조 데이터는 전용 훅으로 별도 조회
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import {
+  fetchHomeProducts as apiFetchHomeProducts,
   fetchProductById as apiFetchProductById,
   fetchProducts as apiFetchProducts,
   fetchProductsByCategory as apiFetchProductsByCategory,
+  fetchProductsByIds as apiFetchProductsByIds,
   searchProductsRemote as apiSearchProductsRemote,
 } from '../data/productApi.js';
 
@@ -61,8 +63,101 @@ export function useProducts({ autoLoad = true } = {}) {
   };
 }
 
-export function useProductSearch(query) {
+export function useHomeProducts() {
+  const [state, setState] = useState({
+    recommendations: { protein: [], meal: [] },
+    recent: [],
+    loading: true,
+    error: null,
+  });
+
+  useEffect(() => {
+    let active = true;
+    apiFetchHomeProducts()
+      .then((result) => {
+        if (active) {
+          setState({ ...result, loading: false, error: null });
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setState({
+            recommendations: { protein: [], meal: [] },
+            recent: [],
+            loading: false,
+            error,
+          });
+        }
+      });
+
+    return () => { active = false; };
+  }, []);
+
+  return state;
+}
+
+export function useProductsByIds(ids) {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error('useProductsByIds는 ProductsProvider 안에서만 사용 가능');
+
+  const orderedKey = (ids ?? [])
+    .map((id) => String(id ?? '').trim())
+    .filter(Boolean)
+    .join(',');
+  const requestKey = useMemo(
+    () => [...new Set(orderedKey.split(',').filter(Boolean))].sort().join(','),
+    [orderedKey],
+  );
+  const [state, setState] = useState({
+    key: '',
+    products: [],
+    loading: false,
+    error: null,
+  });
+
+  useEffect(() => {
+    let active = true;
+    if (!requestKey || ctx.status === 'success') {
+      return () => { active = false; };
+    }
+
+    const requestIds = requestKey.split(',');
+    setState({ key: requestKey, products: [], loading: true, error: null });
+    apiFetchProductsByIds(requestIds)
+      .then((products) => {
+        if (active) {
+          setState({ key: requestKey, products, loading: false, error: null });
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setState({ key: requestKey, products: [], loading: false, error });
+        }
+      });
+
+    return () => { active = false; };
+  }, [requestKey, ctx.status]);
+
+  const sourceProducts = ctx.status === 'success'
+    ? ctx.products
+    : (state.key === requestKey ? state.products : []);
+  const byId = new Map(sourceProducts.map((product) => [String(product.id), product]));
+  const products = orderedKey
+    ? orderedKey.split(',').map((id) => byId.get(id)).filter(Boolean)
+    : [];
+
+  return {
+    products,
+    loading: Boolean(requestKey)
+      && ctx.status !== 'success'
+      && (state.key !== requestKey || state.loading),
+    error: state.key === requestKey ? state.error : null,
+  };
+}
+
+export function useProductSearch(query, { categoryCode = null } = {}) {
   const normalized = String(query ?? '').trim();
+  const categoryKey = String(categoryCode ?? '');
   const [state, setState] = useState({ query: '', products: [], loading: false, error: null });
 
   useEffect(() => {
@@ -73,7 +168,9 @@ export function useProductSearch(query) {
     }
 
     setState({ query: normalized, products: [], loading: true, error: null });
-    apiSearchProductsRemote(normalized)
+    apiSearchProductsRemote(normalized, {
+      categoryCode: categoryKey || null,
+    })
       .then((products) => {
         if (active) setState({ query: normalized, products, loading: false, error: null });
       })
@@ -82,7 +179,7 @@ export function useProductSearch(query) {
       });
 
     return () => { active = false; };
-  }, [normalized]);
+  }, [normalized, categoryKey]);
 
   return state;
 }
@@ -164,4 +261,11 @@ export function useCategoryProducts(categoryCode) {
     loading: catalogProducts === null && Boolean(key) && (!isCurrent || state.loading),
     error: catalogProducts === null && isCurrent ? state.error : null,
   };
+}
+
+export function useListProducts(categoryCode) {
+  const key = String(categoryCode ?? '');
+  const catalog = useProducts({ autoLoad: !key });
+  const category = useCategoryProducts(key);
+  return key ? category : catalog;
 }

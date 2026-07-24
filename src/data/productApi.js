@@ -478,14 +478,6 @@ async function attachFoodCategoryNutrientDescriptions(food) {
   };
 }
 
-function onlyActiveCategoryRows(rows) {
-  return (rows ?? []).filter(
-    (food) =>
-      food?.food_type_categories?.is_active === true &&
-      marketProductProfilesOf(food).length > 0,
-  );
-}
-
 function marketProductProfilesOf(food) {
   const profiles = food?.market_product_profiles;
   if (!Array.isArray(profiles)) return profiles ? [profiles] : [];
@@ -531,10 +523,53 @@ function flattenMarketProductProfiles(food) {
     flattenMarketProductProfile(food, profile, profiles.length));
 }
 
-function transformMarketProductRows(rows) {
-  return onlyActiveCategoryRows(rows)
-    .flatMap(flattenMarketProductProfiles)
-    .map(transformProduct);
+function scoreSnapshotsFromSummaryRow(row) {
+  if (!row?.recommendation_profile_code) return [];
+
+  return [{
+    profile_code: row.recommendation_profile_code,
+    profile_version: row.recommendation_profile_version,
+    revision: row.recommendation_revision,
+    revision_label: row.recommendation_revision_label,
+    status: row.recommendation_status,
+    score: row.recommendation_score,
+    confidence: row.recommendation_confidence,
+    components: {
+      core: {
+        protein_amount_tier: row.recommendation_protein_amount_tier,
+        amino_quality_factor: row.recommendation_amino_quality_factor,
+        values: {
+          serving_g: row.recommendation_efficiency_protein_g,
+          kcal: row.recommendation_efficiency_kcal,
+          unit_price_krw: row.recommendation_efficiency_unit_price_krw,
+        },
+        kcal_per_20g_protein: row.recommendation_kcal_per_20g_protein,
+        price_per_20g_protein: row.recommendation_price_per_20g_protein,
+        price_factor_basis: row.recommendation_price_factor_basis,
+        chicken_protein_20g_equivalent_kcal:
+          row.recommendation_chicken_equivalent_kcal,
+        chicken_protein_20g_equivalent_kcal_tier:
+          row.recommendation_chicken_equivalent_kcal_tier,
+        chicken_protein_20g_equivalent_price_krw:
+          row.recommendation_chicken_equivalent_price_krw,
+        chicken_protein_20g_equivalent_price_tier:
+          row.recommendation_chicken_equivalent_price_tier,
+      },
+      amino_acids: {
+        quality_score: row.recommendation_amino_quality_score,
+      },
+    },
+    reasons: [],
+    computed_at: row.recommendation_computed_at,
+    published_at: row.recommendation_published_at,
+  }];
+}
+
+function transformMarketProductSummaryRows(rows) {
+  return (rows ?? []).map((row) => transformProduct({
+    ...row,
+    food_score_snapshots: scoreSnapshotsFromSummaryRow(row),
+  }));
 }
 
 // ── 선택 조인 절 (RLS 허용 시에만 포함)
@@ -559,25 +594,6 @@ const PROFILE_SCORE_JOIN = `
 const FLAVOR_JOIN = `
   food_flavors ( code, name_ko, display_order, is_active ),
 `;
-const MARKET_PROFILES_LIST_JOIN = `
-  market_product_profiles:food_product_profiles!food_product_profiles_food_id_fkey!inner (
-    id, revision_label, is_market_active, updated_at,
-    barcode, source_food_code, image_url, storage_image_path,
-    list_price_krw,
-    net_content_amount, net_content_unit,
-    package_unit_count, package_unit_name, package_unit_amount,
-    serving_amount, nutrition_basis_type,
-    allergens_text, ingredient_annotations,
-    ${PROFILE_SCORE_JOIN}
-    food_purchase_links!food_purchase_links_product_profile_id_fkey (
-      vendor_name, url, quantity, price, is_fast_delivery, is_active, updated_at
-    ),
-    food_profile_nutrients (
-      nutrient_code, amount, unit, amount_text,
-      nutrients ( code, name_ko, default_unit, group_name, display_order )
-    )
-  )
-`;
 const MARKET_PROFILES_DETAIL_JOIN = `
   market_product_profiles:food_product_profiles!food_product_profiles_food_id_fkey!inner (
     id, revision_label, is_market_active, updated_at,
@@ -599,18 +615,6 @@ const MARKET_PROFILES_DETAIL_JOIN = `
   )
 `;
 
-// ── 목록 select 절 (목록/검색/카테고리 순위 공통)
-// 상세 전용 원문·주의사항·출처 메타는 제외하여 전체 카탈로그 응답을 줄인다.
-const LIST_SELECT_BASE = (optional) => `
-  id, name, brand, flavor_code, current_product_profile_id,
-  food_type_category_code, family_id, size_variant_label, updated_at,
-  food_type_categories!inner ( code, name_ko, is_active ),
-  ${FLAVOR_JOIN}
-  ${optional ? FAMILY_JOIN : ''}
-  ${optional ? PURPOSE_JOIN : ''}
-  ${MARKET_PROFILES_LIST_JOIN}
-`;
-
 // ── 단건 상세 select 절. optional=true면 family/purpose/alias 조인 포함
 const DETAIL_SELECT_BASE = (optional) => `
   id, name, brand, flavor_code, current_product_profile_id,
@@ -623,14 +627,47 @@ const DETAIL_SELECT_BASE = (optional) => `
   ${MARKET_PROFILES_DETAIL_JOIN}
 `;
 
+const MARKET_PRODUCT_SUMMARY_SELECT = `
+  id, food_id, product_profile_id, revision_label, is_current_profile,
+  base_name, name, brand, flavor_code, current_product_profile_id,
+  food_type_category_code, family_id, size_variant_label, updated_at,
+  food_type_categories, food_flavors, food_families,
+  food_purpose_category_links,
+  barcode, source_food_code, image_url, storage_image_path, list_price_krw,
+  net_content_amount, net_content_unit,
+  package_unit_count, package_unit_name, package_unit_amount,
+  serving_amount, nutrition_basis_type,
+  allergens_text, ingredient_annotations,
+  food_purchase_links, food_nutrients,
+  recommendation_profile_code, recommendation_profile_version,
+  recommendation_revision, recommendation_revision_label,
+  recommendation_status, recommendation_score, recommendation_confidence,
+  recommendation_computed_at, recommendation_published_at,
+  recommendation_protein_amount_tier,
+  recommendation_amino_quality_score,
+  recommendation_amino_quality_factor,
+  recommendation_efficiency_protein_g,
+  recommendation_efficiency_kcal,
+  recommendation_efficiency_unit_price_krw,
+  recommendation_kcal_per_20g_protein,
+  recommendation_price_per_20g_protein,
+  recommendation_price_factor_basis,
+  recommendation_chicken_equivalent_kcal,
+  recommendation_chicken_equivalent_kcal_tier,
+  recommendation_chicken_equivalent_price_krw,
+  recommendation_chicken_equivalent_price_tier
+`;
+
 // 선택 조인은 기본 사용한다. 운영 DB 정책이 아직 닫혀 있으면 자동 폴백한다.
 // 임시로 끄고 싶을 때만 VITE_SUPABASE_OPTIONAL_JOINS=false를 지정한다.
 let optionalJoinsAvailable = import.meta.env.VITE_SUPABASE_OPTIONAL_JOINS !== 'false';
 
 // StrictMode 재실행과 같은 경로의 반복 진입에서 동일 요청을 합친다.
 let productsRequest = null;
+let homeProductsRequest = null;
 const productDetailRequests = new Map();
 const categoryProductRequests = new Map();
+const selectedProductRequests = new Map();
 
 // 선택 조인 권한/관계 에러인지 판정 (이 경우 폴백)
 function isOptionalJoinError(error) {
@@ -671,31 +708,13 @@ async function searchAliasProductIds(query) {
 
 // ── 제품 목록 전체 조회
 async function fetchProductsUncached() {
-  if (optionalJoinsAvailable) {
-    const { data, error } = await supabase
-      .from('foods')
-      .select(LIST_SELECT_BASE(true))
-      .eq('is_active', true)
-      .eq('food_type_categories.is_active', true)
-      .eq('market_product_profiles.is_market_active', true)
-      .order('updated_at', { ascending: false });
-
-    if (!error) return transformMarketProductRows(data);
-    if (!isOptionalJoinError(error)) throw error;
-    optionalJoinsAvailable = false;
-    console.warn('[productApi] 선택 조인(food_families/purpose/aliases) 불가, 기본 조인으로 폴백');
-  }
-
   const { data, error } = await supabase
-    .from('foods')
-    .select(LIST_SELECT_BASE(false))
-    .eq('is_active', true)
-    .eq('food_type_categories.is_active', true)
-    .eq('market_product_profiles.is_market_active', true)
+    .from('market_product_summaries')
+    .select(MARKET_PRODUCT_SUMMARY_SELECT)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return transformMarketProductRows(data);
+  return transformMarketProductSummaryRows(data);
 }
 
 export function fetchProducts({ force = false } = {}) {
@@ -706,6 +725,95 @@ export function fetchProducts({ force = false } = {}) {
     throw error;
   });
   productsRequest = request;
+  return request;
+}
+
+// ── 메인 전용 제한 조회
+// 전체 카탈로그를 받은 뒤 자르지 않고, 목적별 추천과 최근 제품만 서버에서 제한한다.
+async function fetchHomeProductsUncached() {
+  const [proteinResult, mealResult, recentResult] = await Promise.all([
+    supabase
+      .from('home_product_summaries')
+      .select(MARKET_PRODUCT_SUMMARY_SELECT)
+      .eq('matches_home_protein', true)
+      .not('recommendation_score', 'is', null)
+      .order('recommendation_score', { ascending: false })
+      .order('recommendation_confidence', { ascending: false })
+      .order('ranking_score', { ascending: false })
+      .order('name', { ascending: true })
+      .limit(10),
+    supabase
+      .from('home_product_summaries')
+      .select(MARKET_PRODUCT_SUMMARY_SELECT)
+      .eq('matches_home_meal', true)
+      .order('ranking_score', { ascending: false })
+      .order('name', { ascending: true })
+      .limit(10),
+    supabase
+      .from('market_product_summaries')
+      .select(MARKET_PRODUCT_SUMMARY_SELECT)
+      // 기존 홈의 문자열 상품 ID 내림차순과 같은 기준을 유지한다.
+      .order('id', { ascending: false })
+      .limit(8),
+  ]);
+
+  for (const result of [proteinResult, mealResult, recentResult]) {
+    if (result.error) throw result.error;
+  }
+
+  return {
+    recommendations: {
+      protein: transformMarketProductSummaryRows(proteinResult.data),
+      meal: transformMarketProductSummaryRows(mealResult.data),
+    },
+    recent: transformMarketProductSummaryRows(recentResult.data),
+  };
+}
+
+export function fetchHomeProducts({ force = false } = {}) {
+  if (!force && homeProductsRequest) return homeProductsRequest;
+
+  const request = fetchHomeProductsUncached().catch((error) => {
+    if (homeProductsRequest === request) homeProductsRequest = null;
+    throw error;
+  });
+  homeProductsRequest = request;
+  return request;
+}
+
+// ── 찜함·비교함 전용 ID 묶음 조회
+// 저장된 복합 상품 ID(foodIdpProfileId)만 가져오고 반환 순서는 입력 순서로 맞춘다.
+async function fetchProductsByIdsUncached(ids) {
+  const { data, error } = await supabase
+    .from('market_product_summaries')
+    .select(MARKET_PRODUCT_SUMMARY_SELECT)
+    .in('id', ids);
+
+  if (error) throw error;
+
+  const products = transformMarketProductSummaryRows(data);
+  const byId = new Map(products.map((product) => [String(product.id), product]));
+  return ids.map((id) => byId.get(id)).filter(Boolean);
+}
+
+export function fetchProductsByIds(ids, { force = false } = {}) {
+  const uniqueIds = [...new Set(
+    (ids ?? []).map((id) => String(id ?? '').trim()).filter(Boolean),
+  )].sort();
+  if (uniqueIds.length === 0) return Promise.resolve([]);
+
+  const key = uniqueIds.join(',');
+  if (!force && selectedProductRequests.has(key)) {
+    return selectedProductRequests.get(key);
+  }
+
+  const request = fetchProductsByIdsUncached(uniqueIds).catch((error) => {
+    if (selectedProductRequests.get(key) === request) {
+      selectedProductRequests.delete(key);
+    }
+    throw error;
+  });
+  selectedProductRequests.set(key, request);
   return request;
 }
 
@@ -789,32 +897,14 @@ export function fetchProductById(id, { force = false } = {}) {
 
 // ── 상세의 카테고리 순위/관련 제품용 목록 조회
 async function fetchProductsByCategoryUncached(categoryCode) {
-  if (optionalJoinsAvailable) {
-    const { data, error } = await supabase
-      .from('foods')
-      .select(LIST_SELECT_BASE(true))
-      .eq('is_active', true)
-      .eq('food_type_categories.is_active', true)
-      .eq('market_product_profiles.is_market_active', true)
-      .eq('food_type_category_code', categoryCode)
-      .order('updated_at', { ascending: false });
-
-    if (!error) return transformMarketProductRows(data);
-    if (!isOptionalJoinError(error)) throw error;
-    optionalJoinsAvailable = false;
-  }
-
   const { data, error } = await supabase
-    .from('foods')
-    .select(LIST_SELECT_BASE(false))
-    .eq('is_active', true)
-    .eq('food_type_categories.is_active', true)
-    .eq('market_product_profiles.is_market_active', true)
+    .from('market_product_summaries')
+    .select(MARKET_PRODUCT_SUMMARY_SELECT)
     .eq('food_type_category_code', categoryCode)
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
-  return transformMarketProductRows(data);
+  return transformMarketProductSummaryRows(data);
 }
 
 export function fetchProductsByCategory(categoryCode, { force = false } = {}) {
@@ -833,12 +923,14 @@ export function fetchProductsByCategory(categoryCode, { force = false } = {}) {
 // ── 텍스트 검색
 // 전체 카탈로그에 토큰 AND 검색을 적용하고, alias 테이블에서 토큰별 매칭을 보강한다.
 // 목록 조회와 검색 조회가 같은 매칭 규칙을 사용하므로 띄어쓰기/중간 단어에 결과가 흔들리지 않는다.
-export async function searchProductsRemote(query) {
+export async function searchProductsRemote(query, { categoryCode = null } = {}) {
   const tokens = tokenizeSearchQuery(query);
   if (tokens.length === 0) return [];
 
   const [products, aliasIdGroups] = await Promise.all([
-    fetchProducts(),
+    categoryCode
+      ? fetchProductsByCategory(categoryCode)
+      : fetchProducts(),
     Promise.all(tokens.map(searchAliasProductIds)),
   ]);
   const aliasTokensByProductId = new Map();

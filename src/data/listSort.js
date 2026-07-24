@@ -1,7 +1,7 @@
 // 리스트 정렬 — 카테고리별 정렬 옵션·기준 통합 (데스크톱/모바일 공용)
-// - 단백질 음료는 추천/효율 + 단백질/필수아미노산(EAA)/류신/BCAA 총량 정렬 중심
+// - 단백질 음료는 추천/닭가슴살 단백질 20g 등가 효율 + 단백질/필수아미노산(EAA)/류신/BCAA 총량 정렬 중심
 // - 그 외 카테고리는 공통 기본 옵션(당류/탄수화물 등)
-// - 정렬값은 카드 메트릭(computeMetricValues)과 동일한 기준(칼로리/가격 대비)으로 산출
+// - 칼로리·가성비 정렬은 화면에 표시하는 닭가슴살 단백질 20g 기준 환산값을 사용
 import { cheapestUnitPrice } from './categoryCardMetrics.js';
 import { computeEaa, computeBcaa } from './aminoAcids.js';
 import { getProteinDrinkScoreModel } from './proteinDrinkScore.js';
@@ -191,7 +191,7 @@ function compareProteinRecommend(a, b) {
   return String(a?.name ?? '').localeCompare(String(b?.name ?? ''), 'ko');
 }
 
-function compareProteinScoreMetric(a, b, metricKey) {
+function compareProteinScoreMetric(a, b, metricKey, direction = 'desc') {
   const valueA = getProteinDrinkScoreModel(a)?.[metricKey]?.value;
   const valueB = getProteinDrinkScoreModel(b)?.[metricKey]?.value;
   const hasA = Number.isFinite(valueA);
@@ -200,7 +200,7 @@ function compareProteinScoreMetric(a, b, metricKey) {
   if (!hasA) return 1;
   if (!hasB) return -1;
 
-  const valueDiff = valueB - valueA;
+  const valueDiff = direction === 'asc' ? valueA - valueB : valueB - valueA;
   return valueDiff !== 0 ? valueDiff : compareProteinRecommend(a, b);
 }
 
@@ -232,17 +232,17 @@ export function applySort(products, category, sortKey) {
   const key = resolveSortKey(category, sortKey);
   const arr = [...products];
 
-  // 단백질 음료 — 추천순/효율순은 별도 기준, 성분 정렬은 단백질/EAA/류신/BCAA 기준 내림차순
+  // 단백질 음료 — 닭가슴살 단백질 20g 기준 칼로리·가격은 오름차순, 품질·성분은 내림차순
   if (category === PROTEIN_DRINK_CATEGORY) {
     if (key === PROTEIN_SORT_RECOMMEND) return arr.sort(compareProteinRecommend);
     if (key === PROTEIN_SORT_QUALITY) {
       return arr.sort((a, b) => compareProteinScoreMetric(a, b, 'aminoQuality'));
     }
     if (key === PROTEIN_SORT_CALORIE_EFFICIENCY) {
-      return arr.sort((a, b) => compareProteinScoreMetric(a, b, 'calorieEfficiency'));
+      return arr.sort((a, b) => compareProteinScoreMetric(a, b, 'calorieEfficiency', 'asc'));
     }
     if (key === PROTEIN_SORT_PRICE_EFFICIENCY) {
-      return arr.sort((a, b) => compareProteinScoreMetric(a, b, 'priceEfficiency'));
+      return arr.sort((a, b) => compareProteinScoreMetric(a, b, 'priceEfficiency', 'asc'));
     }
     return arr.sort((a, b) => proteinDrinkValue(b, key) - proteinDrinkValue(a, key));
   }
