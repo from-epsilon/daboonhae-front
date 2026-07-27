@@ -1401,17 +1401,18 @@ img.product-thumb { object-fit: cover; }
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
 }
 .m-foodcard-list-main {
+  --m-foodcard-list-thumb-size: clamp(96px, 28vw, 104px);
   display: flex;
   align-items: flex-start;
   gap: 12px;
 }
 .m-foodcard-list-media {
-  width: 88px;
-  flex: 0 0 88px;
+  width: var(--m-foodcard-list-thumb-size);
+  flex: 0 0 var(--m-foodcard-list-thumb-size);
 }
 .m-foodcard-list-thumb {
-  width: 88px;
-  height: 88px;
+  width: var(--m-foodcard-list-thumb-size);
+  height: var(--m-foodcard-list-thumb-size);
   overflow: hidden;
   border-radius: var(--radius-sm);
   background: var(--bg-white);
