@@ -421,7 +421,7 @@ function AminoPatternSection({ product, nutrition }) {
             {hasFallback && (
               <span className="d-analysis-amino-pattern-legend d-analysis-amino-pattern-legend--fallback">
                 <i aria-hidden="true" />
-                추정치
+                참고용 추정치
               </span>
             )}
           </div>
@@ -456,8 +456,7 @@ function AminoPatternSection({ product, nutrition }) {
                 <span className="d-analysis-amino-pattern-value">
                   {row.value != null ? (
                     <>
-                      <strong>{Math.round(row.ratio)}%</strong>
-                      {row.fallback && <b>추정</b>}
+                      <strong>{row.fallback ? '≈' : ''}{Math.round(row.ratio)}%</strong>
                       {row.partial && <b>부분</b>}
                     </>
                   ) : (
@@ -476,7 +475,7 @@ function AminoPatternSection({ product, nutrition }) {
         )}
         {hasFallback && (
           <p className="d-analysis-amino-pattern-note">
-            추정치는 제품의 표기값이 없어, 원재료를 기반으로 추정한 값이에요.
+            추정치는 제품의 표기값이 없어, 원재료를 기반으로 계산한 참고용 값이에요. 실제 함량과 차이가 클 수 있어요.
           </p>
         )}
       </div>

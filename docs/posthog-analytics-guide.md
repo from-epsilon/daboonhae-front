@@ -1,6 +1,6 @@
 # PostHog 분석 운영 가이드
 
-> 최종 갱신: 2026-07-11
+> 최종 갱신: 2026-07-29
 > 대상 프로젝트: 다분해 프런트엔드
 > PostHog 리전: US Cloud
 
@@ -22,6 +22,8 @@
 - `src/store/WishlistContext.jsx`: 찜 변경 이벤트
 - `src/store/CompareContext.jsx`: 비교함 변경 이벤트
 - `src/pages/RedirectPage.jsx`: 구매처 이동 이벤트
+- `src/components/global/SiteFeedbackButton.jsx`: 의견 패널 진입·제출 이벤트
+- `src/pages/ContactPage.jsx`: 문의 페이지 진입·제출 이벤트
 - `src/pages/PrivacyPage.jsx`: 개인정보 처리방침
 
 ## 2. 현재 완료 상태
@@ -194,6 +196,31 @@ PostHog가 기본으로 붙이는 브라우저·기기·URL·Referrer·UTM 속�
 | `source_path` | 동일 출처 Referrer가 있으면 구매 링크를 누른 다분해 경로 |
 
 이벤트 이름은 클릭이지만 실제 수집 지점은 안전한 리다이렉트 페이지 진입이다. 따라서 외부에서 `/redirect` URL을 직접 열어도 유효 링크라면 기록될 수 있다.
+
+#### `feedback_opened`
+
+사용자가 의견 작성 UI에 진입했을 때 발생한다. 전역 의견 버튼, 제품 정보 오류 제보, 문의하기 페이지의 성과를 구분한다.
+
+| 속성 | 예시 | 설명 |
+|---|---|---|
+| `entry_point` | `global_fab`, `product_data_error`, `contact_page` | 의견 작성 UI에 진입한 위치 |
+| `preset_category` | `data_error`, `general`, `null` | 진입 시 미리 선택되어 있던 의견 유형 |
+| `presentation` | `desktop_popover`, `mobile_bottom_sheet`, `full_page` | 사용자에게 표시된 UI 형태 |
+| `page_path` | `/product/example-123` | 진입 당시 다분해 경로 |
+
+#### `feedback_submitted`
+
+Supabase에 의견 또는 문의가 정상 저장된 후 발생한다.
+
+| 속성 | 예시 | 설명 |
+|---|---|---|
+| `entry_point` | `global_fab`, `product_data_error`, `contact_page` | 의견 작성 UI 진입 위치 |
+| `category` | `data_error`, `product_request`, `general` | 제출 시 선택한 의견 유형 |
+| `message_length` | `124` | 공백을 제거한 의견 본문의 글자 수 |
+| `presentation` | `desktop_popover`, `mobile_bottom_sheet`, `full_page` | 제출에 사용한 UI 형태 |
+| `page_path` | `/product/example-123` | 제출 당시 다분해 경로 |
+
+의견 본문과 이메일은 개인정보 가능성이 있으므로 PostHog로 전송하지 않는다. 원문은 접근이 제한된 Supabase `feedback_submissions`에만 저장한다.
 
 ## 7. 이벤트 네이밍·변경 규칙
 
@@ -373,6 +400,18 @@ product_viewed
 
 찜은 즉시 구매 전환보다 재방문과 장기 전환을 함께 확인한다.
 
+### 의견 제출 퍼널
+
+```text
+feedback_opened
+→ feedback_submitted
+```
+
+- 의견 작성 완료율 = `feedback_submitted` 고유 사용자 / `feedback_opened` 고유 사용자
+- `entry_point`로 나눠 전역 버튼과 제품 정보 오류 제보의 효율을 비교한다.
+- `presentation`으로 나눠 데스크톱 팝오버와 모바일 바텀시트의 완료율을 비교한다.
+- `category`별 제출 건수는 두 번째 단계인 `feedback_submitted`에서 확인한다.
+
 ### 마케팅 채널 성과
 
 UTM 속성을 기준으로 다음을 나눈다.
@@ -411,6 +450,8 @@ utm_campaign
 - 검색 사용률
 - 비교함 추가율
 - 찜 추가율
+- 의견 작성 완료율
+- 진입점·의견 유형별 제출 건수
 
 ### 대시보드 C: Conversion funnel
 

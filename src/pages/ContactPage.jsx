@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Send } from 'lucide-react';
 import Seo from '../components/global/Seo.jsx';
 import { submitFeedback } from '../data/feedbackApi.js';
+import {
+  ANALYTICS_EVENTS,
+  captureEvent,
+} from '../lib/analytics.js';
 import './ContactPage.css';
 
 export default function ContactPage() {
@@ -9,6 +13,15 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    captureEvent(ANALYTICS_EVENTS.FEEDBACK_OPENED, {
+      entry_point: 'contact_page',
+      preset_category: 'general',
+      presentation: 'full_page',
+      page_path: '/contact',
+    });
+  }, []);
 
   const update = (key, value) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -25,9 +38,17 @@ export default function ContactPage() {
     try {
       await submitFeedback({
         source: 'contact_page',
+        entryPoint: 'contact_page',
         category: form.type,
         email: form.email,
         message: form.message,
+      });
+      captureEvent(ANALYTICS_EVENTS.FEEDBACK_SUBMITTED, {
+        entry_point: 'contact_page',
+        category: form.type,
+        message_length: form.message.trim().length,
+        presentation: 'full_page',
+        page_path: '/contact',
       });
       setSubmitted(true);
     } catch (error) {

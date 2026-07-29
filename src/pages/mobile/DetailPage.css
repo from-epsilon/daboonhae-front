@@ -545,6 +545,11 @@
   gap: 8px;
 }
 
+.m-detail #analysis > .product-feedback-entry {
+  margin-top: 6px;
+  padding: 0 16px;
+}
+
 .m-detail-report > .m-detail-ingr,
 .m-detail-shake-grid > .m-detail-ingr {
   margin: 0 16px;

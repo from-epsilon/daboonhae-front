@@ -17,6 +17,8 @@ export const ANALYTICS_EVENTS = Object.freeze({
   COMPARE_CHANGED: 'compare_changed',
   COMPARE_VIEWED: 'compare_viewed',
   PURCHASE_LINK_CLICKED: 'purchase_link_clicked',
+  FEEDBACK_OPENED: 'feedback_opened',
+  FEEDBACK_SUBMITTED: 'feedback_submitted',
 });
 
 function readInternalUserStatus() {

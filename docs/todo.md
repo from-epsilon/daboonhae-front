@@ -6,7 +6,7 @@
 
 - 현재 상태: `feedback_submissions` 테이블에 Supabase anon insert를 허용해 MVP 제출 기능을 운영한다.
 - 리스크: 공개 anon key와 REST endpoint를 이용한 대량 스팸 제출, DB 용량/quota 소모, 운영 데이터 오염.
-- 현재 방어: RLS로 insert만 허용, select/update/delete 미개방, source/category/message 길이 제약.
+- 현재 방어: RLS로 insert만 허용, select/update/delete 미개방, source/entry_point/category/message 길이 제약.
 - 추후 작업:
   - Supabase Edge Function을 통해서만 제출 받도록 변경
   - Cloudflare Turnstile 또는 hCaptcha 검증 추가

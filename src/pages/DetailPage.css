@@ -876,6 +876,9 @@
 .d-detail-report-head {
   flex-direction: column; align-items: flex-start; gap: 4px; margin-bottom: 18px;
 }
+.d-detail-section-block > .product-feedback-entry {
+  margin-top: 6px;
+}
 .d-detail-report-title { color: var(--text-primary); }
 .d-detail-report-hint { font-size: 13px; color: var(--text-secondary); margin: 0; }
 .d-detail-report-grid { display: flex; flex-direction: column; gap: 8px; }
@@ -1247,6 +1250,8 @@
       transparent 6px
     ),
     linear-gradient(180deg, #a7d979 0%, #72cf8a 100%);
+  opacity: 0.45;
+  filter: saturate(0.55);
 }
 .d-analysis-amino-pattern-chart {
   position: relative;
@@ -1359,7 +1364,7 @@
   background-repeat: repeat, no-repeat;
 }
 .d-analysis-amino-pattern-row.is-fallback .d-analysis-amino-pattern-bar {
-  /* 원료 추정값은 신뢰도 차이를 드러내기 위해 기존의 차분한 톤과 빗금 패턴을 유지한다. */
+  /* 원료 추정값은 막대 높이만 유지하고 색의 존재감은 크게 낮춰 실측값과 구분한다. */
   background-image:
     repeating-linear-gradient(
       135deg,
@@ -1380,6 +1385,8 @@
   background-size: auto, 100% var(--amino-pattern-track-height);
   background-position: 0 0, bottom;
   background-repeat: repeat, no-repeat;
+  opacity: 0.4;
+  filter: saturate(0.5);
 }
 .d-analysis-amino-pattern-missing {
   position: absolute;
@@ -1404,6 +1411,10 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
+}
+.d-analysis-amino-pattern-row.is-fallback .d-analysis-amino-pattern-value strong {
+  color: var(--text-tertiary);
+  font-weight: 400;
 }
 .d-analysis-amino-pattern-value em {
   margin-left: 5px;

@@ -24,6 +24,7 @@ import { CategoryGuideCard } from '../../components/mobile/detail/CategoryGuideC
 import { RelatedProducts } from '../../components/mobile/detail/RelatedProducts.jsx';
 import { StickyCTA } from '../../components/mobile/detail/StickyCTA.jsx';
 import PurchaseOffers from '../../components/global/PurchaseOffers.jsx';
+import ProductFeedbackEntry from '../../components/global/ProductFeedbackEntry.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { productLd, breadcrumbLd } from '../../data/jsonLd.js';
 import { buildProductBreadcrumb } from '../../data/breadcrumb.js';
@@ -298,6 +299,7 @@ export default function DetailPageMobile() {
             rawText={raw?._raw?.ingredientsText}
             annotations={raw?._raw?.ingredientAnnotations}
           />
+          <ProductFeedbackEntry />
         </div>
 
         {/* 6. 후기 */}

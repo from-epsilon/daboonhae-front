@@ -5,6 +5,14 @@
 CREATE TABLE IF NOT EXISTS feedback_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   source TEXT NOT NULL CHECK (source IN ('floating_button', 'contact_page')),
+  entry_point TEXT CHECK (
+    entry_point IS NULL OR entry_point IN (
+      'global_fab',
+      'product_data_error',
+      'contact_page',
+      'legacy_floating_button'
+    )
+  ),
   category TEXT CHECK (category IS NULL OR char_length(category) <= 50),
   message TEXT NOT NULL CHECK (char_length(message) BETWEEN 1 AND 2000),
   email TEXT CHECK (email IS NULL OR char_length(email) <= 320),

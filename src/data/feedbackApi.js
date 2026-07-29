@@ -7,6 +7,7 @@ const truncate = (value, maxLength) => (
 
 export async function submitFeedback({
   source,
+  entryPoint = null,
   category = null,
   message,
   email = null,
@@ -26,6 +27,7 @@ export async function submitFeedback({
     .from('feedback_submissions')
     .insert({
       source,
+      entry_point: entryPoint,
       category,
       message: trimmedMessage,
       email: trimmedEmail,

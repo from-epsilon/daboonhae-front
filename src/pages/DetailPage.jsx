@@ -24,6 +24,7 @@ import { CategoryGuide } from '../components/desktop/detail/CategoryGuide.jsx';
 import { ReviewSection } from '../components/desktop/detail/ReviewSection.jsx';
 import { RelatedProducts } from '../components/desktop/detail/RelatedProducts.jsx';
 import PurchaseOffers from '../components/global/PurchaseOffers.jsx';
+import ProductFeedbackEntry from '../components/global/ProductFeedbackEntry.jsx';
 import Seo from '../components/global/Seo.jsx';
 import { productLd, breadcrumbLd } from '../data/jsonLd.js';
 import { buildProductBreadcrumb } from '../data/breadcrumb.js';
@@ -756,6 +757,7 @@ export default function DetailPage() {
                 rawText={raw?._raw?.ingredientsText}
                 annotations={raw?._raw?.ingredientAnnotations}
               />
+              <ProductFeedbackEntry />
             </div>
             <div id="reviews" className="d-detail-section-block">
               <ReviewSection productId={product.id} />
