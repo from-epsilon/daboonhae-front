@@ -134,21 +134,45 @@ function parseNutrition(foodNutrients) {
   return n;
 }
 
+const MASS_UNIT_GRAMS = {
+  g: 1,
+  lb: 453.59237,
+};
+
+function servingAmountUnitOf(food) {
+  return food.serving_unit || food.net_content_unit || '';
+}
+
+function convertCompatibleAmount(amount, fromUnit, toUnit) {
+  if (fromUnit === toUnit) return amount;
+  const fromGrams = MASS_UNIT_GRAMS[fromUnit];
+  const toGrams = MASS_UNIT_GRAMS[toUnit];
+  if (!fromGrams || !toGrams) return null;
+  return amount * fromGrams / toGrams;
+}
+
 // ── 영양값 기준 계산 (가이드: nutritionBasisOf)
-// - nutrition_basis_type에 따라 기준량/단위 결정 (단위는 항상 net_content_unit)
 function nutritionBasisOf(food) {
-  const unit = food.net_content_unit ?? '';
+  const netContentUnit = food.net_content_unit ?? '';
   switch (food.nutrition_basis_type) {
     case 'net_content':
-      return { type: 'net_content', amount: food.net_content_amount ?? null, unit };
+      return { type: 'net_content', amount: food.net_content_amount ?? null, unit: netContentUnit };
     case 'package_unit':
-      return { type: 'package_unit', amount: food.package_unit_amount ?? null, unit };
+      return { type: 'package_unit', amount: food.package_unit_amount ?? null, unit: netContentUnit };
     case 'serving':
-      return { type: 'serving', amount: food.serving_amount ?? null, unit };
+      return {
+        type: 'serving',
+        amount: food.serving_amount ?? null,
+        unit: servingAmountUnitOf(food),
+      };
     case 'standard_100':
-      return { type: 'standard_100', amount: 100, unit };
+      return {
+        type: 'standard_100',
+        amount: 100,
+        unit: netContentUnit === 'ml' ? 'ml' : 'g',
+      };
     default:
-      return { type: null, amount: null, unit };
+      return { type: null, amount: null, unit: netContentUnit };
   }
 }
 
@@ -156,7 +180,14 @@ function servingsPerUnitOf(food) {
   const net = Number(food.net_content_amount);
   const serving = Number(food.serving_amount);
   if (Number.isFinite(net) && net > 0 && Number.isFinite(serving) && serving > 0) {
-    return net / serving;
+    const servingInNetUnit = convertCompatibleAmount(
+      serving,
+      servingAmountUnitOf(food),
+      food.net_content_unit ?? '',
+    );
+    if (servingInNetUnit !== null && servingInNetUnit > 0) {
+      return net / servingInNetUnit;
+    }
   }
 
   // 단일 파우치/팩은 serving_amount가 비어 있어도 순내용량 자체가 1회분인 경우가 많다.
@@ -435,6 +466,7 @@ function transformProduct(food) {
       servingSize: basis.amount,
       servingUnit: basis.unit,
       servingAmount: food.serving_amount ?? null,
+      servingAmountUnit: servingAmountUnitOf(food),
       servingDescription: food.serving_description ?? '',
       servingsPerUnit,
       netContentAmount: food.net_content_amount ?? null,
@@ -565,9 +597,27 @@ function scoreSnapshotsFromSummaryRow(row) {
   }];
 }
 
-function transformMarketProductSummaryRows(rows) {
-  return (rows ?? []).map((row) => transformProduct({
+async function transformMarketProductSummaryRows(rows) {
+  const sourceRows = rows ?? [];
+  const profileIds = [...new Set(
+    sourceRows.map((row) => row?.product_profile_id).filter((id) => id != null),
+  )];
+  let servingUnitByProfileId = new Map();
+
+  if (profileIds.length > 0) {
+    const { data, error } = await supabase
+      .from('food_product_profiles')
+      .select('id, serving_unit')
+      .in('id', profileIds);
+    if (error) throw error;
+    servingUnitByProfileId = new Map(
+      (data ?? []).map((profile) => [profile.id, profile.serving_unit]),
+    );
+  }
+
+  return sourceRows.map((row) => transformProduct({
     ...row,
+    serving_unit: servingUnitByProfileId.get(row.product_profile_id) ?? null,
     food_score_snapshots: scoreSnapshotsFromSummaryRow(row),
   }));
 }
@@ -601,7 +651,7 @@ const MARKET_PROFILES_DETAIL_JOIN = `
     is_mfds_official_source, list_price_krw,
     net_content_amount, net_content_unit,
     package_unit_count, package_unit_name, package_unit_amount,
-    serving_amount, serving_description, nutrition_basis_type,
+    serving_amount, serving_unit, serving_description, nutrition_basis_type,
     ingredients_text, allergens_text, cross_contamination_text,
     caution_notes, additional_content, ingredient_annotations,
     ${PROFILE_SCORE_JOIN}
@@ -761,12 +811,18 @@ async function fetchHomeProductsUncached() {
     if (result.error) throw result.error;
   }
 
+  const [proteinProducts, mealProducts, recentProducts] = await Promise.all([
+    transformMarketProductSummaryRows(proteinResult.data),
+    transformMarketProductSummaryRows(mealResult.data),
+    transformMarketProductSummaryRows(recentResult.data),
+  ]);
+
   return {
     recommendations: {
-      protein: transformMarketProductSummaryRows(proteinResult.data),
-      meal: transformMarketProductSummaryRows(mealResult.data),
+      protein: proteinProducts,
+      meal: mealProducts,
     },
-    recent: transformMarketProductSummaryRows(recentResult.data),
+    recent: recentProducts,
   };
 }
 
@@ -791,7 +847,7 @@ async function fetchProductsByIdsUncached(ids) {
 
   if (error) throw error;
 
-  const products = transformMarketProductSummaryRows(data);
+  const products = await transformMarketProductSummaryRows(data);
   const byId = new Map(products.map((product) => [String(product.id), product]));
   return ids.map((id) => byId.get(id)).filter(Boolean);
 }

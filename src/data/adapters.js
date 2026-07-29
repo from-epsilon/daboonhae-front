@@ -171,6 +171,7 @@ export function getAdapted(product) {
     servingSize: product._raw?.servingSize ?? null,
     servingUnit: product._raw?.servingUnit ?? '',
     servingAmount: product._raw?.servingAmount ?? null,
+    servingAmountUnit: product._raw?.servingAmountUnit ?? product._raw?.servingUnit ?? '',
     netContentAmount: product._raw?.netContentAmount ?? null,
     netContentUnit: product._raw?.netContentUnit ?? '',
     sizeVariantLabel: product._raw?.sizeVariantLabel ?? '',

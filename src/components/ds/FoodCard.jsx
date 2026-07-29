@@ -165,7 +165,10 @@ function ProductNameContent({ food, config }) {
 function ServingMeta({ food, showCalories = false, variant }) {
   const parts = [];
   if (variant === 'explicit') {
-    const serving = formatAmountLabel(food.servingAmount ?? food.servingSize, food.servingUnit);
+    const serving = formatAmountLabel(
+      food.servingAmount ?? food.servingSize,
+      food.servingAmount != null ? food.servingAmountUnit : food.servingUnit,
+    );
     if (serving) parts.push(`1회 제공량 ${serving}`);
   } else if (food.serving) {
     parts.push(food.serving);
