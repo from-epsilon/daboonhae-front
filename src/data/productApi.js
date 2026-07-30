@@ -216,6 +216,40 @@ function parsePurposeCategories(links) {
     .filter((p) => p.code);
 }
 
+function parseFlavors(food) {
+  const links = Array.isArray(food?.food_flavor_links)
+    ? [...food.food_flavor_links]
+    : [];
+  const flavors = links
+    .sort(
+      (a, b) =>
+        Number(a?.display_order ?? 9999) - Number(b?.display_order ?? 9999) ||
+        String(a?.flavor_code ?? '').localeCompare(String(b?.flavor_code ?? '')),
+    )
+    .map((link) => {
+      const relation = Array.isArray(link?.food_flavors)
+        ? link.food_flavors[0]
+        : link?.food_flavors;
+      const code = link?.flavor_code ?? relation?.code ?? '';
+      return {
+        code,
+        name: relation?.name_ko ?? code,
+      };
+    })
+    .filter((flavor) => flavor.code);
+
+  if (flavors.length > 0) {
+    return [...new Map(flavors.map((flavor) => [flavor.code, flavor])).values()];
+  }
+
+  const fallbackCode = food?.flavor_code ?? '';
+  if (!fallbackCode) return [];
+  return [{
+    code: fallbackCode,
+    name: food?.food_flavors?.name_ko ?? fallbackCode,
+  }];
+}
+
 // ── 제품군(food_families) → 정규화
 function parseFamily(family) {
   if (!family) return null;
@@ -401,6 +435,7 @@ function transformProduct(food) {
   const allergens = parseAllergens(food.allergens_text);
   const lactoseFree = deriveLactoseFreeFromAllergens(allergens);
   const purposeCategories = parsePurposeCategories(food.food_purpose_category_links);
+  const flavors = parseFlavors(food);
   const basis = nutritionBasisOf(food);
   const servingsPerUnit = servingsPerUnitOf(food);
   const family = parseFamily(food.food_families);
@@ -425,8 +460,11 @@ function transformProduct(food) {
     brand: food.brand ?? '',
     thumbnail: productImageUrl(food),
     volume,
-    flavorCode: food.flavor_code ?? '',
-    flavorName: food.food_flavors?.name_ko ?? food.flavor_code ?? '',
+    flavors,
+    flavorCodes: flavors.map((flavor) => flavor.code),
+    flavorNames: flavors.map((flavor) => flavor.name),
+    flavorCode: flavors[0]?.code ?? '',
+    flavorName: flavors[0]?.name ?? '',
     // 표시용 식품유형 라벨(name_ko 우선) + 매칭용 코드 분리 보존
     category: food.food_type_categories?.name_ko ?? food.food_type_category_code ?? '',
     categoryCode: food.food_type_category_code ?? '',
@@ -602,22 +640,25 @@ async function transformMarketProductSummaryRows(rows) {
   const profileIds = [...new Set(
     sourceRows.map((row) => row?.product_profile_id).filter((id) => id != null),
   )];
-  let servingUnitByProfileId = new Map();
-
-  if (profileIds.length > 0) {
-    const { data, error } = await supabase
-      .from('food_product_profiles')
-      .select('id, serving_unit')
-      .in('id', profileIds);
-    if (error) throw error;
-    servingUnitByProfileId = new Map(
-      (data ?? []).map((profile) => [profile.id, profile.serving_unit]),
-    );
-  }
+  const [servingUnitByProfileId, flavorLinksByFoodId] = await Promise.all([
+    (async () => {
+      if (profileIds.length === 0) return new Map();
+      const { data, error } = await supabase
+        .from('food_product_profiles')
+        .select('id, serving_unit')
+        .in('id', profileIds);
+      if (error) throw error;
+      return new Map(
+        (data ?? []).map((profile) => [profile.id, profile.serving_unit]),
+      );
+    })(),
+    loadFoodFlavorLinks(),
+  ]);
 
   return sourceRows.map((row) => transformProduct({
     ...row,
     serving_unit: servingUnitByProfileId.get(row.product_profile_id) ?? null,
+    food_flavor_links: flavorLinksByFoodId.get(Number(row.food_id)) ?? [],
     food_score_snapshots: scoreSnapshotsFromSummaryRow(row),
   }));
 }
@@ -642,7 +683,14 @@ const PROFILE_SCORE_JOIN = `
   ),
 `;
 const FLAVOR_JOIN = `
-  food_flavors ( code, name_ko, display_order, is_active ),
+  food_flavors!foods_flavor_code_fkey ( code, name_ko, display_order, is_active ),
+`;
+const FLAVOR_LINK_JOIN = `
+  food_flavor_links (
+    flavor_code,
+    display_order,
+    food_flavors ( code, name_ko, display_order, is_active )
+  ),
 `;
 const MARKET_PROFILES_DETAIL_JOIN = `
   market_product_profiles:food_product_profiles!food_product_profiles_food_id_fkey!inner (
@@ -671,6 +719,7 @@ const DETAIL_SELECT_BASE = (optional) => `
   food_type_category_code, family_id, size_variant_label, updated_at,
   food_type_categories!inner ( code, name_ko, is_active ),
   ${FLAVOR_JOIN}
+  ${optional ? FLAVOR_LINK_JOIN : ''}
   ${optional ? FAMILY_JOIN : ''}
   ${optional ? PURPOSE_JOIN : ''}
   ${optional ? ALIAS_JOIN : ''}
@@ -715,6 +764,7 @@ let optionalJoinsAvailable = import.meta.env.VITE_SUPABASE_OPTIONAL_JOINS !== 'f
 // StrictMode 재실행과 같은 경로의 반복 진입에서 동일 요청을 합친다.
 let productsRequest = null;
 let homeProductsRequest = null;
+let flavorLinksRequest = null;
 const productDetailRequests = new Map();
 const categoryProductRequests = new Map();
 const selectedProductRequests = new Map();
@@ -728,8 +778,47 @@ function isOptionalJoinError(error) {
     msg.includes('food_purpose_category') ||
     msg.includes('food_families') ||
     msg.includes('food_aliases') ||
+    msg.includes('food_flavor_links') ||
     msg.includes('permission denied')
   );
+}
+
+async function loadFoodFlavorLinks() {
+  if (flavorLinksRequest) return flavorLinksRequest;
+  flavorLinksRequest = (async () => {
+    const { data, error } = await supabase
+      .from('food_flavor_links')
+      .select(
+        'food_id, flavor_code, display_order, food_flavors(code, name_ko, display_order, is_active)',
+      )
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      const message = String(error.message ?? '').toLowerCase();
+      if (
+        ['42P01', '42501', 'PGRST205'].includes(error.code) ||
+        message.includes('food_flavor_links') ||
+        message.includes('permission denied')
+      ) {
+        return new Map();
+      }
+      throw error;
+    }
+
+    const byFoodId = new Map();
+    for (const link of data ?? []) {
+      const foodId = Number(link.food_id);
+      if (!Number.isFinite(foodId)) continue;
+      const current = byFoodId.get(foodId) ?? [];
+      current.push(link);
+      byFoodId.set(foodId, current);
+    }
+    return byFoodId;
+  })().catch((error) => {
+    flavorLinksRequest = null;
+    throw error;
+  });
+  return flavorLinksRequest;
 }
 
 function isNoRowsError(error) {

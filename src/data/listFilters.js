@@ -317,6 +317,8 @@ function getIngredientList(product, key, context = {}) {
     return normalizeList(ingredients.proteinSources).map(labelOf).filter(Boolean);
   }
   if (key === 'flavor') {
+    const labels = normalizeList(product?.flavorNames);
+    if (labels.length > 0) return labels;
     return normalizeList([product?.flavorName || product?.flavorCode]).filter(Boolean);
   }
   if (key === 'allergens') return normalizeList(ingredients.allergens).filter((item) => item !== '함유');

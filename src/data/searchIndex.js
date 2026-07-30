@@ -62,6 +62,8 @@ function buildSearchableText(product) {
     product.categoryCode,
     product.flavorName,
     product.flavorCode,
+    ...(product.flavorNames ?? []),
+    ...(product.flavorCodes ?? []),
     product.sizeVariantLabel,
     product.family?.name,
     ...(product._raw?.aliases ?? []),
