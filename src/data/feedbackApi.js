@@ -23,17 +23,30 @@ export async function submitFeedback({
     throw new Error(`의견은 ${MAX_MESSAGE_LENGTH}자 이하로 입력해주세요.`);
   }
 
-  const { error } = await supabase
+  const payload = {
+    source,
+    entry_point: entryPoint,
+    category,
+    message: trimmedMessage,
+    email: trimmedEmail,
+    page_path: truncate(window.location.pathname, 500),
+    user_agent: truncate(navigator.userAgent, 1000),
+  };
+
+  let { error } = await supabase
     .from('feedback_submissions')
-    .insert({
-      source,
-      entry_point: entryPoint,
-      category,
-      message: trimmedMessage,
-      email: trimmedEmail,
-      page_path: truncate(window.location.pathname, 500),
-      user_agent: truncate(navigator.userAgent, 1000),
-    });
+    .insert(payload);
+
+  // DB 제약 마이그레이션과 프런트 배포가 잠시 엇갈려도 제출 자체는 보존한다.
+  // PostHog에는 컴포넌트가 원래 entryPoint를 그대로 기록한다.
+  if (
+    error?.code === '23514'
+    && entryPoint === 'search_empty_state'
+  ) {
+    ({ error } = await supabase
+      .from('feedback_submissions')
+      .insert({ ...payload, entry_point: 'global_fab' }));
+  }
 
   if (error) throw error;
 }

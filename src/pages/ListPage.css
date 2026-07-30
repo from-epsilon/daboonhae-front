@@ -840,6 +840,9 @@
 }
 
 .d-list-empty-desc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
   font-family: var(--font-body);
   font-size: var(--font-size-s);
   color: var(--text-secondary);

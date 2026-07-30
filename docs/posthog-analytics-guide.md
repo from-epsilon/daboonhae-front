@@ -203,7 +203,7 @@ PostHog가 기본으로 붙이는 브라우저·기기·URL·Referrer·UTM 속�
 
 | 속성 | 예시 | 설명 |
 |---|---|---|
-| `entry_point` | `global_fab`, `product_data_error`, `contact_page` | 의견 작성 UI에 진입한 위치 |
+| `entry_point` | `global_fab`, `product_data_error`, `search_empty_state`, `contact_page` | 의견 작성 UI에 진입한 위치 |
 | `preset_category` | `data_error`, `general`, `null` | 진입 시 미리 선택되어 있던 의견 유형 |
 | `presentation` | `desktop_popover`, `mobile_bottom_sheet`, `full_page` | 사용자에게 표시된 UI 형태 |
 | `page_path` | `/product/example-123` | 진입 당시 다분해 경로 |
@@ -214,7 +214,7 @@ Supabase에 의견 또는 문의가 정상 저장된 후 발생한다.
 
 | 속성 | 예시 | 설명 |
 |---|---|---|
-| `entry_point` | `global_fab`, `product_data_error`, `contact_page` | 의견 작성 UI 진입 위치 |
+| `entry_point` | `global_fab`, `product_data_error`, `search_empty_state`, `contact_page` | 의견 작성 UI 진입 위치 |
 | `category` | `data_error`, `product_request`, `general` | 제출 시 선택한 의견 유형 |
 | `message_length` | `124` | 공백을 제거한 의견 본문의 글자 수 |
 | `presentation` | `desktop_popover`, `mobile_bottom_sheet`, `full_page` | 제출에 사용한 UI 형태 |

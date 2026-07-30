@@ -32,6 +32,7 @@ import ActiveFilterChips from '../components/desktop/list/ActiveFilterChips.jsx'
 import { Pagination } from '../components/ds/Pagination.jsx';
 import Seo from '../components/global/Seo.jsx';
 import { productPath } from '../data/productUrl.js';
+import { openSiteFeedback } from '../data/siteFeedback.js';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -157,6 +158,20 @@ export default function ListPage() {
   };
 
   const clearSearch = () => { setSearchParams({}); };
+
+  const resetAllConditions = () => {
+    setFilterState({});
+    navigate('/list');
+  };
+
+  const requestMissingProduct = () => {
+    const searchText = q.trim();
+    openSiteFeedback({
+      type: 'product_request',
+      entryPoint: 'search_empty_state',
+      initialText: searchText ? `찾는 제품: ${searchText}\n` : '',
+    });
+  };
 
   const products = useMemo(() => {
     let result = applyListFilters(baseProducts, filterSpecs, filterState, {
@@ -328,9 +343,9 @@ export default function ListPage() {
             {products.length === 0 ? (
               <EmptyResult
                 query={q}
-                canResetFilters={canResetSomething}
-                onResetFilters={resetFilters}
-                onClearQuery={clearSearch}
+                hasActiveConditions={canResetSomething || Boolean(q)}
+                onResetConditions={resetAllConditions}
+                onRequestProduct={requestMissingProduct}
               />
             ) : (
               <>

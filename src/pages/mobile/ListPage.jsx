@@ -38,6 +38,7 @@ import { useCompare } from '../../store/CompareContext.jsx';
 import { useWishlist } from '../../store/WishlistContext.jsx';
 import Seo from '../../components/global/Seo.jsx';
 import { productPath } from '../../data/productUrl.js';
+import { openSiteFeedback } from '../../data/siteFeedback.js';
 import './ListPage.css';
 
 const PAGE_SIZE = 20;
@@ -148,9 +149,18 @@ export default function ListPageMobile() {
 
   const clearSearch = () => { setSearchParams({}); };
 
-  const resetFilters = () => {
+  const resetAllConditions = () => {
     setFilterState({});
-    setActiveSub('all');
+    navigate('/list');
+  };
+
+  const requestMissingProduct = () => {
+    const searchText = q.trim();
+    openSiteFeedback({
+      type: 'product_request',
+      entryPoint: 'search_empty_state',
+      initialText: searchText ? `찾는 제품: ${searchText}\n` : '',
+    });
   };
 
   const goCompare = () => navigate('/compare');
@@ -318,8 +328,8 @@ export default function ListPageMobile() {
           <EmptyState
             query={q}
             hasActiveFilters={hasActiveCondition}
-            onResetFilters={resetFilters}
-            onClearSearch={clearSearch}
+            onResetConditions={resetAllConditions}
+            onRequestProduct={requestMissingProduct}
           />
         </div>
       ) : (

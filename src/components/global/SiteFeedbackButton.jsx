@@ -125,8 +125,12 @@ export default function SiteFeedbackButton() {
     const handleOpenRequest = (event) => {
       const requestedType = event.detail?.type;
       const requestedEntryPoint = event.detail?.entryPoint ?? 'global_fab';
+      const requestedInitialText = event.detail?.initialText;
       if (FEEDBACK_TYPES.some((option) => option.id === requestedType)) {
         setSelectedType(requestedType);
+      }
+      if (typeof requestedInitialText === 'string') {
+        setText(requestedInitialText.slice(0, MAX_FEEDBACK_LENGTH));
       }
       setEntryPoint(requestedEntryPoint);
       setStatus('idle');

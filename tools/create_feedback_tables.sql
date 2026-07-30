@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS feedback_submissions (
     entry_point IS NULL OR entry_point IN (
       'global_fab',
       'product_data_error',
+      'search_empty_state',
       'contact_page',
       'legacy_floating_button'
     )
