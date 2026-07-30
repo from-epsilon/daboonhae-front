@@ -1,14 +1,10 @@
 // 단백질 원료 품질 — 원문 텍스트를 정규 원료로 해석해 약자·품질등급 표시
-// - 해석은 DB 함수 resolve_protein_ingredient_code()(RPC)를 1순위로 사용 → DB 정규화 규칙과 100% 일치
-// - RPC 실패(권한/인자명 불일치 등) 시 클라이언트 정규화 매칭으로 폴백
+// - ingredients/ingredient_aliases를 한 번 로드해 모든 원료명을 로컬에서 해석
 // - 원료 메타는 ingredients, 품질 등급은 ingredient_protein_quality_assessments에서 읽어 code로 합침
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 
-const RESOLVE_FN = 'resolve_protein_ingredient_code';
-const RESOLVE_ARG = 'value';
-
-// 원문 정규화 — DB normalize_protein_ingredient_alias() 근사(폴백용)
+// DB normalize_protein_ingredient_alias()와 같은 순서로 적용한다.
 export function normalizeProteinAlias(text) {
   return String(text || '')
     .trim()
@@ -82,6 +78,7 @@ function formatQualityBasis(quality) {
 function buildDictionary(ingredients, aliases, qualities) {
   const byCode = new Map();
   const byNorm = new Map();
+  const ambiguousNorms = new Set();
   const qualityByCode = new Map();
   const evidenceRank = { direct: 1, proxy: 2, estimated: 3 };
   const rankedQualities = [...(qualities ?? [])].sort((a, b) => {
@@ -97,7 +94,14 @@ function buildDictionary(ingredients, aliases, qualities) {
   }
   const addNorm = (text, ing) => {
     const k = normalizeProteinAlias(text);
-    if (k) byNorm.set(k, ing);
+    if (!k || ambiguousNorms.has(k)) return;
+    const existing = byNorm.get(k);
+    if (existing && existing.code !== ing.code) {
+      byNorm.delete(k);
+      ambiguousNorms.add(k);
+      return;
+    }
+    byNorm.set(k, ing);
   };
   for (const g of ingredients) {
     const quality = qualityByCode.get(g.code);
@@ -133,7 +137,7 @@ async function loadDictionary() {
   if (dictInflight) return dictInflight;
   dictInflight = (async () => {
     try {
-      const [ingRes, aliasRes] = await Promise.all([
+      const [ingRes, aliasRes, qualityRes] = await Promise.all([
         supabase
           .from('ingredients')
           .select('code, name_ko, abbreviation, display_description')
@@ -142,13 +146,13 @@ async function loadDictionary() {
         supabase
           .from('ingredient_aliases')
           .select('ingredient_code, alias'),
+        supabase
+          .from('ingredient_protein_quality_assessments')
+          .select('id, ingredient_code, grade, method, evidence_level, age_basis, source_url'),
       ]);
       if (ingRes.error) {
         dictCache = EMPTY_DICT;
       } else {
-        const qualityRes = await supabase
-          .from('ingredient_protein_quality_assessments')
-          .select('id, ingredient_code, grade, method, evidence_level, age_basis, source_url');
         dictCache = buildDictionary(
           ingRes.data ?? [],
           aliasRes.error ? [] : (aliasRes.data ?? []),
@@ -163,38 +167,9 @@ async function loadDictionary() {
   return dictInflight;
 }
 
-// ── 텍스트 → 원료 코드 (DB RPC 1순위, 결과 캐시)
-const codeCache = new Map(); // text → code|null
-// 함수 미노출/권한없음이 확인되면 이후 RPC를 건너뛰고 폴백만 사용(불필요한 실패 호출 방지)
-let rpcDisabled = false;
-
-async function rpcResolveCode(text) {
-  if (rpcDisabled) return undefined;
-  try {
-    const { data, error } = await supabase.rpc(RESOLVE_FN, { [RESOLVE_ARG]: text });
-    if (error) {
-      // PGRST202(함수 없음) · 42883(시그니처 불일치) · 42501(권한없음) → RPC 영구 비활성화
-      if (['PGRST202', '42883', '42501'].includes(error.code)) rpcDisabled = true;
-      return undefined; // RPC 불가 → 폴백 신호
-    }
-    return typeof data === 'string' && data ? data : null;
-  } catch {
-    return undefined;
-  }
-}
-
-// 텍스트 1건 해석 — RPC(코드)→사전 메타, 실패 시 클라 정규화 폴백
-async function resolveOne(dict, text) {
+// 텍스트 1건 해석 — 이미 로드한 사전에서 동기 조회한다.
+function resolveOne(dict, text) {
   if (!text) return null;
-  if (!codeCache.has(text)) {
-    codeCache.set(text, await rpcResolveCode(text));
-  }
-  const code = codeCache.get(text);
-  if (code) {
-    const ing = dict.byCode.get(code);
-    if (ing) return ing;
-  }
-  // code === null(RPC가 매칭 없음) 또는 undefined(RPC 불가) → 클라 폴백
   return dict.byNorm.get(normalizeProteinAlias(text)) ?? null;
 }
 
@@ -210,9 +185,7 @@ export function useProteinResolver(texts) {
     (async () => {
       const dict = await loadDictionary();
       const unique = [...new Set(list)];
-      const entries = await Promise.all(
-        unique.map(async (text) => [text, await resolveOne(dict, text)]),
-      );
+      const entries = unique.map((text) => [text, resolveOne(dict, text)]);
       if (alive) setMap(new Map(entries));
     })();
     return () => { alive = false; };
@@ -234,9 +207,11 @@ export function useResolvedProteinSources(texts) {
     let alive = true;
     (async () => {
       const dict = await loadDictionary();
-      const entries = await Promise.all(
-        list.map(async (rawText, index) => ({ rawText, index, ingredient: await resolveOne(dict, rawText) })),
-      );
+      const entries = list.map((rawText, index) => ({
+        rawText,
+        index,
+        ingredient: resolveOne(dict, rawText),
+      }));
       const seen = new Set();
       const resolved = [];
       for (const entry of entries) {
