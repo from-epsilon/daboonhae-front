@@ -756,6 +756,10 @@ const MARKET_PRODUCT_SUMMARY_SELECT = `
   recommendation_chicken_equivalent_price_krw,
   recommendation_chicken_equivalent_price_tier
 `;
+const HOME_RECENT_PRODUCT_SUMMARY_SELECT = `
+  ${MARKET_PRODUCT_SUMMARY_SELECT},
+  profile_created_at
+`;
 
 // 선택 조인은 기본 사용한다. 운영 DB 정책이 아직 닫혀 있으면 자동 폴백한다.
 // 임시로 끄고 싶을 때만 VITE_SUPABASE_OPTIONAL_JOINS=false를 지정한다.
@@ -869,6 +873,31 @@ export function fetchProducts({ force = false } = {}) {
 
 // ── 메인 전용 제한 조회
 // 전체 카탈로그를 받은 뒤 자르지 않고, 목적별 추천과 최근 제품만 서버에서 제한한다.
+async function fetchRecentHomeProducts() {
+  const recentResult = await supabase
+    .from('home_recent_product_summaries')
+    .select(HOME_RECENT_PRODUCT_SUMMARY_SELECT)
+    .order('profile_created_at', { ascending: false })
+    .order('product_profile_id', { ascending: false })
+    .limit(8);
+
+  if (!recentResult.error) return recentResult;
+
+  const message = String(recentResult.error.message ?? '').toLowerCase();
+  const isMissingRecentView = (
+    ['42P01', 'PGRST205'].includes(recentResult.error.code)
+    || message.includes('home_recent_product_summaries')
+  );
+  if (!isMissingRecentView) return recentResult;
+
+  // 전용 뷰 배포 전 호환 폴백. product_profile_id는 프로필 생성 시 증가하는 숫자 ID다.
+  return supabase
+    .from('market_product_summaries')
+    .select(MARKET_PRODUCT_SUMMARY_SELECT)
+    .order('product_profile_id', { ascending: false })
+    .limit(8);
+}
+
 async function fetchHomeProductsUncached() {
   const [proteinResult, mealResult, recentResult] = await Promise.all([
     supabase
@@ -888,12 +917,7 @@ async function fetchHomeProductsUncached() {
       .order('ranking_score', { ascending: false })
       .order('name', { ascending: true })
       .limit(10),
-    supabase
-      .from('market_product_summaries')
-      .select(MARKET_PRODUCT_SUMMARY_SELECT)
-      // 기존 홈의 문자열 상품 ID 내림차순과 같은 기준을 유지한다.
-      .order('id', { ascending: false })
-      .limit(8),
+    fetchRecentHomeProducts(),
   ]);
 
   for (const result of [proteinResult, mealResult, recentResult]) {

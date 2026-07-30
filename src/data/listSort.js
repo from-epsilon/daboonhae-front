@@ -21,6 +21,7 @@ const DEFAULT_SORT_OPTIONS = [
 const HIDE_BY_CATEGORY = {
   '제로 음료': ['protein_desc', 'carbs_asc'],
   '아이스크림': ['protein_desc'],
+  '단백질 보충제': ['carbs_asc'],
   '쉐이크': ['carbs_asc'],
 };
 

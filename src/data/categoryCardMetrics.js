@@ -71,6 +71,20 @@ const CONFIG = {
     // 데스크톱 wide의 IngredientDetails는 통째로 생략(중복 방지)
     showIngredientDetails: false,
   },
+  // 분말형 단백질 보충제 — 쉐이크와 동일하게 조제 후 1회 섭취 기준으로 표시
+  'protein:단백질 보충제': {
+    metrics: [],
+    showProteinSource: true,
+    showSweetenerMeta: true,
+    showSweeteners: false,
+    macroBarVariant: 'mini',
+    purchasePricePer: 'serving',
+    titleVariant: 'size',
+    servingMetaVariant: 'explicit',
+    showServingCalories: true,
+    showSubNutrients: false,
+    showIngredientDetails: false,
+  },
   'protein:에너지바':    { metrics: PROTEIN_COMMON, showSweeteners: false },
   'protein:기타 가공육':  { metrics: PROTEIN_COMMON, showSweeteners: false },
 

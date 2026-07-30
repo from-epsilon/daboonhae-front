@@ -7,8 +7,9 @@
 // - 폴백: 링크 데이터가 비어있거나 RLS로 막혔을 때 식품유형 코드(food_type_category_code) 기반
 //   ※ name_ko는 문구가 바뀔 수 있어(예: '과자/초콜릿/젤리') 매칭은 코드로 한다.
 //
-// 서브 칩의 code는 DB food_type_categories.code 와 1:1 매칭 (2026-05 기준 11종):
-//   chicken_breast 닭가슴살 / protein_drink 단백질 음료 / energy_bar 에너지바 /
+// 서브 칩의 code는 DB food_type_categories.code 와 1:1 매칭:
+//   chicken_breast 닭가슴살 / protein_drink 단백질 음료 / protein_supplement 단백질 보충제 /
+//   energy_bar 에너지바 /
 //   processed_meat 기타 가공육 / ice_cream 아이스크림 / snack_sweets 과자·초콜릿·젤리 /
 //   zero_drink 제로 음료 / rice 밥 / noodle 면 / cereal_granola_oat 시리얼·그래놀라·오트밀 / shake 쉐이크
 export const CATEGORY_TABS = [
@@ -21,6 +22,7 @@ export const CATEGORY_TABS = [
     subs: [
       { label: '닭가슴살', code: 'chicken_breast' },
       { label: '단백질 음료', code: 'protein_drink' },
+      { label: '단백질 보충제', code: 'protein_supplement' },
       { label: '에너지바', code: 'energy_bar' },
       { label: '기타 가공육', code: 'processed_meat' },
     ],
@@ -65,6 +67,7 @@ export const HOME_PURPOSE_TABS = ['protein', 'meal', 'low_sugar']
 // slug: 카테고리 경로형 URL(/category/:slug)용 — 한글 키워드 슬러그(안정성 위해 명시)
 export const FOOD_TYPES = [
   { label: '단백질 음료', code: 'protein_drink', tab: 'protein', slug: '단백질-음료' },
+  { label: '단백질 보충제', code: 'protein_supplement', tab: 'protein', slug: '단백질-보충제' },
   { label: '쉐이크', code: 'shake', tab: 'meal', slug: '쉐이크' },
   { label: '닭가슴살', code: 'chicken_breast', tab: 'protein', slug: '닭가슴살' },
   { label: '아이스크림', code: 'ice_cream', tab: 'low_sugar', slug: '아이스크림', disabled: true, showDisabledChip: true },

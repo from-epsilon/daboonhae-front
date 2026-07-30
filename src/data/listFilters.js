@@ -2,7 +2,7 @@ import { ALLERGEN_FILTER_NOTE, ALL_FILTERS } from './purposes.jsx';
 import { computeBcaa, computeEaa } from './aminoAcids.js';
 import { cleanProteinLabel, cleanSweetenerLabel } from './proteinQuality.js';
 
-const PROTEIN_SOURCE_FILTER_CODES = new Set(['protein_drink', 'shake']);
+const PROTEIN_SOURCE_FILTER_CODES = new Set(['protein_drink', 'protein_supplement', 'shake']);
 const FLAVOR_OTHER_LABEL = '기타';
 
 const PROTEIN_RANGE_SPECS = [
