@@ -5,11 +5,16 @@ import "./MainBanner.css";
 
 const ROTATE_MS = 4200;
 
-const DEFAULT_CATEGORIES = [
+const BANNER_CATEGORIES = [
   {
     label: "단백질 음료",
     code: "protein_drink",
     image: "/images/categories/protein-drink-pow-transparent.png",
+  },
+  {
+    label: "단백질 보충제",
+    code: "protein_supplement",
+    image: "/images/categories/protein-supplements-transparent.png",
   },
   {
     label: "쉐이크",
@@ -25,13 +30,17 @@ const DEFAULT_CATEGORIES = [
     label: "아이스크림",
     code: "ice_cream",
     image: "/images/categories/ice-cream-bar-transparent.png",
+    disabled: true,
   },
   {
     label: "과자/초콜릿/젤리",
     code: "snack_sweets",
     image: "/images/categories/snack-cookie-tilted-transparent.png",
+    disabled: true,
   },
 ];
+
+const DEFAULT_CATEGORIES = BANNER_CATEGORIES.filter((category) => !category.disabled);
 
 function getInitialIndex(count) {
   if (count <= 0) return 0;

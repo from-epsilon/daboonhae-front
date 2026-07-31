@@ -143,6 +143,10 @@
   filter: drop-shadow(0 24px 30px rgba(18, 40, 17, 0.16));
 }
 
+.mb__visual--protein_supplement {
+  right: 18px;
+}
+
 .mb__visual--snack_sweets {
   right: 76px;
   bottom: 28px;
