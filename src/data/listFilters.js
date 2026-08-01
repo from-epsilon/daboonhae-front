@@ -1,7 +1,14 @@
 import { ALLERGEN_FILTER_NOTE, ALL_FILTERS } from './purposes.jsx';
+import { normalizeAllergenList } from './allergens.js';
 import { computeBcaa, computeEaa } from './aminoAcids.js';
 import { cleanProteinLabel, cleanSweetenerLabel } from './proteinQuality.js';
 
+const PROTEIN_NUTRITION_FILTER_CODES = new Set([
+  'chicken_breast',
+  'protein_drink',
+  'protein_supplement',
+  'shake',
+]);
 const PROTEIN_SOURCE_FILTER_CODES = new Set(['protein_drink', 'protein_supplement', 'shake']);
 const FLAVOR_OTHER_LABEL = '기타';
 
@@ -14,6 +21,13 @@ const PROTEIN_RANGE_SPECS = [
   { key: 'fat', type: 'range', label: '지방(g)', min: 0, max: 30 },
   { key: 'sugar', type: 'range', label: '당류(g)', min: 0, max: 30 },
 ];
+const CHICKEN_BREAST_SODIUM_RANGE_SPEC = {
+  key: 'sodium',
+  type: 'range',
+  label: '나트륨(mg)',
+  min: 0,
+  max: null,
+};
 
 export function getListFilterSpecs({
   products,
@@ -22,13 +36,22 @@ export function getListFilterSpecs({
   proteinSourceLabelOf,
   sweetenerLabelOf,
 }) {
-  if (!supportsProteinSourceListFilters(activeCode)) {
-    return withFlavorFilter(getGeneralFilterSpecs(products, filterState, { sweetenerLabelOf }), products, filterState);
-  }
-  return withFlavorFilter(getProteinDrinkFilterSpecs(products, filterState, {
-    proteinSourceLabelOf,
-    sweetenerLabelOf,
-  }), products, filterState);
+  const categorySpecs = PROTEIN_NUTRITION_FILTER_CODES.has(activeCode)
+    ? getProteinDrinkFilterSpecs(products, filterState, {
+      proteinSourceLabelOf,
+      sweetenerLabelOf,
+      includeSodium: activeCode === 'chicken_breast',
+      includeProteinSources: activeCode !== 'chicken_breast',
+      includeSweeteners: activeCode !== 'chicken_breast',
+    })
+    : getGeneralFilterSpecs(products, filterState, { sweetenerLabelOf });
+
+  const allergenSpec = getAllergenFilterSpec(products, filterState);
+  return withFlavorFilter(
+    allergenSpec ? [...categorySpecs, allergenSpec] : categorySpecs,
+    products,
+    filterState,
+  );
 }
 
 export function supportsProteinSourceListFilters(activeCode) {
@@ -130,38 +153,35 @@ function getProteinDrinkFilterSpecs(
   {
     proteinSourceLabelOf = defaultProteinSourceLabel,
     sweetenerLabelOf = defaultSweetenerLabel,
+    includeSodium = false,
+    includeProteinSources = true,
+    includeSweeteners = true,
   } = {},
 ) {
-  const rangeSpecs = PROTEIN_RANGE_SPECS
+  const rangeSpecs = (includeSodium
+    ? [...PROTEIN_RANGE_SPECS, CHICKEN_BREAST_SODIUM_RANGE_SPEC]
+    : PROTEIN_RANGE_SPECS)
     .map((spec) => hydrateRangeSpec(spec, products))
     .filter((spec) => hasNutrient(products, spec.key) || hasActiveRange(filterState[spec.key]));
 
   return [
     ...rangeSpecs,
-    dynamicOptionSpec({
+    ...(includeProteinSources ? [dynamicOptionSpec({
       products,
       filterState,
       key: 'proteinSources',
       type: 'tristate',
       label: '단백질 원료',
       context: { proteinSourceLabelOf },
-    }),
-    dynamicOptionSpec({
+    })] : []),
+    ...(includeSweeteners ? [dynamicOptionSpec({
       products,
       filterState,
       key: 'sweeteners',
       type: 'tristate',
       label: '대체당',
       context: { sweetenerLabelOf },
-    }),
-    dynamicOptionSpec({
-      products,
-      filterState,
-      key: 'allergens',
-      type: 'exclude_only',
-      label: '알레르기 유발 성분',
-      note: ALLERGEN_FILTER_NOTE,
-    }),
+    })] : []),
   ].filter(Boolean);
 }
 
@@ -173,6 +193,8 @@ function getGeneralFilterSpecs(
   } = {},
 ) {
   return ALL_FILTERS.map((spec) => {
+    // 알레르기 필터는 식품 카테고리와 무관하게 공통 동적 스펙을 사용한다.
+    if (spec.key === 'allergens') return null;
     if (spec.key !== 'sweeteners') return spec;
     return dynamicOptionSpec({
       products,
@@ -183,6 +205,17 @@ function getGeneralFilterSpecs(
       context: { sweetenerLabelOf },
     });
   }).filter(Boolean);
+}
+
+function getAllergenFilterSpec(products, filterState) {
+  return dynamicOptionSpec({
+    products,
+    filterState,
+    key: 'allergens',
+    type: 'exclude_only',
+    label: '알레르기 유발 성분',
+    note: ALLERGEN_FILTER_NOTE,
+  });
 }
 
 function withFlavorFilter(specs, products, filterState) {
@@ -321,7 +354,7 @@ function getIngredientList(product, key, context = {}) {
     if (labels.length > 0) return labels;
     return normalizeList([product?.flavorName || product?.flavorCode]).filter(Boolean);
   }
-  if (key === 'allergens') return normalizeList(ingredients.allergens).filter((item) => item !== '함유');
+  if (key === 'allergens') return normalizeAllergenList(ingredients.allergens);
   return [];
 }
 

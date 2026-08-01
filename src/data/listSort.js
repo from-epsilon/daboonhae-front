@@ -7,6 +7,7 @@ import { computeEaa, computeBcaa } from './aminoAcids.js';
 import { getProteinDrinkScoreModel } from './proteinDrinkScore.js';
 
 const PROTEIN_DRINK_CATEGORY = '단백질 음료';
+const CHICKEN_BREAST_CATEGORY = '닭가슴살';
 
 // 공통 기본 정렬 옵션 (단백질 음료 외 전 카테고리)
 const DEFAULT_SORT_OPTIONS = [
@@ -15,6 +16,16 @@ const DEFAULT_SORT_OPTIONS = [
   { key: 'protein_desc', label: '단백질순', short: '단백질순' },
   { key: 'carbs_asc', label: '탄수화물 낮은 순', short: '저탄수순' },
   { key: 'sugar_asc', label: '당류 낮은 순', short: '저당순' },
+];
+
+// 닭가슴살 전용 정렬 — 기본 정렬 없이 단백질 총량을 첫 진입 기준으로 사용
+const CHICKEN_BREAST_SORT_OPTIONS = [
+  { key: 'protein_desc', label: '단백질 순', short: '단백질 순' },
+  { key: 'protein_per_calorie_desc', label: '칼로리 효율 순', short: '칼로리 효율 순' },
+  { key: 'protein_value_desc', label: '가성비 순', short: '가성비 순' },
+  { key: 'carbs_asc', label: '탄수화물 낮은 순', short: '탄수화물 낮은 순' },
+  { key: 'sugar_asc', label: '당류 낮은 순', short: '당류 낮은 순' },
+  { key: 'fat_asc', label: '지방 낮은 순', short: '지방 낮은 순' },
 ];
 
 // 카테고리별 비노출 옵션 (의미 없는 정렬 숨김)
@@ -109,6 +120,7 @@ export const PROTEIN_DRINK_SORT_OPTIONS = [
 // 카테고리(서브 라벨) → 노출할 정렬 옵션 목록
 export function getSortOptions(category) {
   if (category === PROTEIN_DRINK_CATEGORY) return PROTEIN_DRINK_SORT_OPTIONS;
+  if (category === CHICKEN_BREAST_CATEGORY) return CHICKEN_BREAST_SORT_OPTIONS;
   if (!category || category === 'all' || category === '전체') return DEFAULT_SORT_OPTIONS;
   const hidden = HIDE_BY_CATEGORY[category];
   if (!hidden) return DEFAULT_SORT_OPTIONS;
@@ -228,6 +240,60 @@ function compareDescMissingLast(a, b, key) {
   return bv - av;
 }
 
+const MASS_UNIT_TO_GRAMS = {
+  mg: 0.001,
+  g: 1,
+  kg: 1000,
+  oz: 28.349523125,
+  lb: 453.59237,
+};
+
+function massInGrams(amount, unit) {
+  const value = Number(amount);
+  const factor = MASS_UNIT_TO_GRAMS[String(unit ?? '').trim().toLowerCase()];
+  return Number.isFinite(value) && value > 0 && factor ? value * factor : null;
+}
+
+function totalProteinPerUnit(food) {
+  const protein = numericValue(food, 'protein');
+  if (!(protein > 0)) return null;
+
+  const basisMass = massInGrams(food?.servingSize, food?.servingUnit);
+  const netMass = massInGrams(food?.netContentAmount, food?.netContentUnit);
+  if (basisMass && netMass) return protein * (netMass / basisMass);
+  return protein;
+}
+
+function proteinValuePerWon(food) {
+  const protein = totalProteinPerUnit(food);
+  const price = cheapestUnitPrice(food);
+  return protein > 0 && price > 0 ? protein / price : null;
+}
+
+function proteinPerCalorie(food) {
+  const protein = numericValue(food, 'protein');
+  const calories = numericValue(food, 'calories');
+  return protein > 0 && calories > 0 ? protein / calories : null;
+}
+
+function compareProteinPerCalorieDescMissingLast(a, b) {
+  const av = proteinPerCalorie(a);
+  const bv = proteinPerCalorie(b);
+  if (av == null && bv == null) return 0;
+  if (av == null) return 1;
+  if (bv == null) return -1;
+  return bv - av;
+}
+
+function compareProteinValueDescMissingLast(a, b) {
+  const av = proteinValuePerWon(a);
+  const bv = proteinValuePerWon(b);
+  if (av == null && bv == null) return 0;
+  if (av == null) return 1;
+  if (bv == null) return -1;
+  return bv - av;
+}
+
 // 정렬 적용 — 카테고리별 기준 분기 (raw 제품 배열 입력)
 export function applySort(products, category, sortKey) {
   const key = resolveSortKey(category, sortKey);
@@ -253,10 +319,16 @@ export function applySort(products, category, sortKey) {
       return arr.sort((a, b) => compareAscMissingLast(a, b, 'calories'));
     case 'protein_desc':
       return arr.sort((a, b) => compareDescMissingLast(a, b, 'protein'));
+    case 'protein_per_calorie_desc':
+      return arr.sort(compareProteinPerCalorieDescMissingLast);
     case 'carbs_asc':
       return arr.sort((a, b) => compareAscMissingLast(a, b, 'carbs'));
     case 'sugar_asc':
       return arr.sort((a, b) => compareAscMissingLast(a, b, 'sugar'));
+    case 'fat_asc':
+      return arr.sort((a, b) => compareAscMissingLast(a, b, 'fat'));
+    case 'protein_value_desc':
+      return arr.sort(compareProteinValueDescMissingLast);
     default:
       return arr;
   }

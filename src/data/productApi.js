@@ -6,6 +6,7 @@
 // - 컬럼은 SUPABASE_PRODUCT_QUERY_GUIDE 기준 신규 스키마만 사용(레거시 컬럼 사용 금지)
 
 import { supabase } from '../lib/supabase.js';
+import { parseAllergensText } from './allergens.js';
 import { AMINO_ACID_KEYS, AMINO_ACID_KO_ALIASES } from './aminoAcids.js';
 import { NUTRIENT_GROUP, isNutrientGroup } from './nutrientGroups.js';
 import { PROTEIN_DRINK_SCORE_PROFILE } from './proteinDrinkScore.js';
@@ -388,15 +389,6 @@ function deriveRankingScore(n) {
   return Math.min(98, Math.max(40, s));
 }
 
-// ── 알레르기 텍스트 → 배열
-function parseAllergens(text) {
-  if (text == null) return null;
-  return text
-    .split(/[,，、\s]+/)
-    .map(s => s.trim())
-    .filter((s) => s && s !== '함유');
-}
-
 function deriveLactoseFreeFromAllergens(allergens) {
   if (!Array.isArray(allergens)) return null;
   if (allergens.some(a => a.includes('우유') || a.includes('유당'))) return false;
@@ -432,7 +424,7 @@ function parseIngredientAnnotations(anns) {
 // ── Supabase row → mock product shape
 function transformProduct(food) {
   const nutrition = parseNutrition(food.food_nutrients);
-  const allergens = parseAllergens(food.allergens_text);
+  const allergens = parseAllergensText(food.allergens_text);
   const lactoseFree = deriveLactoseFreeFromAllergens(allergens);
   const purposeCategories = parsePurposeCategories(food.food_purpose_category_links);
   const flavors = parseFlavors(food);

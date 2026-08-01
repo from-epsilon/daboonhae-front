@@ -121,6 +121,7 @@
   padding: var(--space-2) 0;
 }
 .d-list-filter-section + .d-list-filter-section--tristate,
+.d-list-filter-section + .d-list-filter-section--exclude_only,
 .d-list-filter-section + .d-list-filter-section--bool,
 .d-list-filter-section--single + .d-list-filter-section,
 .d-list-filter-section--tristate + .d-list-filter-section,

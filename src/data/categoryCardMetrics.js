@@ -8,6 +8,9 @@ const PROTEIN_COMMON = [
   { key: 'bcaa', label: 'BCAA', unit: 'mg', perVol: true, perKcal: true },
 ];
 
+// 닭가슴살은 칼로리를 용량 메타 옆에 표시하므로 지표 목록에서는 제외한다.
+const CHICKEN_BREAST_METRICS = PROTEIN_COMMON.filter((metric) => metric.key !== 'calories');
+
 // 단백질 음료 — 3단 우선순위 카드
 // 1순위: 핵심 단백질 지표 (칼로리 대비 /100kcal + 가격 대비 /1,000원)
 // - unitInRatio: 비율값에도 단위 표기 → 총량/칼로리대비/가격대비 형식 통일
@@ -57,7 +60,18 @@ const CEREAL_METRICS = [
 // subLabel은 categoryTabs.js의 tab.subs[].label과 일치해야 함 (DB name_ko 변경 반영)
 const CONFIG = {
   // 단백질 보충
-  'protein:닭가슴살':    { metrics: PROTEIN_COMMON, showSweeteners: false },
+  'protein:닭가슴살': {
+    metrics: CHICKEN_BREAST_METRICS,
+    showServingCalories: true,
+    macroBarVariant: 'mini',
+    macroBarRatioOnly: true,
+    showSubNutrientsOnMobile: true,
+    mobileSubNutrientKeys: ['carbs', 'fat'],
+    subNutrientHeroKeys: ['calories', 'protein'],
+    hideSubNutrients: ['transFat', 'cholesterol'],
+    hideIngredients: ['proteinSources', 'allergens'],
+    showSweeteners: false,
+  },
   // 단백질 음료 — 3단 우선순위(핵심 단백질 지표 → 단백질원 → 보조 영양)
   // 탄단지 비율바·감미료·알레르기·중복 보조영양(SubNutrients)은 숨김
   'protein:단백질 음료': {

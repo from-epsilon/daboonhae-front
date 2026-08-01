@@ -201,14 +201,14 @@ function formatMacroAmount(value) {
   return value >= 100 ? Math.round(value) : Math.round(value * 10) / 10;
 }
 
-function MiniRatioRow({ protein, carbs, fat }) {
+function MiniRatioRow({ protein, carbs, fat, ratioOnly = false }) {
   const total = protein + carbs + fat;
   const pct = (v) => (total > 0 ? Math.round((v / total) * 100) : 0);
   const item = (label, value, key) => (
     <span>
       <i className={`macro-mini-dot macro-mini-dot--${key}`} />
       {label}
-      <b className="macro-mini-amount">{formatMacroAmount(value)}g</b>
+      {!ratioOnly && <b className="macro-mini-amount">{formatMacroAmount(value)}g</b>}
       <em className="macro-mini-ratio">{pct(value)}%</em>
     </span>
   );
@@ -236,7 +236,7 @@ export function MacroRow({ protein = 0, carbs = 0, fat = 0, kcal = 0, compact = 
     return <CompactRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} />;
   }
   if (variant === 'mini') {
-    return <MiniRatioRow protein={protein} carbs={carbs} fat={fat} />;
+    return <MiniRatioRow protein={protein} carbs={carbs} fat={fat} ratioOnly={ratioOnly} />;
   }
   if (wide) {
     return <WideRow protein={protein} carbs={carbs} fat={fat} kcal={kcal} ratioOnly={ratioOnly} />;

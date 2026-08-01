@@ -238,9 +238,22 @@ function FoodCardList({ food, onClick, onCompare, inCompare, onWishlist, inWishl
             />
           </div>
           {config.showMacroBar !== false && config.macroBarVariant && (
-            <MacroRow {...food.macros} variant={config.macroBarVariant} />
+            <MacroRow
+              {...food.macros}
+              variant={config.macroBarVariant}
+              ratioOnly={config.macroBarRatioOnly === true}
+            />
           )}
           <CategoryMetricsBlock food={food} tabId={tabId} subLabel={subLabel} sortKey={sortKey} />
+          {config.showSubNutrientsOnMobile === true && (
+            <SubNutrients
+              nutrition={food.nutrition}
+              category={food.category}
+              heroMetricKeys={config.subNutrientHeroKeys}
+              include={config.mobileSubNutrientKeys}
+              hide={config.hideSubNutrients}
+            />
+          )}
         </div>
       </div>
       <PurchaseOffers
@@ -481,9 +494,11 @@ function SelectedScoreMetric({ food, sortKey }) {
 }
 
 // 세부 영양성분 (hero에 이미 표시된 항목 제외)
-function SubNutrients({ nutrition, category }) {
+function SubNutrients({ nutrition, category, heroMetricKeys, include, hide = [] }) {
   if (!nutrition) return null;
-  const heroKeys = new Set(getCategoryMetrics(category).map((m) => m.key));
+  const heroKeys = new Set(
+    heroMetricKeys ?? getCategoryMetrics(category).map((m) => m.key),
+  );
   const ALL_NUTRIENTS = [
     { key: 'calories', label: '칼로리', unit: 'kcal' },
     { key: 'protein', label: '단백질', unit: 'g' },
@@ -497,7 +512,10 @@ function SubNutrients({ nutrition, category }) {
     { key: 'fiber', label: '식이섬유', unit: 'g' },
   ];
   const remaining = ALL_NUTRIENTS.filter(
-    (n) => !heroKeys.has(n.key) && nutrition[n.key] !== undefined
+    (n) => (!include || include.includes(n.key))
+      && !heroKeys.has(n.key)
+      && !hide.includes(n.key)
+      && nutrition[n.key] !== undefined
   );
   if (remaining.length === 0) return null;
   return (
@@ -659,7 +677,12 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, onWishlist, inWishl
 
           {/* 쉐이크형 미니 탄단지 — 원료 상세보다 먼저 보이도록 배치 */}
           {config.showMacroBar !== false && config.macroBarVariant && (
-            <MacroRow {...food.macros} wide ratioOnly variant={config.macroBarVariant} />
+            <MacroRow
+              {...food.macros}
+              wide
+              ratioOnly={config.macroBarRatioOnly === true}
+              variant={config.macroBarVariant}
+            />
           )}
 
           {/* 카테고리별 강조 지표 — 모바일 리스트 카드와 동일(CategoryMetricsBlock) */}
@@ -672,7 +695,12 @@ function FoodCardWide({ food, onClick, onCompare, inCompare, onWishlist, inWishl
 
           {/* 나머지 영양성분 — 카테고리 설정에서 끌 수 있음(showSubNutrients=false) */}
           {config.showSubNutrients !== false && (
-            <SubNutrients nutrition={food.nutrition} category={food.category} />
+            <SubNutrients
+              nutrition={food.nutrition}
+              category={food.category}
+              heroMetricKeys={config.subNutrientHeroKeys}
+              hide={config.hideSubNutrients}
+            />
           )}
 
           {/* 원재료·성분 상세 — 카테고리별로 일부 섹션 숨김 가능(hideIngredients)

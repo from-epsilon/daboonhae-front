@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Badge } from '../../ds/Badge.jsx';
+import { AMINO_ACID_KEYS } from '../../../data/aminoAcids.js';
+import { NUTRIENT_GROUP, isNutrientGroup } from '../../../data/nutrientGroups.js';
 
 // 더보기/접기 caret — 펼침 상태면 180도 회전 (외부 아이콘 의존 제거)
 function Caret({ open }) {
@@ -36,6 +38,30 @@ const REQUIRED_ORDER = [
 ];
 
 const REQUIRED_CODES = new Set(REQUIRED_ORDER.map(r => r.code));
+const CHICKEN_BREAST_REQUIRED_ORDER = (() => {
+  const protein = REQUIRED_ORDER.find((spec) => spec.code === 'protein_g');
+  const withoutProtein = REQUIRED_ORDER.filter((spec) => spec.code !== 'protein_g');
+  const fatIndex = withoutProtein.findIndex((spec) => spec.code === 'fat_g');
+  return [
+    ...withoutProtein.slice(0, fatIndex),
+    protein,
+    ...withoutProtein.slice(fatIndex),
+  ];
+})();
+const AMINO_CODES = new Set([
+  ...AMINO_ACID_KEYS,
+  'src_eaa_mg',
+  'src_bcaa_mg',
+  'eaa',
+  'bcaa',
+]);
+
+function isAminoNutrient(fn) {
+  const code = fn?.nutrient_code;
+  const nutrientCode = fn?.nutrients?.code;
+  if (AMINO_CODES.has(code) || AMINO_CODES.has(nutrientCode)) return true;
+  return isNutrientGroup(fn, NUTRIENT_GROUP.AMINO_ACID);
+}
 
 function formatValue(fn, ratio = 1) {
   if (ratio === 1 && fn.amount_text) return fn.amount_text;
@@ -110,7 +136,10 @@ export function NutritionTable({
     }
 
     const mainRows = [];
-    for (const spec of REQUIRED_ORDER) {
+    const requiredOrder = categoryCode === 'chicken_breast'
+      ? CHICKEN_BREAST_REQUIRED_ORDER
+      : REQUIRED_ORDER;
+    for (const spec of requiredOrder) {
       const fn = byCode[spec.code];
       if (!fn) continue;
       mainRows.push({
@@ -135,7 +164,9 @@ export function NutritionTable({
     }
 
     const extraRows = foodNutrients
-      .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code) && !(categoryCode === 'protein_drink' && fn.nutrient_code === 'leucine'))
+      .filter(fn => !REQUIRED_CODES.has(fn.nutrient_code)
+        && !(categoryCode === 'protein_drink' && fn.nutrient_code === 'leucine')
+        && !(categoryCode === 'chicken_breast' && isAminoNutrient(fn)))
       .sort((a, b) => (a.nutrients?.display_order ?? 999) - (b.nutrients?.display_order ?? 999))
       .map(fn => ({
         key: fn.nutrient_code,

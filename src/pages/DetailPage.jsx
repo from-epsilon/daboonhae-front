@@ -178,6 +178,7 @@ function DetailNutritionPreview({
   onChangeBasis,
   onToggleExpand,
 }) {
+  const isChickenBreast = categoryCode === 'chicken_breast';
   const nutrition = product?.nutrition ?? {};
   const servingSize = product?.servingSize;
   const servingUnit = product?.servingUnit ?? '';
@@ -203,20 +204,29 @@ function DetailNutritionPreview({
     return 1;
   })();
   const byCode = new Map((foodNutrients ?? []).map((fn) => [fn.nutrient_code, fn]));
+  const proteinRow = {
+    key: 'protein_g',
+    label: '단백질',
+    fn: byCode.get('protein_g'),
+    fallbackValue: nutrition.protein,
+    unit: 'g',
+    showMissing: true,
+  };
   const fixedLeftRows = [
     { key: 'energy_kcal', label: '열량', fn: byCode.get('energy_kcal'), fallbackValue: nutrition.calories, unit: 'kcal', showMissing: true },
     { key: 'carbohydrate_g', label: '탄수화물', fn: byCode.get('carbohydrate_g'), fallbackValue: nutrition.carbs, unit: 'g', showMissing: true },
     { key: 'sugars_g', label: '당류', fn: byCode.get('sugars_g'), fallbackValue: nutrition.sugar, unit: 'g', depth: 1, showMissing: true },
     { key: 'dietary_fiber', label: byCode.get('dietary_fiber')?.nutrients?.name_ko || '식이섬유', fn: byCode.get('dietary_fiber'), fallbackValue: nutrition.fiber, unit: 'g', depth: 1, extra: true },
     { key: 'src_알룰로오스_g', label: byCode.get('src_알룰로오스_g')?.nutrients?.name_ko || '알룰로스', fn: byCode.get('src_알룰로오스_g'), fallbackValue: nutrition.allulose, unit: 'g', depth: 1, extra: true },
+    ...(isChickenBreast ? [proteinRow] : []),
     { key: 'fat_g', label: '지방', fn: byCode.get('fat_g'), fallbackValue: nutrition.fat, unit: 'g', showMissing: true },
     { key: 'trans_fat_g', label: byCode.get('trans_fat_g')?.nutrients?.name_ko || '트랜스지방', fn: byCode.get('trans_fat_g'), fallbackValue: nutrition.transFat, unit: 'g', depth: 1, extra: true },
     { key: 'saturated_fat_g', label: byCode.get('saturated_fat_g')?.nutrients?.name_ko || '포화지방', fn: byCode.get('saturated_fat_g'), fallbackValue: nutrition.saturatedFat, unit: 'g', depth: 1, extra: true },
     { key: 'cholesterol_mg', label: byCode.get('cholesterol_mg')?.nutrients?.name_ko || '콜레스테롤', fn: byCode.get('cholesterol_mg'), fallbackValue: nutrition.cholesterol, unit: 'mg', extra: true },
     { key: 'sodium_mg', label: byCode.get('sodium_mg')?.nutrients?.name_ko || '나트륨', fn: byCode.get('sodium_mg'), fallbackValue: nutrition.sodium, unit: 'mg', extra: true },
   ];
-  const fixedRightRows = [
-    { key: 'protein_g', label: '단백질', fn: byCode.get('protein_g'), fallbackValue: nutrition.protein, unit: 'g', showMissing: true },
+  const fixedRightRows = isChickenBreast ? [] : [
+    proteinRow,
     { key: 'eaa', label: '필수아미노산', fn: firstFoodNutrientByCode(byCode, ['src_eaa_mg', 'eaa']), fallbackValue: nutrition.eaa, unit: 'mg', depth: 1, positiveOnly: true, showMissing: true },
     { key: 'bcaa', label: 'BCAA', fn: firstFoodNutrientByCode(byCode, ['src_bcaa_mg', 'bcaa']), fallbackValue: nutrition.bcaa, unit: 'mg', depth: 2, positiveOnly: true, showMissing: true },
     { key: 'leucine', label: '류신', fn: byCode.get('leucine'), fallbackValue: nutrition.leucine, unit: 'mg', depth: 3, positiveOnly: true, showMissing: true },
@@ -239,7 +249,7 @@ function DetailNutritionPreview({
       showMissing: true,
       extra: true,
     }));
-  const fixedEaaExtraRows = EAA_AMINO_ACIDS
+  const fixedEaaExtraRows = (isChickenBreast ? [] : EAA_AMINO_ACIDS)
     .filter((amino) => amino.code !== 'leucine')
     .map((amino) => ({
       key: amino.code,
@@ -253,7 +263,7 @@ function DetailNutritionPreview({
       extra: true,
     }));
   const fixedEaaCodes = new Set(EAA_AMINO_ACIDS.map((amino) => amino.code));
-  const extraRightRows = (foodNutrients ?? [])
+  const extraRightRows = (isChickenBreast ? [] : (foodNutrients ?? []))
     .map((fn) => ({ fn, aminoKey: previewAminoKey(fn) }))
     .filter(({ fn, aminoKey }) => {
       if (!aminoKey) return false;
@@ -351,7 +361,7 @@ function DetailNutritionPreview({
           )}
         </div>
       </div>
-      <div className={`d-detail-card-nutri-table${expanded ? ' is-open' : ''}`}>
+      <div className={`d-detail-card-nutri-table${expanded ? ' is-open' : ''}${visibleRightRows.length === 0 ? ' has-single-column' : ''}`}>
         {visibleLeftRows.length > 0 && renderList(visibleLeftRows)}
         {visibleRightRows.length > 0 && renderList(visibleRightRows)}
       </div>
