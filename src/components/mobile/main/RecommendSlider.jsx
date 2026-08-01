@@ -91,7 +91,12 @@ function RecommendCard({ food, rank, metrics, onClick, onCompare, inCompare, onW
           )}
         </div>
         <HighlightStats food={food} metrics={metrics} />
-        <SummaryPurchaseLink offer={bestOffer} productId={food.id} />
+        <SummaryPurchaseLink
+          offer={bestOffer}
+          productId={food.id}
+          redirectDelay={2}
+          showAffiliate={false}
+        />
       </div>
     </article>
   );

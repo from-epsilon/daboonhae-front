@@ -4,7 +4,7 @@ import Seo from '../components/global/Seo.jsx';
 import { ANALYTICS_EVENTS, captureEvent } from '../lib/analytics.js';
 import '../styles/redirect.css';
 
-const DEFAULT_DELAY_SECONDS = 1.5;
+const DEFAULT_DELAY_SECONDS = 2;
 const MIN_DELAY_SECONDS = 0.5;
 const MAX_DELAY_SECONDS = 5;
 

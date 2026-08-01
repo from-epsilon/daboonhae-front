@@ -30,6 +30,8 @@ function FoodCell({ food, rank, metrics, onItemClick, onCompare, inCompare, onWi
         {...cardProps}
         metrics={metrics}
         showPurchase={showPurchase}
+        purchaseRedirectDelay={2}
+        showPurchaseAffiliate={false}
         variant={variant === 'recommend' ? 'recommend' : 'standard'}
       />
     </div>

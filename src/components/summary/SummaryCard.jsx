@@ -135,9 +135,14 @@ function SummaryStats({ stats }) {
   );
 }
 
-export function SummaryPurchaseLink({ offer, productId }) {
+export function SummaryPurchaseLink({
+  offer,
+  productId,
+  redirectDelay = 1.5,
+  showAffiliate = true,
+}) {
   const unitPrice = unitPriceOf(offer);
-  const href = getPurchaseRedirectUrl(offer, 1.5, productId);
+  const href = getPurchaseRedirectUrl(offer, redirectDelay, productId);
   if (!offer || unitPrice == null || !href) return null;
   const vendorLogo = getVendorLogo(offer.vendorName);
 
@@ -163,9 +168,11 @@ export function SummaryPurchaseLink({ offer, productId }) {
           <IconChevron size={13} stroke={2} />
         </span>
       </a>
-      <span className="summary-purchase-affiliate">
-        ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다.
-      </span>
+      {showAffiliate && (
+        <span className="summary-purchase-affiliate">
+          ※ 다분해는 제휴 링크 구매에 대해 제휴사로부터 제휴수익을 받습니다.
+        </span>
+      )}
     </div>
   );
 }
@@ -182,6 +189,8 @@ export function SummaryCard({
   metrics,
   showPurchase = false,
   variant = 'standard',
+  purchaseRedirectDelay = 1.5,
+  showPurchaseAffiliate = true,
 }) {
   if (!food) return null;
   const isRecommend = variant === 'recommend';
@@ -211,7 +220,14 @@ export function SummaryCard({
           <SummaryInlineMeta food={food} />
         </a>
         <SummaryStats stats={stats} />
-        {displaysPurchase && <SummaryPurchaseLink offer={bestOffer} productId={food.id} />}
+        {displaysPurchase && (
+          <SummaryPurchaseLink
+            offer={bestOffer}
+            productId={food.id}
+            redirectDelay={purchaseRedirectDelay}
+            showAffiliate={showPurchaseAffiliate}
+          />
+        )}
       </div>
     </article>
   );
@@ -279,7 +295,12 @@ export function MobileSummaryListCard({ food, onClick, onCompare, inCompare, onW
           <div className="mobile-summary-serving">{food.serving}</div>
         )}
         <MobileSummaryMetrics food={food} />
-        <SummaryPurchaseLink offer={bestOffer} productId={food.id} />
+        <SummaryPurchaseLink
+          offer={bestOffer}
+          productId={food.id}
+          redirectDelay={2}
+          showAffiliate={false}
+        />
       </div>
     </article>
   );
