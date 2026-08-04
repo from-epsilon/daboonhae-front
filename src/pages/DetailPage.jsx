@@ -19,6 +19,7 @@ import ProductThumb from '../components/global/ProductThumb.jsx';
 import ProductNameText from '../components/global/ProductNameText.jsx';
 import { MacroRow } from '../components/ds/MacroRow.jsx';
 import { IconCompare, IconHeart } from '../components/ds/Icons.jsx';
+import { Skeleton } from '../components/ds/Skeleton.jsx';
 import { AnalysisReport } from '../components/desktop/detail/AnalysisReport.jsx';
 import { CategoryGuide } from '../components/desktop/detail/CategoryGuide.jsx';
 import { ReviewSection } from '../components/desktop/detail/ReviewSection.jsx';
@@ -652,21 +653,53 @@ export default function DetailPage() {
   if (loading) return (
     <div className="page d-detail-skeleton-wrap">
       <div className="d-detail-skeleton-breadcrumb">
-        <span className="d-skeleton" style={{ width: '30%', height: 12, borderRadius: 4, display: 'inline-block' }} />
+        <Skeleton width={280} height={12} />
       </div>
-      <div className="d-detail-skeleton-body">
-        <div className="d-skeleton" style={{ width: 320, height: 320, borderRadius: 12, flexShrink: 0 }} />
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <span className="d-skeleton" style={{ width: '25%', height: 12, borderRadius: 4, display: 'inline-block' }} />
-          <span className="d-skeleton" style={{ width: '60%', height: 28, borderRadius: 4, display: 'inline-block' }} />
-          <span className="d-skeleton" style={{ width: '20%', height: 12, borderRadius: 4, display: 'inline-block' }} />
-          <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-            <span className="d-skeleton" style={{ width: 100, height: 60, borderRadius: 8, display: 'inline-block' }} />
-            <span className="d-skeleton" style={{ width: 100, height: 60, borderRadius: 8, display: 'inline-block' }} />
-            <span className="d-skeleton" style={{ width: 100, height: 60, borderRadius: 8, display: 'inline-block' }} />
+      <div className="d-detail-skeleton-layout">
+        <main className="d-detail-skeleton-main">
+          <div className="d-detail-skeleton-overview">
+            <Skeleton width={230} height={230} radius={0} />
+            <div className="d-detail-skeleton-summary">
+              <Skeleton width="22%" height={11} />
+              <Skeleton width="66%" height={24} />
+              <Skeleton width="30%" height={11} />
+              <div className="d-detail-skeleton-summary-lines">
+                <Skeleton width="44%" height={12} />
+                <Skeleton width="52%" height={12} />
+              </div>
+              <div className="d-detail-skeleton-nutrients">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} width="100%" height={20} />
+                ))}
+              </div>
+            </div>
           </div>
-          <span className="d-skeleton" style={{ width: '100%', height: 12, borderRadius: 6, display: 'inline-block', marginTop: 8 }} />
-        </div>
+          <div className="d-detail-skeleton-tabs">
+            <Skeleton width={64} height={18} />
+            <Skeleton width={36} height={18} />
+          </div>
+          <Skeleton width={140} height={26} />
+          {[0, 1].map((i) => (
+            <div key={i} className="d-detail-skeleton-report-row">
+              <Skeleton width={52} height={52} radius={6} />
+              <div>
+                <Skeleton width={120} height={16} />
+                <Skeleton width={260} height={11} />
+              </div>
+              <Skeleton width={54} height={20} />
+            </div>
+          ))}
+        </main>
+        <aside className="d-detail-skeleton-aside">
+          <Skeleton width={72} height={18} />
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} width="100%" height={74} radius={8} />
+          ))}
+          <Skeleton width={72} height={18} style={{ marginTop: 38 }} />
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} width={i === 3 ? '72%' : '100%'} height={11} />
+          ))}
+        </aside>
       </div>
     </div>
   );

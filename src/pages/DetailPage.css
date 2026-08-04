@@ -54,15 +54,80 @@
 .d-detail-skeleton-wrap {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 40px;
+  padding: 8px 40px 80px;
 }
 .d-detail-skeleton-breadcrumb {
-  margin-bottom: 24px;
-}
-.d-detail-skeleton-body {
+  height: 20px;
   display: flex;
-  gap: 40px;
-  align-items: flex-start;
+  align-items: center;
+  margin-bottom: 19px;
+}
+.d-detail-skeleton-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+}
+.d-detail-skeleton-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 20px;
+}
+.d-detail-skeleton-overview {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 24px;
+  min-height: 343px;
+}
+.d-detail-skeleton-summary {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.d-detail-skeleton-summary-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 8px;
+}
+.d-detail-skeleton-nutrients {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 24px;
+  margin-top: 14px;
+}
+.d-detail-skeleton-tabs {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+.d-detail-skeleton-report-row {
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-tertiary);
+}
+.d-detail-skeleton-report-row > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.d-detail-skeleton-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 19px;
+}
+@media (max-width: 960px) {
+  .d-detail-skeleton-layout { grid-template-columns: 1fr; }
+  .d-detail-skeleton-aside { display: none; }
 }
 
 /* ───────── 정보 툴팁 (? 아이콘 hover) ───────── */

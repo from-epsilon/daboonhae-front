@@ -60,10 +60,55 @@
 
 /* 스켈레톤 카드 */
 .m-list-skeleton-card {
+  position: relative;
   display: flex;
-  gap: 12px;
-  padding: 14px 0;
+  flex-direction: column;
+  gap: 0;
+  min-height: 260px;
+  padding: 14px 12px 14px 0;
   border-bottom: 1px solid var(--border-tertiary);
+}
+.m-list-skeleton-actions {
+  position: absolute;
+  top: 14px;
+  right: 12px;
+  display: flex;
+  gap: 5px;
+}
+.m-list-skeleton-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 104px;
+}
+.m-list-skeleton-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 68px;
+}
+.m-list-skeleton-metrics {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+.m-list-skeleton-offers {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-tertiary);
+}
+.m-list-skeleton-offers-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.m-list-skeleton-offers-list {
+  display: flex;
+  gap: 4px;
+  overflow: hidden;
 }
 
 /* number input spinner 제거 */

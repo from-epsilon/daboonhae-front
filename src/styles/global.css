@@ -479,6 +479,80 @@ select:focus-visible {
   flex-direction: column;
   gap: 6px;
 }
+.d-skeleton-foodcard-stats {
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 2px;
+}
+.d-skeleton-foodcard-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.d-skeleton-foodcard-purchase {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+  padding: 8px;
+  border: 1px solid var(--border-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.d-skeleton-wide-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+.d-skeleton-wide-actions {
+  position: absolute;
+  top: 20px;
+  right: 0;
+  display: flex;
+  gap: 6px;
+}
+.d-skeleton-wide-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  min-height: 140px;
+  padding-right: 76px;
+}
+.d-skeleton-wide-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.d-skeleton-wide-metrics {
+  display: flex;
+  gap: 14px;
+  margin-top: 2px;
+}
+.d-skeleton-wide-offers {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-tertiary);
+}
+.d-skeleton-wide-offers-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.d-skeleton-wide-offers-list {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+}
 @media (prefers-reduced-motion: reduce) {
   .d-skeleton { animation: none; background: var(--gray-200); }
 }

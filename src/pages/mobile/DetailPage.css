@@ -47,6 +47,50 @@
   font-weight: 700;
 }
 
+.m-detail-skeleton-hero-image {
+  aspect-ratio: 4 / 3;
+  display: block;
+}
+.m-detail-skeleton-hero-body {
+  min-height: 150px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.m-detail-skeleton-hero-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-tertiary);
+}
+.m-detail-skeleton-purchase {
+  min-height: 248px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.m-detail-skeleton-purchase-list {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+}
+.m-detail-skeleton-card {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.m-detail-skeleton-card > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-tertiary);
+}
+
 .m-detail-embedded-section {
   padding-top: 16px;
   margin-top: 16px;

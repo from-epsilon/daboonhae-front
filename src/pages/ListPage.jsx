@@ -23,7 +23,7 @@ import {
 } from '../data/listViewState.js';
 import { LIST_FOOD_TYPES, getFoodTypeByLabel, getFoodTypeBySlug, isListProductVisible, categoryPath } from '../data/categoryTabs.js';
 import NotFoundPage from './NotFoundPage.jsx';
-import { FoodCardWideSkeleton } from '../components/ds/Skeleton.jsx';
+import { FoodCardWideSkeleton, Skeleton } from '../components/ds/Skeleton.jsx';
 import SidebarFilter from '../components/desktop/list/SidebarFilter.jsx';
 import ResultHeader from '../components/desktop/list/ResultHeader.jsx';
 import ResultGrid from '../components/desktop/list/ResultGrid.jsx';
@@ -254,8 +254,24 @@ export default function ListPage() {
             ))}
           </div>
           <div className="d-list-body">
-            <div />
+            <aside className="d-list-sidebar d-list-skeleton-sidebar" aria-hidden="true">
+              <Skeleton width="34%" height={12} />
+              <Skeleton width="100%" height={40} radius={6} />
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="d-list-skeleton-filter">
+                  <Skeleton width="42%" height={11} />
+                  <Skeleton width="100%" height={34} radius={6} />
+                </div>
+              ))}
+            </aside>
             <section className="d-list-main">
+              <div className="d-list-result-header d-list-skeleton-result-header" aria-hidden="true">
+                <div className="d-list-result-header-left">
+                  <Skeleton width={88} height={14} />
+                  <Skeleton width={34} height={14} />
+                </div>
+                <Skeleton width={72} height={14} />
+              </div>
               {Array.from({ length: 5 }).map((_, i) => (
                 <FoodCardWideSkeleton key={i} />
               ))}

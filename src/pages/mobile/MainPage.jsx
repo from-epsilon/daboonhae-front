@@ -65,22 +65,61 @@ function HomeSkeleton() {
   return (
     <div className="m-home">
       <div className="m-home-hero-skeleton">
-        <Skeleton width="50%" height={14} radius={4} />
-        <Skeleton width="80%" height={22} radius={4} />
-        <Skeleton width="60%" height={14} radius={4} />
+        <Skeleton width="68%" height={20} radius={4} />
+        <Skeleton width="82%" height={20} radius={4} />
+        <Skeleton width="92%" height={11} radius={4} style={{ marginTop: 8 }} />
+        <Skeleton width="72%" height={11} radius={4} />
+        <Skeleton width={152} height={36} radius={18} style={{ marginTop: 8 }} />
       </div>
-      <div style={{ padding: '20px 0' }}>
-        <Skeleton width="30%" height={18} radius={4} style={{ marginBottom: 12 }} />
-        <div style={{ display: 'flex', gap: 12, overflow: 'hidden' }}>
-          {[1,2,3].map(i => (
-            <div key={i} style={{ flex: '0 0 160px' }}>
-              <Skeleton height={160} radius={12} />
-              <Skeleton width="40%" height={10} radius={3} style={{ marginTop: 8 }} />
-              <Skeleton width="80%" height={13} radius={3} style={{ marginTop: 4 }} />
+      <section className="m-home-section m-home-section--cattabs m-home-skeleton-cattabs" aria-hidden="true">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="m-home-skeleton-cat-item">
+            <Skeleton width={78} height={78} radius={12} />
+            <Skeleton width={62} height={12} />
+          </div>
+        ))}
+      </section>
+      <div className="m-home-divider" aria-hidden="true" />
+      <section className="m-home-section m-home-section--rec m-home-skeleton-rec" aria-hidden="true">
+        <div className="m-home-skeleton-section-head">
+          <Skeleton width={132} height={18} />
+          <Skeleton width={44} height={12} />
+        </div>
+        <Skeleton width="calc(100% - 16px)" height={44} radius={22} />
+        <div className="m-home-skeleton-rec-list">
+          {[0, 1].map((i) => (
+            <div key={i} className="m-home-skeleton-rec-card">
+              <Skeleton width={196} height={196} radius={12} />
+              <Skeleton width="38%" height={10} />
+              <Skeleton width="88%" height={14} />
+              <Skeleton width="68%" height={14} />
+              <div className="m-home-skeleton-rec-stats">
+                <Skeleton width={56} height={28} />
+                <Skeleton width={56} height={28} />
+              </div>
+              <Skeleton width="100%" height={36} radius={6} />
             </div>
           ))}
         </div>
-      </div>
+      </section>
+      <div className="m-home-divider" aria-hidden="true" />
+      <section className="m-home-section m-home-skeleton-recent" aria-hidden="true">
+        <div className="m-home-skeleton-section-head">
+          <Skeleton width={132} height={18} />
+          <Skeleton width={44} height={12} />
+        </div>
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="m-home-skeleton-recent-row">
+            <Skeleton width={104} height={104} radius={8} />
+            <div>
+              <Skeleton width="34%" height={10} />
+              <Skeleton width="82%" height={14} />
+              <Skeleton width="64%" height={14} />
+              <Skeleton width="100%" height={34} radius={6} />
+            </div>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }

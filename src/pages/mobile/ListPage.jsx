@@ -9,7 +9,7 @@ import { SortSheet, getSortShortLabel } from '../../components/mobile/list/SortS
 import { ProteinSortLabel } from '../../components/list/ProteinSortLabel.jsx';
 import { SearchSheet } from '../../components/mobile/list/SearchSheet.jsx';
 import { EmptyState } from '../../components/mobile/list/EmptyState.jsx';
-import { Skeleton } from '../../components/ds/Skeleton.jsx';
+import { FoodCardListSkeleton } from '../../components/ds/Skeleton.jsx';
 import { Pagination } from '../../components/ds/Pagination.jsx';
 import { useListProducts, useProductSearch } from '../../store/ProductsContext.jsx';
 import { searchProducts } from '../../data/searchIndex.js';
@@ -47,19 +47,7 @@ function ListSkeleton() {
   return (
     <div className="m-list-cards">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="m-list-skeleton-card">
-          <Skeleton width={88} height={88} radius={4} />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <Skeleton width="30%" height={11} />
-            <Skeleton width="80%" height={14} />
-            <Skeleton width="60%" height={11} />
-            <Skeleton width="100%" height={6} radius={3} />
-            <div style={{ display: 'flex', gap: 4 }}>
-              <Skeleton width={48} height={18} radius={10} />
-              <Skeleton width={40} height={18} radius={10} />
-            </div>
-          </div>
-        </div>
+        <FoodCardListSkeleton key={i} />
       ))}
     </div>
   );

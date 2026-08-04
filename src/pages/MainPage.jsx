@@ -4,7 +4,7 @@ import { useHomeProducts } from '../store/ProductsContext.jsx';
 import { getAdapted } from '../data/adapters.js';
 import { useCompare } from '../store/CompareContext.jsx';
 import { IconChevron } from '../components/ds/Icons.jsx';
-import { FoodCardSkeleton } from '../components/ds/Skeleton.jsx';
+import { FoodCardSkeleton, Skeleton } from '../components/ds/Skeleton.jsx';
 import { HOME_PURPOSE_TABS } from '../data/categoryTabs.js';
 import { getPurposeHighlightMetrics } from '../data/categoryCardMetrics.js';
 
@@ -63,12 +63,31 @@ function PurposeSegment({ value, onChange }) {
 function HomeSkeletonDesktop() {
   return (
     <div className="d-home">
-      <div className="d-home-skeleton-banner" />
-      <div className="d-home-food-grid">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <FoodCardSkeleton key={i} />
-        ))}
-      </div>
+      <div className="d-home-skeleton-banner d-skeleton" />
+      <section className="d-home-cattabs d-home-skeleton-cattabs" aria-hidden="true">
+        <div className="d-home-cattabs-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="d-home-cattabs-item">
+              <Skeleton width={92} height={92} radius={12} />
+              <Skeleton width={72} height={13} />
+            </div>
+          ))}
+        </div>
+      </section>
+      {[0, 1].map((sectionIndex) => (
+        <section key={sectionIndex} className="d-home-section" aria-hidden="true">
+          <div className="d-home-skeleton-section-head">
+            <Skeleton width={190} height={24} />
+            {sectionIndex === 0 && <Skeleton width={270} height={38} radius={20} />}
+            <Skeleton width={64} height={14} />
+          </div>
+          <div className="d-home-food-grid">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <FoodCardSkeleton key={i} />
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

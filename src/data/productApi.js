@@ -391,7 +391,7 @@ function deriveRankingScore(n) {
 
 function deriveLactoseFreeFromAllergens(allergens) {
   if (!Array.isArray(allergens)) return null;
-  if (allergens.some(a => a.includes('우유') || a.includes('유당'))) return false;
+  if (allergens.some(a => a.includes('우유'))) return false;
   return null;
 }
 

@@ -15,6 +15,7 @@ import { AppBar } from '../../components/ds/AppBar.jsx';
 import ProductNameText from '../../components/global/ProductNameText.jsx';
 import { Button } from '../../components/ds/Button.jsx';
 import { MacroRow } from '../../components/ds/MacroRow.jsx';
+import { Skeleton } from '../../components/ds/Skeleton.jsx';
 import { HeroSection } from '../../components/mobile/detail/HeroSection.jsx';
 import { NutritionTable } from '../../components/mobile/detail/NutritionTable.jsx';
 import { AnalysisReport } from '../../components/desktop/detail/AnalysisReport.jsx';
@@ -155,15 +156,37 @@ export default function DetailPageMobile() {
   if (loading) return (
     <>
       <AppBar onBack={() => navigate(-1)} title="불러오는 중..." />
-      <div className="m-detail" style={{ gap: 16, padding: '16px 16px 92px' }}>
-        <div style={{ width: '100%', aspectRatio: '4/3', background: 'var(--gray-100)', borderRadius: 12 }} className="d-skeleton" />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <span className="d-skeleton" style={{ width: '30%', height: 12, borderRadius: 4, display: 'inline-block' }} />
-          <span className="d-skeleton" style={{ width: '80%', height: 22, borderRadius: 4, display: 'inline-block' }} />
-          <span className="d-skeleton" style={{ width: '50%', height: 12, borderRadius: 4, display: 'inline-block' }} />
-        </div>
-        <span className="d-skeleton" style={{ width: '100%', height: 80, borderRadius: 12, display: 'inline-block' }} />
-        <span className="d-skeleton" style={{ width: '100%', height: 200, borderRadius: 12, display: 'inline-block' }} />
+      <div className="m-detail m-detail-skeleton">
+        <section className="m-detail-hero">
+          <Skeleton width="100%" height="auto" radius={12} className="m-detail-skeleton-hero-image" />
+          <div className="m-detail-skeleton-hero-body">
+            <Skeleton width="30%" height={12} />
+            <Skeleton width="82%" height={22} />
+            <Skeleton width="48%" height={12} />
+            <div className="m-detail-skeleton-hero-facts">
+              <Skeleton width="44%" height={11} />
+              <Skeleton width="58%" height={11} />
+            </div>
+          </div>
+        </section>
+        <section className="purchase-offers m-detail-purchase-offers m-detail-skeleton-purchase" aria-hidden="true">
+          <Skeleton width={72} height={18} />
+          <div className="m-detail-skeleton-purchase-list">
+            <Skeleton width={212} height={104} radius={8} />
+            <Skeleton width={212} height={104} radius={8} />
+          </div>
+          <Skeleton width="70%" height={10} />
+          <Skeleton width="88%" height={9} />
+        </section>
+        <section className="m-detail-card m-detail-skeleton-card" aria-hidden="true">
+          <Skeleton width={96} height={18} />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i}>
+              <Skeleton width="26%" height={11} />
+              <Skeleton width="22%" height={14} />
+            </div>
+          ))}
+        </section>
       </div>
     </>
   );
