@@ -1,5 +1,5 @@
 ﻿// 모바일 디테일 페이지 (Round 3)
-// 구조: AppBar(서브) → Hero → MacroRow → 자동 태그 → 영양표 → 분석 리포트 → 원료 → 후기 → sticky CTA bar
+// 구조: AppBar(서브) → Hero → MacroRow → 자동 태그 → 영양표 → 분석 리포트 → 원료 → 리뷰 → sticky CTA bar
 // - 모바일 셸은 디테일에서 BottomNav 숨김 (App.jsx 처리). 본문 하단은 sticky CTA용 padding 확보
 // - AppBar/CTA는 페이지가 직접 렌더
 import { useEffect, useRef, useState } from 'react';
@@ -78,7 +78,7 @@ function LoadErrorState({ onRetry }) {
 
 const SECTIONS = [
   { id: 'analysis', label: '분석 리포트' },
-  { id: 'reviews', label: '후기' },
+  { id: 'reviews', label: '리뷰' },
 ];
 
 function SectionNav({ activeId, navRef }) {
@@ -325,9 +325,12 @@ export default function DetailPageMobile() {
           <ProductFeedbackEntry />
         </div>
 
-        {/* 6. 후기 */}
+        {/* 6. 리뷰 */}
         <div id="reviews">
-          <ReviewSection productId={product.id} />
+          <ReviewSection
+            productProfileId={raw?.productProfileId}
+            categoryCode={raw?.categoryCode}
+          />
         </div>
 
         {/* 7. 비슷한 제품 (같은 제품군 우선, 없으면 같은 카테고리) */}

@@ -123,10 +123,10 @@ export function toMacros(product) {
   };
 }
 
-// ============================================================ Mock 후기 수
+// ============================================================ Mock 리뷰 수
 // - PRODUCTS에 review_count 필드가 없어, id 해시 + score를 결합해 결정적 mock 값 생성
 // - 동일 id는 항상 동일 값 (렌더마다 흔들리지 않음)
-// - 점수가 높을수록 후기수도 약간 더 많음 (자연스러운 분포 시뮬레이션)
+// - 점수가 높을수록 리뷰 수도 약간 더 많음 (자연스러운 분포 시뮬레이션)
 // - 추후 PRODUCTS에 review_count 들어오면 이 함수는 제거하고 raw 값을 그대로 쓰면 됨
 export function getMockReviewCount(product) {
   const id = product?.id ?? '';

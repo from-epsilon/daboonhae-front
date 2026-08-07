@@ -1,10 +1,10 @@
-// 데스크탑 메인 — 사용자 후기 (크몽의 "고객 후기 슬라이드" 패턴 차용)
+// 데스크탑 메인 — 사용자 리뷰 (크몽의 "고객 리뷰 슬라이드" 패턴 차용)
 // - 가로 카드 4개 (mock 데이터)
 // - 별점 + 본문 발췌 + 닉네임 + 컨텍스트 (목적/카테고리)
 // - 신뢰감 + 사람냄새 → 전환 가장 큰 영향 요소
 import { IconCheck } from '../../ds/Icons.jsx';
 
-// 후기 mock — 짧고 구체적인 한 줄
+// 리뷰 mock — 짧고 구체적인 한 줄
 // - author: 마스킹된 가짜 실명 대신 사용 시나리오 기반 익명 페르소나
 //   (mock fake review 인상 방지)
 const TESTIMONIALS = [
@@ -70,13 +70,13 @@ function TestimonialCard({ quote, author, context, rating }) {
 
 export default function Testimonials() {
   return (
-    <section className="d-home-testimonials" aria-label="사용자 후기">
+    <section className="d-home-testimonials" aria-label="사용자 리뷰">
       <header className="d-home-section-head">
         <div className="d-home-section-title-wrap">
-          <h2 className="d-home-section-title">사용자 후기</h2>
+          <h2 className="d-home-section-title">사용자 리뷰</h2>
           <p className="d-home-section-sub">
             <IconCheck size={12} stroke={2.5} className="d-home-section-sub-icon" />
-            예시 후기 · 실제 사용자 코멘트를 모집 중이에요
+            예시 리뷰 · 실제 사용자 코멘트를 모집 중이에요
           </p>
         </div>
       </header>

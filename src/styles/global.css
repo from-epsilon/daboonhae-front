@@ -164,6 +164,11 @@ select:focus-visible {
   line-height: 15px;
   text-align: center;
 }
+.header-account-label {
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .purpose-toggle { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
 .purpose-chip {
   display: inline-flex; align-items: center; gap: 4px;
@@ -1024,7 +1029,7 @@ img.product-thumb { object-fit: cover; }
 
 /* ───────── Detail Page ───────── */
 .detail-empty { padding: 48px; text-align: center; color: var(--c-text-sub); }
-/* 좌측 본문(요약/액션/후기) + 우측 분석 리포트 2단 레이아웃
+/* 좌측 본문(요약/액션/리뷰) + 우측 분석 리포트 2단 레이아웃
    - 우측 분석 리포트는 sticky로 항상 보임
    - 좁은 폭(<=960px)에서는 1단으로 무너지며 sticky도 해제됨 */
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }

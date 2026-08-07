@@ -60,7 +60,7 @@ export function websiteLd() {
 
 - `offers`: 판매처가 여러 개이므로 **AggregateOffer**(최저/최고가). 가격 있는 링크만 사용. 모두 가격 없으면 offers 생략.
 - `image`: 절대 URL이어야 함. thumbnail이 상대경로면 `absUrl()`.
-- 후기/별점이 실제 데이터로 있으면 `aggregateRating` 추가(없으면 **넣지 않음** — 가짜 평점 금지).
+- 리뷰/별점이 실제 데이터로 있으면 `aggregateRating` 추가(없으면 **넣지 않음** — 가짜 평점 금지).
 
 ```js
 export function productLd(product) {

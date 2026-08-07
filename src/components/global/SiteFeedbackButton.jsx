@@ -43,7 +43,7 @@ function feedbackPresentation() {
     : 'desktop_popover';
 }
 
-// 우하단 의견을 주세요 버튼 (제품 후기와는 별개)
+// 우하단 의견을 주세요 버튼 (제품 리뷰와는 별개)
 // - 버튼 클릭 시 텍스트 입력 패널 토글
 // - 상세에서는 본문의 오류 제보 버튼으로 패널만 열고 FAB은 숨긴다.
 export default function SiteFeedbackButton() {

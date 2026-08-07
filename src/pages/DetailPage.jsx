@@ -531,7 +531,7 @@ function ProductOverview({
 // #3 섹션 앵커 탭
 const SECTIONS = [
   { id: 'analysis', label: '분석 리포트' },
-  { id: 'reviews', label: '후기' },
+  { id: 'reviews', label: '리뷰' },
 ];
 
 function SectionNav({ activeId, navRef }) {
@@ -803,7 +803,10 @@ export default function DetailPage() {
               <ProductFeedbackEntry />
             </div>
             <div id="reviews" className="d-detail-section-block">
-              <ReviewSection productId={product.id} />
+              <ReviewSection
+                productProfileId={raw?.productProfileId}
+                categoryCode={raw?.categoryCode}
+              />
             </div>
             <RelatedProducts
               currentProduct={raw}

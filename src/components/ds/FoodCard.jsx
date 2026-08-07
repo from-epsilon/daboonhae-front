@@ -817,7 +817,7 @@ function FoodCardGrid({ food, onClick, onCompare, inCompare, sortKey, showPurcha
             emptyLabel="가격 정보 없음"
           />
         )}
-        {/* 후기 N건 — 카드 trust 신호 */}
+        {/* 리뷰 N건 — 카드 trust 신호 */}
       </div>
     </div>
   );
@@ -867,8 +867,8 @@ export function PurposeRecommendCard({ food, onClick, onCompare, inCompare, metr
   );
 }
 
-// 카드 하단 trust 신호 — "후기 24건"
-// - reviewCount 가 없으면 "후기 수집 중" 라벨
+// 카드 하단 trust 신호 — "리뷰 24건"
+// - reviewCount 가 없으면 "리뷰 수집 중" 라벨
 function ReviewMeta({ reviewCount }) {
   const hasReviews = typeof reviewCount === 'number' && reviewCount > 0;
   return (
@@ -883,7 +883,7 @@ function ReviewMeta({ reviewCount }) {
         lineHeight: 1.3,
       }}
     >
-      <span>{hasReviews ? `후기 ${reviewCount}건` : '후기 수집 중'}</span>
+      <span>{hasReviews ? `리뷰 ${reviewCount}건` : '리뷰 수집 중'}</span>
     </div>
   );
 }

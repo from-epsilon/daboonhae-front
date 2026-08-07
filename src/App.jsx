@@ -27,6 +27,13 @@ const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage.jsx'));
 const RedirectPage = lazy(() => import('./pages/RedirectPage.jsx'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'));
+const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
+const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage.jsx'));
+const JoinPage = lazy(() => import('./pages/JoinPage.jsx'));
+const WishlistImportPage = lazy(() => import('./pages/WishlistImportPage.jsx'));
+const AccountPage = lazy(() => import('./pages/AccountPage.jsx'));
+const ProfileEditPage = lazy(() => import('./pages/ProfileEditPage.jsx'));
+const MyReviewsPage = lazy(() => import('./pages/MyReviewsPage.jsx'));
 // 모바일 페이지 — 데스크탑 사용자는 받지 않음
 const MainPageMobile = lazy(() => import('./pages/mobile/MainPage.jsx'));
 const ListPageMobile = lazy(() => import('./pages/mobile/ListPage.jsx'));
@@ -46,6 +53,10 @@ function DesktopShell() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/redirect" element={<RedirectPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/join" element={<JoinPage />} />
+          <Route path="/wishlist/import" element={<WishlistImportPage />} />
           <Route
             path="*"
             element={
@@ -59,6 +70,9 @@ function DesktopShell() {
                     <Route path="/product/:id" element={<DetailPage />} />
                     <Route path="/compare" element={<ComparePage />} />
                     <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/account" element={<AccountPage />} />
+                    <Route path="/account/profile" element={<ProfileEditPage />} />
+                    <Route path="/account/reviews" element={<MyReviewsPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/contact" element={<ContactPage />} />
@@ -87,6 +101,10 @@ function MobileShell() {
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/redirect" element={<RedirectPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/join" element={<JoinPage />} />
+          <Route path="/wishlist/import" element={<WishlistImportPage />} />
           <Route
             path="*"
             element={
@@ -99,6 +117,9 @@ function MobileShell() {
                     <Route path="/product/:id" element={<DetailPageMobile />} />
                     <Route path="/compare" element={<ComparePageMobile />} />
                     <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/account" element={<AccountPage />} />
+                    <Route path="/account/profile" element={<ProfileEditPage />} />
+                    <Route path="/account/reviews" element={<MyReviewsPage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/contact" element={<ContactPage />} />

@@ -715,10 +715,13 @@
   margin-bottom: 24px;
 }
 #analysis > .d-detail-report > .d-detail-card-head,
-#reviews > .d-review > .d-detail-card-head,
 .d-detail-related.d-detail-section-block > .d-detail-related-header {
   align-items: flex-start;
   margin-bottom: 30px;
+}
+#reviews > .d-review > .d-detail-card-head {
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 #analysis > .d-detail-report > .d-detail-card-head .d-detail-card-title,
 #reviews > .d-review > .d-detail-card-head .d-detail-card-title,
@@ -3061,7 +3064,7 @@
 .d-detail-notice-caution-label { font-weight: 700; margin-right: 6px; }
 .d-detail-notice-caution-text { color: var(--text-secondary); }
 
-/* ───────── 후기 ───────── */
+/* ───────── 리뷰 ───────── */
 .d-review-form {
   border: 1px solid var(--border-tertiary); border-radius: var(--radius-lg);
   padding: 16px 18px; display: flex; flex-direction: column; gap: 12px;
@@ -3128,7 +3131,7 @@
 .d-review-submit:hover { background: var(--gray-800); }
 .d-review-submit:disabled { background: var(--gray-200); color: var(--text-tertiary); cursor: default; }
 
-/* 후기 리스트 */
+/* 리뷰 리스트 */
 .d-review-list { display: flex; flex-direction: column; }
 .d-review-item {
   padding: 14px 0; border-bottom: 1px solid var(--border-tertiary);

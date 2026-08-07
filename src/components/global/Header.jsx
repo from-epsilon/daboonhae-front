@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { IconCompare, IconHeart, IconSearch } from '../ds/Icons.jsx';
+import { IconCompare, IconHeart, IconSearch, IconUser } from '../ds/Icons.jsx';
 import { useCompare } from '../../store/CompareContext.jsx';
 import { useWishlist } from '../../store/WishlistContext.jsx';
+import { useAuth } from '../../store/AuthContext.jsx';
+import { loginPath } from '../../lib/auth.js';
 
 const HIDE_SEARCH_PATHS = ['/about', '/faq', '/contact', '/terms', '/privacy'];
 
@@ -47,10 +49,13 @@ function HeaderSearchBar() {
 }
 
 export default function Header() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const hideSearch = HIDE_SEARCH_PATHS.includes(pathname);
   const compare = useCompare();
   const wishlist = useWishlist();
+  const { user } = useAuth();
+  const accountPath = user ? '/account' : loginPath(`${pathname}${search}`);
+  const accountLabel = user ? '내 정보' : '로그인';
 
   return (
     <header className="header">
@@ -92,6 +97,17 @@ export default function Header() {
               )}
             </span>
             <span>찜함</span>
+          </Link>
+          <Link
+            to={accountPath}
+            className={`header-shortcut${pathname.startsWith('/account') ? ' is-active' : ''}`}
+            aria-label={accountLabel}
+            title={accountLabel}
+          >
+            <span className="header-shortcut-icon" aria-hidden="true">
+              <IconUser size={17} stroke={1.8} />
+            </span>
+            <span className="header-account-label">{accountLabel}</span>
           </Link>
         </nav>
       </div>

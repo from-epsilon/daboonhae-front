@@ -12,8 +12,10 @@
 //   - IconBell 제거 (알림 기능 없음)
 //   - 우측 IconCompare + 카운트 배지로 교체
 //   - onBack/title 모드 추가 (디테일/서브 페이지 대응)
-import { useNavigate } from 'react-router-dom';
-import { IconSearch, IconCompare, IconBack, IconHeart } from './Icons.jsx';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { IconSearch, IconCompare, IconBack, IconHeart, IconUser } from './Icons.jsx';
+import { useAuth } from '../../store/AuthContext.jsx';
+import { loginPath } from '../../lib/auth.js';
 
 // 비교함 카운트 배지 (compareCount > 0 일 때만)
 function ShortcutBadge({ count }) {
@@ -99,6 +101,12 @@ export function AppBar({
 }) {
   const isSubPage = typeof onBack === 'function' || !!title;
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  const handleAccount = () => {
+    if (user) navigate('/account');
+    else navigate(loginPath(`${location.pathname}${location.search}`));
+  };
   // 로고 클릭 → onLogo 우선, 없으면 기본적으로 홈 이동 (데스크톱 포함 전역 동작)
   const handleLogo = () => (typeof onLogo === 'function' ? onLogo() : navigate('/'));
 
@@ -232,6 +240,9 @@ export function AppBar({
           </ShortcutButton>
           <ShortcutButton onClick={onCompare} label="비교함" count={compareCount}>
             <IconCompare />
+          </ShortcutButton>
+          <ShortcutButton onClick={handleAccount} label={user ? '내 정보' : '로그인'}>
+            <IconUser />
           </ShortcutButton>
         </>
       )}

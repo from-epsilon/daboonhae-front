@@ -1,4 +1,4 @@
-// 상세 페이지 구간별 뷰포트 캡처 — 영양표/분석/후기 또렷하게 확인
+// 상세 페이지 구간별 뷰포트 캡처 — 영양표/분석/리뷰 또렷하게 확인
 import { chromium, devices } from 'playwright';
 import path from 'node:path';
 
@@ -21,7 +21,7 @@ await page.evaluate(() => document.querySelectorAll('vite-error-overlay').forEac
 const shots = [
   { y: 600, name: 'detail-s1.png' },   // 매크로~영양표
   { y: 1200, name: 'detail-s2.png' },  // 영양표~분석
-  { y: 1900, name: 'detail-s3.png' },  // 분석~원료~후기
+  { y: 1900, name: 'detail-s3.png' },  // 분석~원료~리뷰
 ];
 for (const s of shots) {
   await page.evaluate((y) => window.scrollTo(0, y), s.y);

@@ -103,7 +103,7 @@
   font-size: 14px;
 }
 
-/* 섹션 헤더(카드 밖) — 분석/후기 영역용 */
+/* 섹션 헤더(카드 밖) — 분석/리뷰 영역용 */
 .m-detail-section-head {
   display: flex;
   align-items: baseline;
@@ -1466,7 +1466,7 @@
 }
 
 /* ============================================================
-   카테고리 선택 가이드 (CategoryGuideCard) — 후기 위
+   카테고리 선택 가이드 (CategoryGuideCard) — 리뷰 위
    ============================================================ */
 .m-detail-guide {
   background: var(--bg-white);
