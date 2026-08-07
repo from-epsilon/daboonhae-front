@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App.jsx';
 import { CompareProvider } from './store/CompareContext.jsx';
@@ -15,22 +15,33 @@ import './styles/global.css';
 
 initAnalytics();
 
+function AppProviders() {
+  return (
+    <AuthProvider>
+      <ProductsProvider>
+        <PurposeProvider>
+          <CompareProvider>
+            <WishlistProvider>
+              <App />
+            </WishlistProvider>
+          </CompareProvider>
+        </PurposeProvider>
+      </ProductsProvider>
+    </AuthProvider>
+  );
+}
+
+const router = createBrowserRouter([
+  {
+    path: '*',
+    element: <AppProviders />,
+  },
+]);
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HelmetProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <ProductsProvider>
-            <PurposeProvider>
-              <CompareProvider>
-                <WishlistProvider>
-                  <App />
-                </WishlistProvider>
-              </CompareProvider>
-            </PurposeProvider>
-          </ProductsProvider>
-        </AuthProvider>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </HelmetProvider>
   </React.StrictMode>,
 );

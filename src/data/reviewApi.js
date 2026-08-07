@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js';
+import { isAllowedReviewContent } from '../lib/textModeration.js';
 
 function positiveProfileId(value) {
   const parsed = Number(value);
@@ -42,12 +43,21 @@ export async function fetchProductProfileReviewPage(productProfileId, offset, li
 }
 
 export async function saveProductProfileReview(productProfileId, scores, content) {
+  const normalizedContent = String(content || '').trim();
+  if (!isAllowedReviewContent(normalizedContent)) {
+    throw new Error('등록할 수 없는 표현이 포함되어 있습니다.');
+  }
   const { data, error } = await supabase.rpc('save_product_profile_review', {
     p_product_profile_id: positiveProfileId(productProfileId),
     p_scores: scores,
-    p_content: String(content || '').trim() || null,
+    p_content: normalizedContent || null,
   });
-  if (error) throw error;
+  if (error) {
+    if (error.message?.includes('Review content is not allowed')) {
+      throw new Error('등록할 수 없는 표현이 포함되어 있습니다.');
+    }
+    throw error;
+  }
   return data;
 }
 

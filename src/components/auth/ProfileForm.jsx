@@ -11,10 +11,13 @@ export default function ProfileForm({
   submitLabel,
   saving = false,
   footer,
+  onDirtyChange,
 }) {
-  const [nickname, setNickname] = useState('');
-  const [gender, setGender] = useState('');
-  const [birthYear, setBirthYear] = useState('');
+  const [nickname, setNickname] = useState(() => profile?.nickname || '');
+  const [gender, setGender] = useState(() => profile?.gender || '');
+  const [birthYear, setBirthYear] = useState(() => (
+    profile?.birth_year == null ? '' : String(profile.birth_year)
+  ));
   const [error, setError] = useState('');
   const years = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -27,6 +30,14 @@ export default function ProfileForm({
     setGender(profile.gender || '');
     setBirthYear(profile.birth_year == null ? '' : String(profile.birth_year));
   }, [profile]);
+
+  useEffect(() => {
+    if (!profile || !onDirtyChange) return;
+    const dirty = nickname !== (profile.nickname || '')
+      || gender !== (profile.gender || '')
+      || birthYear !== (profile.birth_year == null ? '' : String(profile.birth_year));
+    onDirtyChange(dirty);
+  }, [profile, nickname, gender, birthYear, onDirtyChange]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

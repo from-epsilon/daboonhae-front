@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useBlocker, useLocation, useNavigate } from 'react-router-dom';
 import ProfileForm from '../components/auth/ProfileForm.jsx';
 import { AppBar } from '../components/ds/AppBar.jsx';
 import Seo from '../components/global/Seo.jsx';
@@ -25,9 +25,29 @@ export default function ProfileEditPage() {
   } = useAuth();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => (
+    dirty
+    && !deleting
+    && (
+      currentLocation.pathname !== nextLocation.pathname
+      || currentLocation.search !== nextLocation.search
+      || currentLocation.hash !== nextLocation.hash
+    )
+  ));
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!dirty || deleting) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [dirty, deleting]);
 
   useEffect(() => {
     if (deleting) return;
@@ -51,6 +71,11 @@ export default function ProfileEditPage() {
       setSaving(false);
     }
   };
+
+  const handleDirtyChange = useCallback((nextDirty) => {
+    setDirty(nextDirty);
+    if (nextDirty) setSaved(false);
+  }, []);
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -85,6 +110,7 @@ export default function ProfileEditPage() {
                 onSubmit={handleSubmit}
                 submitLabel={saved ? '저장 완료' : '변경사항 저장'}
                 saving={saving}
+                onDirtyChange={handleDirtyChange}
               />
               <section className="d-account-delete" aria-labelledby="account-delete-title">
                 <h2 id="account-delete-title">회원 탈퇴</h2>
@@ -110,6 +136,26 @@ export default function ProfileEditPage() {
           )}
         </section>
       </div>
+      {blocker.state === 'blocked' && (
+        <div className="d-unsaved-overlay" role="presentation">
+          <section
+            className="d-unsaved-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="unsaved-dialog-title"
+          >
+            <h2 id="unsaved-dialog-title">변경사항을 저장하지 않았어요</h2>
+            <div className="d-unsaved-actions">
+              <button type="button" autoFocus onClick={() => blocker.reset()}>
+                계속 수정
+              </button>
+              <button type="button" className="is-leave" onClick={() => blocker.proceed()}>
+                나가기
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </>
   );
 }

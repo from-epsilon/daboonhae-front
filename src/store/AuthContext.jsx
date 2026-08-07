@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { rememberAuthReturnPath, safeReturnPath } from '../lib/auth.js';
+import { isAllowedNickname } from '../lib/textModeration.js';
 
 const AuthContext = createContext(null);
 const PROFILE_FIELDS =
@@ -17,6 +18,9 @@ function normalizeProfileInput({ nickname, gender, birthYear }) {
   const normalizedNickname = String(nickname || '').trim();
   if (normalizedNickname.length < 2 || normalizedNickname.length > 20) {
     throw new Error('닉네임은 2자 이상 20자 이하로 입력해주세요.');
+  }
+  if (!isAllowedNickname(normalizedNickname)) {
+    throw new Error('사용할 수 없는 닉네임입니다.');
   }
 
   const normalizedGender = gender === 'female' || gender === 'male' ? gender : null;
@@ -148,7 +152,12 @@ export function AuthProvider({ children }) {
       .eq('user_id', userId)
       .select(PROFILE_FIELDS)
       .single();
-    if (error) throw error;
+    if (error) {
+      if (error.message?.includes('Nickname is not allowed')) {
+        throw new Error('사용할 수 없는 닉네임입니다.');
+      }
+      throw error;
+    }
 
     setProfile(data);
     setProfileError(null);
