@@ -4,7 +4,7 @@
 //   - 제품 URL: src/data/productUrl.js 의 productPath()
 //   - 카테고리 슬러그: src/data/categoryTabs.js 의 FOOD_TYPES.slug (ACTIVE만)
 //
-// 실행:  node scripts/generate-sitemap.mjs
+// 실행:  npm run build 시 자동 실행 (단독: npm run sitemap)
 // 필요 env: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY (Vercel 빌드 env에 이미 존재)
 // 선택 env: SITE_ORIGIN(기본 https://www.daboonhae.com)
 
@@ -30,8 +30,9 @@ const GHOST_IDS = new Set([8, 9, 11]);
 const STATIC_PATHS = ['/', '/list', '/about', '/faq'];
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('✗ VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY 환경변수가 필요합니다.');
-  process.exit(1);
+  // 빌드 체인에 걸려 있으므로 env 없는 로컬 빌드는 막지 않고 기존 sitemap.xml을 유지한다.
+  console.warn('⚠ VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY 없음 — sitemap.xml 재생성 건너뜀');
+  process.exit(0);
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -50,11 +51,12 @@ function urlEntry(path, lastmod) {
 }
 
 async function main() {
-  const { data: foods, error } = await supabase
-    .from('foods')
-    .select('id, name, brand, updated_at, food_type_category_code')
-    .eq('is_active', true)
-    .order('id', { ascending: true })
+  // 목록 페이지와 같은 소스(market_product_summaries)를 쓴다 — 내부 링크와 사이트맵 URL이 일치하도록.
+  // id는 버전 ID(`{foodId}p{profileId}`), name은 리비전 라벨이 붙은 표시명이라 상세의 정규 URL과 같다.
+  const { data: rows, error } = await supabase
+    .from('market_product_summaries')
+    .select('id, food_id, name, brand, updated_at, food_type_category_code, food_type_categories')
+    .order('food_id', { ascending: true })
     .limit(5000);
 
   if (error) {
@@ -62,8 +64,17 @@ async function main() {
     process.exit(1);
   }
 
-  const included = foods.filter((f) => !GHOST_IDS.has(f.id));
-  const excluded = foods.filter((f) => GHOST_IDS.has(f.id));
+  // 상세 페이지가 "존재하지 않는 제품"(noindex)으로 렌더되는 제품은 제외:
+  // 유령 레코드, 비활성 카테고리 소속(상세 조회가 food_type_categories.is_active를 요구)
+  const isIndexable = (r) =>
+    !GHOST_IDS.has(r.food_id) && r.food_type_categories?.is_active === true;
+  const included = rows.filter(isIndexable);
+  const excluded = rows.filter((r) => !isIndexable(r));
+
+  if (rows.length > 0 && included.length === 0) {
+    console.error('✗ 색인 대상 제품이 0개 — 스키마 변경 여부를 확인하세요.');
+    process.exit(1);
+  }
 
   // 카테고리 lastmod = 해당 코드 제품들의 최신 updated_at
   const latestByCode = {};
@@ -110,7 +121,7 @@ async function main() {
   console.log(`  URL 합계: ${entries.length}`);
   console.log(`   - 정적: ${STATIC_PATHS.length}`);
   console.log(`   - 카테고리(활성): ${ACTIVE_FOOD_TYPES.length}`);
-  console.log(`   - 제품: ${included.length} (제외 유령 ${excluded.length}: ${excluded.map((f) => f.id).join(', ') || '없음'})`);
+  console.log(`   - 제품: ${included.length} (제외 ${excluded.length}: ${excluded.map((f) => f.id).join(', ') || '없음'})`);
   console.log(`  카테고리 매핑:`);
   for (const row of categoryRows) console.log(`   - ${row}`);
 }
