@@ -6,7 +6,7 @@ const CONTACT_EMAIL = 'kodactle@gmail.com';
 
 function Section({ id, title, children }) {
   return (
-    <section id={id} className="d-legal-section">
+    <section id={id} className="d-legal-section" style={id ? { scrollMarginTop: 96 } : undefined}>
       <h2 className="d-legal-section-title">{title}</h2>
       {children}
     </section>
