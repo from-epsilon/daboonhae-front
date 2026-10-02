@@ -1,12 +1,12 @@
 import Seo from '../components/global/Seo.jsx';
 import './LegalPage.css';
 
-const UPDATED_AT = '2026년 8월 7일';
+const UPDATED_AT = '2026년 10월 3일';
 const CONTACT_EMAIL = 'kodactle@gmail.com';
 
-function Section({ title, children }) {
+function Section({ id, title, children }) {
   return (
-    <section className="d-legal-section">
+    <section id={id} className="d-legal-section">
       <h2 className="d-legal-section-title">{title}</h2>
       {children}
     </section>
@@ -42,6 +42,9 @@ export default function PrivacyPage() {
           <span>시행일 {UPDATED_AT}</span>
           <span>문의 {CONTACT_EMAIL}</span>
         </div>
+        <p className="d-legal-note">
+          <a className="d-legal-contact" href="#account-deletion">다분해 계정 및 데이터 삭제 요청 안내</a>
+        </p>
       </header>
 
       <Section title="1. 개인정보 처리 목적">
@@ -157,6 +160,9 @@ export default function PrivacyPage() {
         <p>
           사용자 활동 분석 수집을 원하지 않는 이용자는 브라우저의 쿠키 및 사이트 데이터 차단, 추적 방지 설정, 저장소 삭제 기능을 사용할 수 있습니다. 별도의 분석 도구를 도입하는 경우 해당 도구가 제공하는 수집 거부 방법 또는 서비스 내 수집 거부 방법을 함께 안내합니다.
         </p>
+        <p>
+          위 PostHog 활동 분석 안내는 웹사이트에 적용됩니다. 현재 Android 앱(1.0.0)은 PostHog 활동 분석을 사용하지 않습니다.
+        </p>
       </Section>
 
       <Section title="9. 개인정보의 파기">
@@ -167,7 +173,14 @@ export default function PrivacyPage() {
         </ol>
       </Section>
 
-      <Section title="10. 정보주체의 권리와 행사 방법">
+      <Section id="account-deletion" title="10. 정보주체의 권리와 행사 방법">
+        <p className="d-legal-note">
+          다분해 계정과 연결 데이터의 삭제는 내 정보 → 프로필 수정 → 회원 탈퇴에서 진행할 수 있습니다.
+          앱을 삭제했거나 로그인할 수 없는 경우에도{' '}
+          <a className="d-legal-contact" href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('다분해 계정 삭제 요청')}`}>{CONTACT_EMAIL}</a>로
+          로그인 제공자(Google 또는 카카오)와 계정 이메일을 보내 삭제를 요청할 수 있습니다.
+          본인 확인 후 계정·프로필·계정 찜함·제품 평가 및 리뷰를 삭제하며, 별도 보관 정보는 제4항의 보유기간을 따릅니다.
+        </p>
         <p>
           이용자는 개인정보 열람, 정정, 삭제, 처리정지, 동의 철회, 개인정보 국외 이전 거부를 요청할 수 있습니다.
           권리 행사는 개인정보 문의 이메일을 통해 할 수 있으며, 서비스는 관련 법령에 따라 지체 없이 조치합니다.
